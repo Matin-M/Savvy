@@ -65,7 +65,7 @@ client.on("messageCreate", async (message) => {
       subscribedUsers = [...new Set(subscribedUsers)];
       for(const userID of subscribedUsers){
         const subscribedUser = await client.users.fetch(`${userID}`);
-        subscribedUser.send(`${newState.member.displayName} has joined voice channel ${newState.channel.name}`);
+        subscribedUser.send(`**${newState.member.displayName}** has joined voice channel **${newState.channel.name}** in server **${newState.guild.name}**`);
       }
       //channel.send(`${newState.member.displayName} has joined voice channel ${newState.channel.name}`);
     }
@@ -90,6 +90,7 @@ client.on("messageCreate", async (message) => {
     console.log(member.user.id + ' has left');
 });
 
+//Handle commands.
 client.on('interactionCreate', async interaction => {
     console.log('Received command');
 	if (!interaction.isCommand()) return;
