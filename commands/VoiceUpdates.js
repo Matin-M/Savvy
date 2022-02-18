@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const fs = require('fs');
+const { MessageEmbed } = require('discord.js');
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -12,6 +13,10 @@ module.exports = {
 			  return
 			}
 		})
-		await interaction.reply(`${interaction.user}, you will now receive status updates for voice channels in this server.`);
+		const replyEmbed = new MessageEmbed()
+          .setColor('#0099ff')
+          .setTitle(`${interaction.user.username}, you will now receive status updates for voice channels in this server.`)
+          .setTimestamp();
+		await interaction.reply({embeds: [replyEmbed]});
 	},
 };

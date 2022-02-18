@@ -1,6 +1,7 @@
 const fs = require('fs');
 const lineByLine = require('n-readlines');
 const { Client, Collection, Intents } = require('discord.js');
+const { MessageEmbed } = require('discord.js');
 const { token } = require('./config.json');
 const { strictEqual } = require('assert');
 const { channel } = require('diagnostics_channel');
@@ -16,6 +17,10 @@ const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('
 for (const file of commandFiles) {
 	const command = require(`./commands/${file}`);
 	client.commands.set(command.data.name, command);
+}
+
+function getPosition(string, subString, index) {
+  return string.split(subString, index).join(subString).length;
 }
 
 client.once('ready', () => {
@@ -36,10 +41,20 @@ client.on("messageCreate", async (message) => {
     const attachment = message.attachments.first()
 
     if (message.channel.type === 'DM') {
-        message.reply("Why are you DMing me?");
+      message.reply("Why are you DMing me?");
     }else{
-        const guildChannels = message.guild.channels;
-        const guildVoiceChannels = message.guild.guildVoiceChannels;
+      const liner = new lineByLine('MessageReplyList.txt');
+      const guildChannels = message.guild.channels;
+      const guildVoiceChannels = message.guild.guildVoiceChannels;
+      let line; 
+      while(line = liner.next()){
+        line = line.toString('ascii');
+        var keyword = line.substring(getPosition(line,"+",1) + 1, getPosition(line,"+",2));
+        var phrase = line.substring(getPosition(line,"+",2) + 1, line.length);
+        if(line.includes(message.guild.id) && message.content.includes(keyword)){
+          message.reply(phrase);
+        }
+      }
     }
   });
 
@@ -65,7 +80,12 @@ client.on("messageCreate", async (message) => {
       subscribedUsers = [...new Set(subscribedUsers)];
       for(const userID of subscribedUsers){
         const subscribedUser = await client.users.fetch(`${userID}`);
-        subscribedUser.send(`**${newState.member.displayName}** has joined voice channel **${newState.channel.name}** in server **${newState.guild.name}**`);
+        const replyEmbed = new MessageEmbed()
+          .setColor('#0099ff')
+          .setTitle(`A user has joined a channel:`)
+          .setDescription(`**${newState.member.displayName}** has joined voice channel **${newState.channel.name}** in server **${newState.guild.name}**`)
+          .setTimestamp();
+        subscribedUser.send({ embeds: [replyEmbed] });
       }
       //channel.send(`${newState.member.displayName} has joined voice channel ${newState.channel.name}`);
     }
@@ -77,7 +97,11 @@ client.on("messageCreate", async (message) => {
     const channel = member.guild.channels.cache.find(
         (c) => c.type === "GUILD_TEXT" && c.permissionsFor(member.guild.me).has("SEND_MESSAGES") && c.name == "general"
       );
-    channel.send(`Welcome to ${member.guild.name}, ${member.user}!`);
+    const replyEmbed = new MessageEmbed()
+          .setColor('#0099ff')
+          .setTitle(`Welcome to ${member.guild.name}, ${member.user}!`)
+          .setTimestamp();
+    channel.send({ embeds: [replyEmbed] });
     console.log(member.user.id + ' has Joined');
 });
 
@@ -87,6 +111,11 @@ client.on("messageCreate", async (message) => {
         (c) => c.type === "GUILD_TEXT" && c.permissionsFor(member.guild.me).has("SEND_MESSAGES") && c.name == "general"
       );
     channel.send(`${member.user} has left ${member.guild.name}`);
+    const replyEmbed = new MessageEmbed()
+          .setColor('#0099ff')
+          .setTitle(`${member.user} has left ${member.guild.name}`)
+          .setTimestamp();
+    channel.send({ embeds: [replyEmbed] });
     console.log(member.user.id + ' has left');
 });
 

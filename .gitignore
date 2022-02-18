@@ -4,3 +4,4 @@ config.json
 .DS_Store
 VoiceUpdateList.txt
 UpdateChannelList.txt
+MessageReplyList.txt
