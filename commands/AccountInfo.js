@@ -17,7 +17,6 @@ module.exports = {
 			)
 			.setImage(`${interaction.user.displayAvatarURL()}`)
 			.setTimestamp()
-		//var reply = `${interaction.user}, here are the details of your account:\nAccount created: **${accDate}**\nDiscord Tag: **${interaction.user.tag}**\nJoined ${interaction.guild} on: **${new Date(interaction.guild.joinedTimestamp).toLocaleDateString("en-US")}**\nAvatar: ${interaction.user.displayAvatarURL()}`;
 		await interaction.reply({embeds: [replyEmbed]});
 	},
 };
