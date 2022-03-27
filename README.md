@@ -1,3 +1,3 @@
 # Savvy
 
-A discord bot that does useful things.
+A discord.js bot

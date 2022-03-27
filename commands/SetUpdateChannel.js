@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const { MessageEmbed } = require('discord.js');
+const { Client, MessageEmbed } = require('discord.js');
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -8,7 +8,7 @@ module.exports = {
             option.setName('channel')
                 .setDescription('channel name')
                 .setRequired(true)),
-	async execute(interaction) {
+	async execute(client, interaction) {
 		await interaction.reply('In progress');
 	},
 };

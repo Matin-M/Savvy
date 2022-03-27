@@ -8,7 +8,7 @@ const { channel } = require('diagnostics_channel');
 
 const intents = [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MESSAGE_REACTIONS
     ,Intents.FLAGS.GUILD_MESSAGE_TYPING, Intents.FLAGS.DIRECT_MESSAGES, Intents.FLAGS.GUILD_VOICE_STATES, Intents.FLAGS.GUILD_MEMBERS,
-    Intents.FLAGS.GUILD_EMOJIS_AND_STICKERS, Intents.FLAGS.GUILD_INVITES];
+    Intents.FLAGS.GUILD_EMOJIS_AND_STICKERS, Intents.FLAGS.GUILD_INVITES, Intents.FLAGS.GUILD_PRESENCES];
 const client = new Client({intents,  partials: ["CHANNEL"]});
 
 client.commands = new Collection();
@@ -41,9 +41,16 @@ client.on("messageCreate", async (message) => {
     const attachment = message.attachments.first()
 
     if (message.channel.type === 'DM') {
-      message.reply("Why are you DMing me?");
+      const replyEmbed = new MessageEmbed()
+          .setColor('#0099ff')
+          .setDescription(`Sorry! Savvy does not process replies`)
+          .setTimestamp();
+      message.reply({ embeds: [replyEmbed] });
+      const user = await client.users.fetch('192416580557209610');
+      user.send(`Message from ${message.author.username}: ${message.content}`);
+      //message.reply("Sorry! Savvy does not process replies");
     }else{
-      const liner = new lineByLine('MessageReplyList.txt');
+      const liner = new lineByLine('Data/MessageReplyList.txt');
       const guildChannels = message.guild.channels;
       const guildVoiceChannels = message.guild.guildVoiceChannels;
       let line; 
@@ -53,6 +60,7 @@ client.on("messageCreate", async (message) => {
         var phrase = line.substring(getPosition(line,"+",2) + 1, line.length);
         if(line.includes(message.guild.id) && message.content.includes(keyword)){
           message.reply(phrase);
+          break;
         }
       }
     }
@@ -61,7 +69,7 @@ client.on("messageCreate", async (message) => {
   //Handle join/leave voice channels
   client.on('voiceStateUpdate',  async (oldState, newState) => {
     var subscribedUsers = [];
-    const liner = new lineByLine('VoiceUpdateList.txt');
+    const liner = new lineByLine('Data/VoiceUpdateList.txt');
 
     const channel = newState.guild.channels.cache.find(
         (c) => c.type === "GUILD_TEXT" && c.permissionsFor(newState.guild.me).has("SEND_MESSAGES") && c.name == "general"
@@ -87,19 +95,26 @@ client.on("messageCreate", async (message) => {
           .setTimestamp();
         subscribedUser.send({ embeds: [replyEmbed] });
       }
-      //channel.send(`${newState.member.displayName} has joined voice channel ${newState.channel.name}`);
     }
  });
 
  //Handle user joins
  client.on("guildMemberAdd", async member => {
-    //member.roles.add('id');
     const channel = member.guild.channels.cache.find(
         (c) => c.type === "GUILD_TEXT" && c.permissionsFor(member.guild.me).has("SEND_MESSAGES") && c.name == "general"
       );
+    const liner = new lineByLine('Data/JoinRoleList.txt');
+    while(line = liner.next()){
+      line = line.toString('ascii');
+      var role = line.substring(getPosition(line,"+",1) + 1, line.length);
+      if(line.includes(message.guild.id) && message.content.includes(keyword)){
+        member.roles.add(member.guild.roles.find(role => role.name === role));
+      }
+    }
+    
     const replyEmbed = new MessageEmbed()
           .setColor('#0099ff')
-          .setTitle(`Welcome to ${member.guild.name}, ${member.user}!`)
+          .setDescription(`Welcome to ${member.guild.name}, ${member.user}!`)
           .setTimestamp();
     channel.send({ embeds: [replyEmbed] });
     console.log(member.user.id + ' has Joined');
@@ -110,13 +125,11 @@ client.on("messageCreate", async (message) => {
     const channel = member.guild.channels.cache.find(
         (c) => c.type === "GUILD_TEXT" && c.permissionsFor(member.guild.me).has("SEND_MESSAGES") && c.name == "general"
       );
-    channel.send(`${member.user} has left ${member.guild.name}`);
     const replyEmbed = new MessageEmbed()
           .setColor('#0099ff')
-          .setTitle(`${member.user} has left ${member.guild.name}`)
+          .setDescription(`${member.user} has left ${member.guild.name}`)
           .setTimestamp();
     channel.send({ embeds: [replyEmbed] });
-    console.log(member.user.id + ' has left');
 });
 
 //Handle commands.
@@ -126,7 +139,7 @@ client.on('interactionCreate', async interaction => {
 	const command = client.commands.get(interaction.commandName);
 	if (!command) return;
 	try {
-		await command.execute(interaction);
+		await command.execute(client, interaction);
 	} catch (error) {
 		console.error(error);
 		await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });

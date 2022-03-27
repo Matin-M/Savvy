@@ -1,20 +1,21 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const { MessageEmbed } = require('discord.js');
+const { Client, MessageEmbed } = require('discord.js');
 
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('serverinfo')
 		.setDescription('replies with server info'),
-	async execute(interaction) {
+	async execute(client, interaction) {
 		const replyEmbed = new MessageEmbed()
 			.setColor('#0099ff')
 			.setTitle(`Server info for ${interaction.guild.name}`)
 			.addFields(
-				{ name: 'Members', value: `**${interaction.guild.memberCount}**`, inline: true },
-				{ name: 'Created on', value: `**${new Date(interaction.guild.createdTimestamp).toLocaleDateString("en-US")}**`, inline: true },
-				{ name: `Max VC bitrate`, value: `**${interaction.guild.maximumBitrate}**`, inline: true },
+				{ name: 'Members', value: `\t**${interaction.guild.memberCount}**`, inline: true },
+				{ name: '\tCreated on', value: `**${new Date(interaction.guild.createdTimestamp).toLocaleDateString("en-US")}**`, inline: true },
+				{ name: `\tMax VC bitrate`, value: `\t**${interaction.guild.maximumBitrate} bits/s**`, inline: true },
 				{ name: `Max members`, value: `**${interaction.guild.maximumMembers}**`, inline: true },
-				{ name: `Number of boosts:`, value: `**${interaction.guild.premiumSubscriptionCount}**`, inline: true },
+				{ name: `\tNumber of boosts`, value: `\t**${interaction.guild.premiumSubscriptionCount}**`, inline: true },
+				{ name: `Server description`, value: `**${interaction.guild.description}**`, inline: true },
 			)
 			.setImage(`${interaction.guild.iconURL()}`)
 			.setTimestamp()

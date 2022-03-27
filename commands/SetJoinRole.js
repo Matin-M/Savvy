@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const { MessageEmbed } = require('discord.js');
+const fs = require('fs');
+const { Client, MessageEmbed } = require('discord.js');
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -8,9 +9,18 @@ module.exports = {
             option.setName('role')
                 .setDescription('role name')
                 .setRequired(true)),
-	async execute(interaction) {
-		const clientName = interaction.user.username;
-        const inputParam = interaction.options.getString('input');
-		await interaction.reply(clientName + ", you just said: " + inputParam);
+	async execute(client, interaction) {
+        const role = interaction.options.getString('role');
+		fs.appendFile('JoinRoleList.txt', `${interaction.guild.id}+${role}\n`, err => {
+			if (err) {
+			  console.error(err);
+			  return
+			}
+		})
+		const replyEmbed = new MessageEmbed()
+          .setColor('#0099ff')
+          .setTitle(`New uses will have their role set to ${role}`)
+          .setTimestamp();
+		await interaction.reply({embeds: [replyEmbed]});
 	},
 };

@@ -1,6 +1,6 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const fs = require('fs');
-const { MessageEmbed } = require('discord.js');
+const { Client, MessageEmbed } = require('discord.js');
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -12,7 +12,7 @@ module.exports = {
             option.setName('phrase')
                 .setDescription('phrase')
                 .setRequired(true)),
-	async execute(interaction) {
+	async execute(client, interaction) {
         const keyword = interaction.options.getString('keyword');
         const phrase = interaction.options.getString('phrase');
         fs.appendFile('MessageReplyList.txt', `${interaction.guild.id}+${keyword}+${phrase}\n`, err => {
