@@ -36,7 +36,6 @@ client.once('ready', () => {
 //Handle messaging
 client.on("messageCreate", async (message) => {
     if (message.author.bot) return false; 
-
     console.log(`Message from ${message.author.username}: ${message.content}`);
     const attachment = message.attachments.first()
 
@@ -45,10 +44,13 @@ client.on("messageCreate", async (message) => {
           .setColor('#0099ff')
           .setDescription(`Sorry! Savvy does not process replies`)
           .setTimestamp();
-      message.reply({ embeds: [replyEmbed] });
+      try{
+        await message.reply({ embeds: [replyEmbed] });
+      }catch(error){
+        console.log(error);
+      }
       const user = await client.users.fetch('192416580557209610');
       user.send(`Message from ${message.author.username}: ${message.content}`);
-      //message.reply("Sorry! Savvy does not process replies");
     }else{
       const liner = new lineByLine('Data/MessageReplyList.txt');
       const guildChannels = message.guild.channels;
@@ -88,12 +90,19 @@ client.on("messageCreate", async (message) => {
       subscribedUsers = [...new Set(subscribedUsers)];
       for(const userID of subscribedUsers){
         const subscribedUser = await client.users.fetch(`${userID}`);
+        if(subscribedUser.id == newState.member.id){
+          break;
+        }
         const replyEmbed = new MessageEmbed()
           .setColor('#0099ff')
           .setTitle(`A user has joined a channel:`)
           .setDescription(`**${newState.member.displayName}** has joined voice channel **${newState.channel.name}** in server **${newState.guild.name}**`)
           .setTimestamp();
-        subscribedUser.send({ embeds: [replyEmbed] });
+        try{
+          await subscribedUser.send({ embeds: [replyEmbed] });
+        }catch(error){
+          console.log(error);
+        }
       }
     }
  });
@@ -106,9 +115,10 @@ client.on("messageCreate", async (message) => {
     const liner = new lineByLine('Data/JoinRoleList.txt');
     while(line = liner.next()){
       line = line.toString('ascii');
-      var role = line.substring(getPosition(line,"+",1) + 1, line.length);
+      var roleToAdd = line.substring(getPosition(line,"+",1) + 1, line.length);
       if(line.includes(message.guild.id) && message.content.includes(keyword)){
-        member.roles.add(member.guild.roles.find(role => role.name === role));
+        member.roles.add(member.guild.roles.find(role => roleToAdd === role));
+        break;
       }
     }
     

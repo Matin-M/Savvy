@@ -15,7 +15,7 @@ module.exports = {
 	async execute(client, interaction) {
         const keyword = interaction.options.getString('keyword');
         const phrase = interaction.options.getString('phrase');
-        fs.appendFile('MessageReplyList.txt', `${interaction.guild.id}+${keyword}+${phrase}\n`, err => {
+        fs.appendFile('Data/MessageReplyList.txt', `${interaction.guild.id}+${keyword}+${phrase}\n`, err => {
 			if (err) {
 			  console.error(err);
 			  return

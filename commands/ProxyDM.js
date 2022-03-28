@@ -16,11 +16,17 @@ module.exports = {
         const userID = interaction.options.getString('userid');
 		const message = interaction.options.getString('message');
 		const user = await client.users.fetch(userID);
-		user.send(message)
-		const replyEmbed = new MessageEmbed()
+		var replyEmbed = new MessageEmbed()
           .setColor('#0099ff')
-          .setTitle(`Sent ${message} to userID ${userID}`)
           .setTimestamp();
+		
+		  try{
+			await user.send(message);
+			replyEmbed.setTitle(`Sent ${message} to userID ${userID}`)
+		}catch(error){
+			replyEmbed.setTitle(`Error while sending message! Error code: ${error.code}`)
+		}
+		
 		await interaction.reply({embeds: [replyEmbed]});
 	},
 };

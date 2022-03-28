@@ -11,7 +11,7 @@ module.exports = {
                 .setRequired(true)),
 	async execute(client, interaction) {
         const role = interaction.options.getString('role');
-		fs.appendFile('JoinRoleList.txt', `${interaction.guild.id}+${role}\n`, err => {
+		fs.appendFile('Data/JoinRoleList.txt', `${interaction.guild.id}+${role}\n`, err => {
 			if (err) {
 			  console.error(err);
 			  return

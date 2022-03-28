@@ -7,7 +7,7 @@ module.exports = {
 		.setName('voiceupdates')
 		.setDescription('dms you when any user joins a specific voice channel'),
 	async execute(client, interaction) {
-		fs.appendFile('VoiceUpdateList.txt', `${interaction.guild.id}+${interaction.user.id}\n`, err => {
+		fs.appendFile('Data/VoiceUpdateList.txt', `${interaction.guild.id}+${interaction.user.id}\n`, err => {
 			if (err) {
 			  console.error(err);
 			  return
