@@ -3,7 +3,7 @@ const { Client, MessageEmbed } = require('discord.js');
 
 module.exports = {
 	data: new SlashCommandBuilder()
-		.setName('ping')
+		.setName('latency')
 		.setDescription('returns savvys ping'),
 	async execute(client, interaction) {
 		const sent = await interaction.reply({ content: 'Pinging...', fetchReply: true });

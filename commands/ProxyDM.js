@@ -20,10 +20,11 @@ module.exports = {
           .setColor('#0099ff')
           .setTimestamp();
 		
-		  try{
+		try{
 			await user.send(message);
 			replyEmbed.setTitle(`Sent ${message} to userID ${userID}`)
 		}catch(error){
+			replyEmbed.setColor('#ff0000');
 			replyEmbed.setTitle(`Error while sending message! Error code: ${error.code}`)
 		}
 		

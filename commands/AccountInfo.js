@@ -7,7 +7,7 @@ module.exports = {
 		.setDescription('replies with information about your discord account'),
 	async execute(client, interaction) {
         var accDate = new Date(interaction.user.createdTimestamp).toLocaleDateString("en-US");
-		var joinDate = new Date(interaction.user.guild.joinedTimestamp).toLocaleDateString("en-US");
+		var joinDate = interaction.user.joinedAt;
 		const replyEmbed = new MessageEmbed()
 			.setColor('#0099ff')
 			.setTitle(`Account info for ${interaction.user.username}`)
