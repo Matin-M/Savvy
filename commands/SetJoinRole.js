@@ -9,17 +9,13 @@ module.exports = {
             option.setName('role')
                 .setDescription('role name')
                 .setRequired(true)),
-	async execute(client, interaction) {
+	async execute(client, interaction, Tags) {
         const role = interaction.options.getString('role');
-		fs.appendFile('Data/JoinRoleList.txt', `${interaction.guild.id}+${role}\n`, err => {
-			if (err) {
-			  console.error(err);
-			  return
-			}
-		})
+		const affectedRows = await Tags.update({ joinRole: role }, { where: { guildId: interaction.guild.id } });
+
 		const replyEmbed = new MessageEmbed()
           .setColor('#0099ff')
-          .setTitle(`New uses will have their role set to ${role}`)
+          .setDescription(`New users will have their role set to **${role}**`)
           .setTimestamp();
 		await interaction.reply({embeds: [replyEmbed]});
 	},

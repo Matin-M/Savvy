@@ -1,8 +1,8 @@
 const fs = require('fs');
-const lineByLine = require('n-readlines');
 const { Client, Collection, Intents } = require('discord.js');
 const { MessageEmbed } = require('discord.js');
-const { token } = require('./config.json');
+const Sequelize = require('sequelize');
+const { token, dbConnectionString } = require('./config.json');
 const { strictEqual } = require('assert');
 const { channel } = require('diagnostics_channel');
 
@@ -10,6 +10,39 @@ const intents = [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLA
     ,Intents.FLAGS.GUILD_MESSAGE_TYPING, Intents.FLAGS.DIRECT_MESSAGES, Intents.FLAGS.GUILD_VOICE_STATES, Intents.FLAGS.GUILD_MEMBERS,
     Intents.FLAGS.GUILD_EMOJIS_AND_STICKERS, Intents.FLAGS.GUILD_INVITES, Intents.FLAGS.GUILD_PRESENCES];
 const client = new Client({intents,  partials: ["CHANNEL"]});
+
+const sequelize = new Sequelize(dbConnectionString);
+
+//Postgres DB schema
+const Tags = sequelize.define('defaultschema', {
+	guildId: {
+		type: Sequelize.STRING,
+    allowNull: false,
+		unique: true,
+	},
+	updateChannel: {
+    type: Sequelize.STRING,
+    allowNull: false,
+    defaultValue: "general"
+  },
+  joinRole: {
+    type: Sequelize.STRING,
+    allowNull: false,
+    defaultValue: "NA"
+  },
+  voice_subscribers_list: {
+    type: Sequelize.ARRAY(Sequelize.DataTypes.STRING),
+    allowNull: true
+  },
+  message_reply_phrases: {
+    type: Sequelize.ARRAY(Sequelize.DataTypes.STRING),
+    allowNull: true
+  },
+  message_reply_keywords: {
+    type: Sequelize.ARRAY(Sequelize.DataTypes.STRING),
+    allowNull: true
+  }
+});
 
 client.commands = new Collection();
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
@@ -27,10 +60,26 @@ client.once('ready', () => {
 	const Guilds = client.guilds.cache.map(guild => guild.id);
     console.log("Serving in Guilds: ");
     console.log(Guilds);
+    Tags.sync();
     client.user.setStatus("online");
     client.user.setActivity("you", {
         type: "WATCHING"
-      });
+    });
+});
+
+client.on('guildCreate', async (guild) => {
+  console.log("Savvy has joined server" + guild.name);
+  const newGuildTag = await Tags.create({
+    guildId: guild.id,
+    voice_subscribers_list: [],
+    message_reply_phrases: [],
+    message_reply_keywords: []
+  });
+})
+
+client.on("guildDelete", async (guild) => {
+  const rowCount = await Tags.destroy({ where: { guildId: guild.id } });
+  console.log("Bot removed from guild");
 });
 
 //Handle messaging
@@ -52,17 +101,12 @@ client.on("messageCreate", async (message) => {
       const user = await client.users.fetch('192416580557209610');
       user.send(`Message from ${message.author.username}: ${message.content}`);
     }else{
-      const liner = new lineByLine('Data/MessageReplyList.txt');
-      const guildChannels = message.guild.channels;
-      const guildVoiceChannels = message.guild.guildVoiceChannels;
-      let line; 
-      while(line = liner.next()){
-        line = line.toString('ascii');
-        var keyword = line.substring(getPosition(line,"+",1) + 1, getPosition(line,"+",2));
-        var phrase = line.substring(getPosition(line,"+",2) + 1, line.length);
-        if(line.includes(message.guild.id) && message.content.includes(keyword)){
-          message.reply(phrase);
-          break;
+      const tag = await Tags.findOne({ where: { guildId: message.guild.id } });
+      let keywords = tag.get("message_reply_keywords");
+      let phrases = tag.get("message_reply_phrases");
+      for(let i = 0; i < keywords.length; i++){
+        if(message.content.includes(keywords[i])){
+          message.reply(phrases[i]);
         }
       }
     }
@@ -70,23 +114,11 @@ client.on("messageCreate", async (message) => {
 
   //Handle join/leave voice channels
   client.on('voiceStateUpdate',  async (oldState, newState) => {
-    var subscribedUsers = [];
-    const liner = new lineByLine('Data/VoiceUpdateList.txt');
-
-    const channel = newState.guild.channels.cache.find(
-        (c) => c.type === "GUILD_TEXT" && c.permissionsFor(newState.guild.me).has("SEND_MESSAGES") && c.name == "general"
-      );
+    let subscribedUsers = [];
 
     if((newState.channelId != oldState.channelId) && newState.channelId != null){
-      let line; 
-      while(line = liner.next()){
-        line = line.toString('ascii');
-        console.log(line);
-        if(line.includes(newState.guild.id)){
-          userID = line.substring(19, 37);
-          subscribedUsers.push(line.substring(19, 37));
-        }
-      }
+      const tag = await Tags.findOne({ where: { guildId: newState.member.guild.id } });
+      subscribedUsers = tag.get("voice_subscribers_list");
       subscribedUsers = [...new Set(subscribedUsers)];
       for(const userID of subscribedUsers){
         const subscribedUser = await client.users.fetch(`${userID}`);
@@ -109,37 +141,59 @@ client.on("messageCreate", async (message) => {
 
  //Handle user joins
  client.on("guildMemberAdd", async member => {
-    const channel = member.guild.channels.cache.find(
-        (c) => c.type === "GUILD_TEXT" && c.permissionsFor(member.guild.me).has("SEND_MESSAGES") && c.name == "general"
-      );
-    const liner = new lineByLine('Data/JoinRoleList.txt');
-    while(line = liner.next()){
-      line = line.toString('ascii');
-      var roleToAdd = line.substring(getPosition(line,"+",1) + 1, line.length);
-      if(line.includes(message.guild.id) && message.content.includes(keyword)){
-        member.roles.add(member.guild.roles.find(role => roleToAdd === role));
-        break;
-      }
+    const tag = await Tags.findOne({ where: { guildId: member.guild.id } });
+
+    let updateChannel;
+    if(tag.get("updateChannel") == "NA"){
+      updateChannel = member.guild.channels.cache.find(
+        (c) => c.type === "GUILD_TEXT" && c.permissionsFor(member.guild.me).has("SEND_MESSAGES") && c.name == "general");
+    }else{
+      updateChannel = member.guild.channels.cache.find(
+        (c) => c.type === "GUILD_TEXT" && c.permissionsFor(member.guild.me).has("SEND_MESSAGES") && c.name == tag.get("updateChannel"));
     }
     
     const replyEmbed = new MessageEmbed()
-          .setColor('#0099ff')
+          .setColor('#00FF00')
           .setDescription(`Welcome to ${member.guild.name}, ${member.user}!`)
           .setTimestamp();
-    channel.send({ embeds: [replyEmbed] });
+    updateChannel.send({ embeds: [replyEmbed] });
+
+    if(tag.get("joinRole") == "NA"){
+      return;
+    }
+    try{
+      await member.roles.add(member.guild.roles.cache.find(role => tag.get("joinRole") === role.name));
+    }catch(error){
+      console.log("Role does not exist!");
+    }
     console.log(member.user.id + ' has Joined');
 });
 
  //Handle user leaves
  client.on("guildMemberRemove", async member => {
-    const channel = member.guild.channels.cache.find(
-        (c) => c.type === "GUILD_TEXT" && c.permissionsFor(member.guild.me).has("SEND_MESSAGES") && c.name == "general"
-      );
-    const replyEmbed = new MessageEmbed()
-          .setColor('#0099ff')
-          .setDescription(`${member.user} has left ${member.guild.name}`)
-          .setTimestamp();
-    channel.send({ embeds: [replyEmbed] });
+  if(member.id == "936480332591534090"){
+    return;
+  }
+  const tag = await Tags.findOne({ where: { guildId: member.guild.id } });
+  let updateChannel;
+  if(tag.get("updateChannel") == "NA"){
+    updateChannel = member.guild.channels.cache.find(
+      (c) => c.type === "GUILD_TEXT" && c.permissionsFor(member.guild.me).has("SEND_MESSAGES") && c.name == "general");
+  }else{
+    updateChannel = member.guild.channels.cache.find(
+      (c) => c.type === "GUILD_TEXT" && c.permissionsFor(member.guild.me).has("SEND_MESSAGES") && c.name == tag.get("updateChannel"));
+  }
+  
+  const replyEmbed = new MessageEmbed()
+        .setColor('#FF0000')
+        .setDescription(`${member.user} has left ${member.guild.name}`)
+        .setTimestamp();
+  try{
+    updateChannel.send({ embeds: [replyEmbed] });
+  }catch(error){
+    console.log("Invalid channel for leave!");
+  }
+  
 });
 
 //Handle commands.
@@ -149,7 +203,7 @@ client.on('interactionCreate', async interaction => {
 	const command = client.commands.get(interaction.commandName);
 	if (!command) return;
 	try {
-		await command.execute(client, interaction);
+		await command.execute(client, interaction, Tags);
 	} catch (error) {
 		console.error(error);
 		await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });

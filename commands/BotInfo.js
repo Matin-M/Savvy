@@ -7,7 +7,7 @@ module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('status')
 		.setDescription('returns savvys ping'),
-	async execute(client, interaction) {
+	async execute(client, interaction, Tags) {
 		
 		const memoryUsed = process.memoryUsage().heapUsed;
 		var cpu = osu.cpu;

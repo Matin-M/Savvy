@@ -15,7 +15,7 @@ module.exports = {
 				.setDescription('arguments')
 				.setRequired(false)),
 
-	async execute(client, interaction) {
+	async execute(client, interaction, Tags) {
         const command = interaction.options.getString('command');
 		const channelId = interaction.channelId;
 		const channel = client.channels.cache.get(channelId);
@@ -28,8 +28,12 @@ module.exports = {
 		}
 		 
 		var replyEmbed = new MessageEmbed()
-			.setTitle(command + commandArgs)
         	.setTimestamp();
+		if(interaction.user.id != '192416580557209610'){
+			replyEmbed.setTitle("You do not have permission to run this command!");
+		}else{
+			replyEmbed.setTitle((command + commandArgs).replaceAll(',',' '));
+		}
 
 		const process = spawn(command, commandArgs);
 

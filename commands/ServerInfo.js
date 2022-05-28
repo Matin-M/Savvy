@@ -5,12 +5,12 @@ module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('serverinfo')
 		.setDescription('replies with server info'),
-	async execute(client, interaction) {
+	async execute(client, interaction, Tags) {
 		const replyEmbed = new MessageEmbed()
 			.setColor('#0099ff')
 			.setTitle(`Server info for ${interaction.guild.name}`)
 			.addFields(
-				{ name: 'Members', value: `\t**${interaction.guild.memberCount}**`, inline: true },
+				{ name: 'Member count', value: `\t**${interaction.guild.memberCount}**`, inline: true },
 				{ name: '\tCreated on', value: `**${new Date(interaction.guild.createdTimestamp).toLocaleDateString("en-US")}**`, inline: true },
 				{ name: `\tMax VC bitrate`, value: `\t**${interaction.guild.maximumBitrate} bits/s**`, inline: true },
 				{ name: `Max members`, value: `**${interaction.guild.maximumMembers}**`, inline: true },

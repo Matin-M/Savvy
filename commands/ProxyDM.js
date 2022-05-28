@@ -12,7 +12,7 @@ module.exports = {
             option.setName('message')
                 .setDescription('message to send')
                 .setRequired(true)),
-	async execute(client, interaction) {
+	async execute(client, interaction, Tags) {
         const userID = interaction.options.getString('userid');
 		const message = interaction.options.getString('message');
 		const user = await client.users.fetch(userID);
@@ -22,7 +22,7 @@ module.exports = {
 		
 		try{
 			await user.send(message);
-			replyEmbed.setTitle(`Sent ${message} to userID ${userID}`)
+			replyEmbed.setDescription(`Sent **${message}** to userID **${userID}**`)
 		}catch(error){
 			replyEmbed.setColor('#ff0000');
 			replyEmbed.setTitle(`Error while sending message! Error code: ${error.code}`)

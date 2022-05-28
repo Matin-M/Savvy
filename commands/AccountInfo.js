@@ -13,8 +13,8 @@ module.exports = {
 			.setTitle(`Account info for ${interaction.user.username}`)
 			.addFields(
 				{ name: 'Account created:', value: `**${accDate}**`, inline: true },
-				{ name: '\tDiscord tag', value: `\t**${interaction.user.tag}**`, inline: true },
-				{ name: `\tJoined ${interaction.guild} on`, value: `\t**${joinDate}`, inline: true },
+				{ name: 'Discord tag', value: `\t**${interaction.user.tag}**`, inline: true },
+				{ name: `Joined ${interaction.guild} on`, value: `\t**${joinDate}`, inline: true },
 			)
 			.setImage(`${interaction.user.displayAvatarURL()}`)
 			.setTimestamp()

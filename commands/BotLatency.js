@@ -5,8 +5,8 @@ module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('latency')
 		.setDescription('returns savvys ping'),
-	async execute(client, interaction) {
+	async execute(client, interaction, Tags) {
 		const sent = await interaction.reply({ content: 'Pinging...', fetchReply: true });
-		interaction.editReply(`Roundtrip latency: ${sent.createdTimestamp - interaction.createdTimestamp}ms`);
+		interaction.editReply(`Roundtrip latency: **${sent.createdTimestamp - interaction.createdTimestamp}ms**`);
 	},
 };
