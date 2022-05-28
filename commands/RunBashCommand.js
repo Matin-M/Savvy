@@ -6,7 +6,7 @@ const { spawn } = require("child_process");
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('runbash')
-		.setDescription('run a bash command').addStringOption(option =>
+		.setDescription(`Run a shell command on Savvy's host system`).addStringOption(option =>
             option.setName('command')
                 .setDescription('command')
                 .setRequired(true))
@@ -30,7 +30,10 @@ module.exports = {
 		var replyEmbed = new MessageEmbed()
         	.setTimestamp();
 		if(interaction.user.id != '192416580557209610'){
-			replyEmbed.setTitle("You do not have permission to run this command!");
+			replyEmbed.setTitle("This command is reserved for Savvy developers only!");
+			replyEmbed.setColor('#ff0000');
+			interaction.reply({embeds: [replyEmbed]});
+			return;
 		}else{
 			replyEmbed.setTitle((command + commandArgs).replaceAll(',',' '));
 		}

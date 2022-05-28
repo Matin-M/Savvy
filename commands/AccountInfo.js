@@ -4,7 +4,7 @@ const { Client, MessageEmbed } = require('discord.js');
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('accountinfo')
-		.setDescription('replies with information about your discord account'),
+		.setDescription('Replies with information about your discord account'),
 	async execute(client, interaction) {
         var accDate = new Date(interaction.user.createdTimestamp).toLocaleDateString("en-US");
 		var joinDate = interaction.user.joinedAt;

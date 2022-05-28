@@ -4,7 +4,7 @@ const { Client, MessageEmbed } = require('discord.js');
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('setupdate')
-		.setDescription('server updates channel').addStringOption(option =>
+		.setDescription('The text channel that Savvy will send updates to').addStringOption(option =>
             option.setName('channel')
                 .setDescription('channel name')
                 .setRequired(true)),
@@ -14,7 +14,7 @@ module.exports = {
 
 		const replyEmbed = new MessageEmbed()
           .setColor('#0099ff')
-          .setDescription(`Savvy will now send updates to channel **${newChannel}**`)
+          .setDescription(`Savvy will now send server updates to text channel **${newChannel}**`)
           .setTimestamp();
 		await interaction.reply({embeds: [replyEmbed]});
 	},

@@ -4,7 +4,7 @@ const { Client, MessageEmbed } = require('discord.js');
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('serverinfo')
-		.setDescription('replies with server info'),
+		.setDescription('Returns info about this discord server'),
 	async execute(client, interaction, Tags) {
 		const replyEmbed = new MessageEmbed()
 			.setColor('#0099ff')

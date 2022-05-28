@@ -8,7 +8,7 @@ const sequelize = new Sequelize(dbConnectionString);
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('voiceupdates')
-		.setDescription('dms you when any user joins a specific voice channel'),
+		.setDescription('Sends you a notification when a user joins any voice channel in this server'),
 	async execute(client, interaction, Tags) {
 		//Update voice subscriber list.
 		Tags.update({'voice_subscribers_list': sequelize.fn('array_append', sequelize.col('voice_subscribers_list'), `${interaction.user.id}`)}, { where: { guildId: interaction.guild.id } });

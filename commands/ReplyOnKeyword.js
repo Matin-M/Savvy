@@ -8,7 +8,7 @@ const sequelize = new Sequelize(dbConnectionString);
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('replyonkeyword')
-		.setDescription('replies to message with supplied phrase containing the supplied keyword').addStringOption(option =>
+		.setDescription('Replies with supplied phrase if any channel message contains supplied keyword').addStringOption(option =>
             option.setName('keyword')
                 .setDescription('keyword')
                 .setRequired(true)).addStringOption(option =>
@@ -25,7 +25,7 @@ module.exports = {
 
         const replyEmbed = new MessageEmbed()
           .setColor('#0099ff')
-          .setDescription(`${interaction.user.username}, Savvy will reply with **${phrase}** when a user mentions **${keyword}**`)
+          .setDescription(`${interaction.user.username}, Savvy will reply with **${phrase}** when a users' message contains **${keyword}**`)
           .setTimestamp();
 		await interaction.reply({embeds: [replyEmbed]});
 	},

@@ -4,7 +4,7 @@ const { Client, MessageEmbed } = require('discord.js');
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('proxydm')
-		.setDescription('direct message any user via savvy').addStringOption(option =>
+		.setDescription('Use Savvy to direct message any user in this server').addStringOption(option =>
             option.setName('userid')
                 .setDescription('unique user UUID')
                 .setRequired(true))

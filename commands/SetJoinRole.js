@@ -5,7 +5,7 @@ const { Client, MessageEmbed } = require('discord.js');
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('joinrole')
-		.setDescription('set the role for a new user upon join').addStringOption(option =>
+		.setDescription('The role that new users will get upoun joining this server').addStringOption(option =>
             option.setName('role')
                 .setDescription('role name')
                 .setRequired(true)),
