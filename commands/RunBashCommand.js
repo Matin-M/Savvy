@@ -6,7 +6,7 @@ const { spawn } = require("child_process");
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('runbash')
-		.setDescription(`Run a shell command on Savvy's host system`).addStringOption(option =>
+		.setDescription(`Runs a shell command on Savvy's host system`).addStringOption(option =>
             option.setName('command')
                 .setDescription('command')
                 .setRequired(true))

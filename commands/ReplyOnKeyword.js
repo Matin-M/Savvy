@@ -8,7 +8,7 @@ const sequelize = new Sequelize(dbConnectionString);
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('replyonkeyword')
-		.setDescription('Replies with supplied phrase if any channel message contains supplied keyword').addStringOption(option =>
+		.setDescription('Replies withsupplied phrase if any channel message contains supplied keyword').addStringOption(option =>
             option.setName('keyword')
                 .setDescription('keyword')
                 .setRequired(true)).addStringOption(option =>
@@ -20,7 +20,6 @@ module.exports = {
         const phrase = interaction.options.getString('phrase');
 
         Tags.update({'message_reply_keywords': sequelize.fn('array_append', sequelize.col('message_reply_keywords'), `${keyword}`)}, { where: { guildId: interaction.guild.id } });
-
         Tags.update({'message_reply_phrases': sequelize.fn('array_append', sequelize.col('message_reply_phrases'), `${phrase}`)}, { where: { guildId: interaction.guild.id } });
 
         const replyEmbed = new MessageEmbed()

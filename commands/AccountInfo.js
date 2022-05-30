@@ -14,7 +14,7 @@ module.exports = {
 			.addFields(
 				{ name: 'Account created:', value: `**${accDate}**`, inline: true },
 				{ name: 'Discord tag', value: `\t**${interaction.user.tag}**`, inline: true },
-				{ name: `Joined ${interaction.guild} on`, value: `\t**${joinDate}`, inline: true },
+				{ name: `Hex accent color:`, value: `\t**${interaction.user.hexAccentColor}**`, inline: true },
 			)
 			.setImage(`${interaction.user.displayAvatarURL()}`)
 			.setTimestamp()

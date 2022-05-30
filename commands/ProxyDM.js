@@ -19,9 +19,8 @@ module.exports = {
 		var replyEmbed = new MessageEmbed()
           .setColor('#0099ff')
           .setTimestamp();
-		
 		try{
-			await user.send(message);
+			await user.send(`Proxy message from **${interaction.user.username}**: ${message}`);
 			replyEmbed.setDescription(`Sent **${message}** to userID **${userID}**`)
 		}catch(error){
 			replyEmbed.setColor('#ff0000');

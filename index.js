@@ -146,7 +146,7 @@ client.on("messageCreate", async (message) => {
     let updateChannel;
     if(tag.get("updateChannel") == "NA"){
       updateChannel = member.guild.channels.cache.find(
-        (c) => c.type === "GUILD_TEXT" && c.permissionsFor(member.guild.me).has("SEND_MESSAGES") && c.name == "general");
+        (c) => c.type === "GUILD_TEXT" && c.permissionsFor(member.guild.me).has("SEND_MESSAGES"));
     }else{
       updateChannel = member.guild.channels.cache.find(
         (c) => c.type === "GUILD_TEXT" && c.permissionsFor(member.guild.me).has("SEND_MESSAGES") && c.name == tag.get("updateChannel"));
@@ -178,7 +178,7 @@ client.on("messageCreate", async (message) => {
   let updateChannel;
   if(tag.get("updateChannel") == "NA"){
     updateChannel = member.guild.channels.cache.find(
-      (c) => c.type === "GUILD_TEXT" && c.permissionsFor(member.guild.me).has("SEND_MESSAGES") && c.name == "general");
+      (c) => c.type === "GUILD_TEXT" && c.permissionsFor(member.guild.me).has("SEND_MESSAGES"));
   }else{
     updateChannel = member.guild.channels.cache.find(
       (c) => c.type === "GUILD_TEXT" && c.permissionsFor(member.guild.me).has("SEND_MESSAGES") && c.name == tag.get("updateChannel"));

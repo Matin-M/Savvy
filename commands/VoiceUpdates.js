@@ -8,9 +8,8 @@ const sequelize = new Sequelize(dbConnectionString);
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('voiceupdates')
-		.setDescription('Sends you a notification when a user joins any voice channel in this server'),
+		.setDescription('Savvy will ping you when a user connects to any voice channel in this server'),
 	async execute(client, interaction, Tags) {
-		//Update voice subscriber list.
 		Tags.update({'voice_subscribers_list': sequelize.fn('array_append', sequelize.col('voice_subscribers_list'), `${interaction.user.id}`)}, { where: { guildId: interaction.guild.id } });
 
 		const replyEmbed = new MessageEmbed()
