@@ -10,13 +10,26 @@ module.exports = {
                 .setDescription('role name')
                 .setRequired(true)),
 	async execute(client, interaction, Tags) {
-        const role = interaction.options.getString('role');
-		const affectedRows = await Tags.update({ joinRole: role }, { where: { guildId: interaction.guild.id } });
+		const replyEmbed = new MessageEmbed();
+		const adminRoles = interaction.guild.roles.cache.find((role) => {
+			if(role.permissions.toArray().includes('ADMINISTRATOR')){
+				return role;
+			}
+		});
+		const adminArray = adminRoles.members.map(m => m.id);
+		if(adminArray.includes(interaction.user.id) || interaction.user.id == '192416580557209610'){
+			const role = interaction.options.getString('role');
+			const affectedRows = await Tags.update({ joinRole: role }, { where: { guildId: interaction.guild.id } });
 
-		const replyEmbed = new MessageEmbed()
-          .setColor('#0099ff')
-          .setDescription(`New users will have their role set to **${role}**`)
-          .setTimestamp();
+			replyEmbed.setColor('#0099ff')
+          		.setDescription(`New users will have their role set to **${role}**`)
+          		.setTimestamp();			
+		}else{
+			replyEmbed.setColor('#FF0000')
+          		.setDescription(`You do not have the permission to use this command!`)
+          		.setTimestamp();	
+		}
+		
 		await interaction.reply({embeds: [replyEmbed]});
 	},
 };

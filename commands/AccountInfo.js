@@ -12,9 +12,9 @@ module.exports = {
 			.setColor('#0099ff')
 			.setTitle(`Account info for ${interaction.user.username}`)
 			.addFields(
-				{ name: 'Account created:', value: `**${accDate}**`, inline: true },
-				{ name: 'Discord tag', value: `\t**${interaction.user.tag}**`, inline: true },
-				{ name: `Hex accent color:`, value: `\t**${interaction.user.hexAccentColor}**`, inline: true },
+				{ name: 'Account created', value: `**${accDate}**`, inline: true },
+				{ name: `Username`, value: `\t**${interaction.user.username}**`, inline: true },
+				{ name: 'Discord tag', value: `\t**${interaction.user.discriminator}**`, inline: true },
 			)
 			.setImage(`${interaction.user.displayAvatarURL()}`)
 			.setTimestamp()

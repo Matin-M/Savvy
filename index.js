@@ -8,7 +8,7 @@ const { channel } = require('diagnostics_channel');
 
 const intents = [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MESSAGE_REACTIONS
     ,Intents.FLAGS.GUILD_MESSAGE_TYPING, Intents.FLAGS.DIRECT_MESSAGES, Intents.FLAGS.GUILD_VOICE_STATES, Intents.FLAGS.GUILD_MEMBERS,
-    Intents.FLAGS.GUILD_EMOJIS_AND_STICKERS, Intents.FLAGS.GUILD_INVITES, Intents.FLAGS.GUILD_PRESENCES];
+    Intents.FLAGS.GUILD_EMOJIS_AND_STICKERS, Intents.FLAGS.GUILD_INVITES, Intents.FLAGS.GUILD_PRESENCES, Intents.FLAGS.GUILD_WEBHOOKS, Intents.FLAGS.GUILD_INTEGRATIONS, Intents.FLAGS.GUILD_BANS, Intents.FLAGS.GUILD_INVITES];
 const client = new Client({intents,  partials: ["CHANNEL"]});
 
 const sequelize = new Sequelize(dbConnectionString);
@@ -67,6 +67,7 @@ client.once('ready', () => {
     });
 });
 
+//Handle guild joins
 client.on('guildCreate', async (guild) => {
   console.log("Savvy has joined server" + guild.name);
   const newGuildTag = await Tags.create({
@@ -77,6 +78,7 @@ client.on('guildCreate', async (guild) => {
   });
 })
 
+//Handle guild leave/kick
 client.on("guildDelete", async (guild) => {
   const rowCount = await Tags.destroy({ where: { guildId: guild.id } });
   console.log("Bot removed from guild");
@@ -107,6 +109,7 @@ client.on("messageCreate", async (message) => {
       for(let i = 0; i < keywords.length; i++){
         if(message.content.includes(keywords[i])){
           message.reply(phrases[i]);
+          break;
         }
       }
     }
@@ -152,12 +155,16 @@ client.on("messageCreate", async (message) => {
         (c) => c.type === "GUILD_TEXT" && c.permissionsFor(member.guild.me).has("SEND_MESSAGES") && c.name == tag.get("updateChannel"));
     }
     
-    const replyEmbed = new MessageEmbed()
+    try{
+      const replyEmbed = new MessageEmbed()
           .setColor('#00FF00')
           .setDescription(`Welcome to ${member.guild.name}, ${member.user}!`)
           .setTimestamp();
-    updateChannel.send({ embeds: [replyEmbed] });
-
+      updateChannel.send({ embeds: [replyEmbed] });
+    }catch(error){
+      console.log("Update channel does not exist!");
+    }
+    
     if(tag.get("joinRole") == "NA"){
       return;
     }

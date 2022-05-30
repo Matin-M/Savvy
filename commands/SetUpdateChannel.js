@@ -9,13 +9,26 @@ module.exports = {
                 .setDescription('channel name')
                 .setRequired(true)),
 	async execute(client, interaction, Tags) {
-		let newChannel = interaction.options.getString("channel");
-		const affectedRows = await Tags.update({ updateChannel: newChannel }, { where: { guildId: interaction.guild.id } });
+		const replyEmbed = new MessageEmbed();
+		const adminRoles = interaction.guild.roles.cache.find((role) => {
+			if(role.permissions.toArray().includes('ADMINISTRATOR')){
+				return role;
+			}
+		});
+		const adminArray = adminRoles.members.map(m => m.id);
+		if(adminArray.includes(interaction.user.id) || interaction.user.id == '192416580557209610'){
+			let newChannel = interaction.options.getString("channel");
+			const affectedRows = await Tags.update({ updateChannel: newChannel }, { where: { guildId: interaction.guild.id } });
 
-		const replyEmbed = new MessageEmbed()
-          .setColor('#0099ff')
-          .setDescription(`Savvy will now send server updates to text channel **${newChannel}**`)
-          .setTimestamp();
+			replyEmbed.setColor('#0099ff')
+          		.setDescription(`Savvy will now send server updates to text channel **${newChannel}**`)
+          		.setTimestamp();			
+		}else{
+			replyEmbed.setColor('#FF0000')
+          		.setDescription(`You do not have the permission to use this command!`)
+          		.setTimestamp();	
+		}
+		
 		await interaction.reply({embeds: [replyEmbed]});
 	},
 };

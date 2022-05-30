@@ -1,3 +1,5 @@
 # Savvy
+Savvy is an easy to use discord moderation bot written using the Discord.JS framework. 
 
-A discord.js bot
+## Features
+Keyword blacklisting, voice channel status pings, new user greetings, auto role assignments, & much more.  
