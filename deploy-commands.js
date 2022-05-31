@@ -23,7 +23,7 @@ readline.question('Deploy commands globally or locally? Enter either global or l
 			Routes.applicationCommands(clientId),
 			{ body: commands },
 		).then(() => console.log('Successfully registered application commands globally.'))
-		.catch(console.error);;
+		.catch(console.error);
 	}else if(response == 'local'){
 		rest.put(
 			Routes.applicationGuildCommands(clientId, guildId), 

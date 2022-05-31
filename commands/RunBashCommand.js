@@ -1,6 +1,5 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const { Client, MessageEmbed } = require('discord.js');
-const { exec } = require("child_process");
+const { MessageEmbed } = require('discord.js');
 const { spawn } = require("child_process");
 
 module.exports = {
@@ -26,9 +25,8 @@ module.exports = {
 		}else{
 			commandArgs = interaction.options.getString('args').split(' ');
 		}
-		 
-		var replyEmbed = new MessageEmbed()
-        	.setTimestamp();
+
+		var replyEmbed = new MessageEmbed().setTimestamp();
 		if(interaction.user.id != '192416580557209610'){
 			replyEmbed.setTitle("This command is reserved for Savvy developers only!");
 			replyEmbed.setColor('#ff0000');

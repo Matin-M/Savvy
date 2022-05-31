@@ -1,6 +1,5 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const fs = require('fs');
-const { Client, MessageEmbed } = require('discord.js');
+const { MessageEmbed } = require('discord.js');
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -19,15 +18,15 @@ module.exports = {
 		const adminArray = adminRoles.members.map(m => m.id);
 		if(adminArray.includes(interaction.user.id) || interaction.user.id == '192416580557209610'){
 			const role = interaction.options.getString('role');
-			const affectedRows = await Tags.update({ joinRole: role }, { where: { guildId: interaction.guild.id } });
+			await Tags.update({ joinRole: role }, { where: { guildId: interaction.guild.id } });
 
 			replyEmbed.setColor('#0099ff')
-          		.setDescription(`New users will have their role set to **${role}**`)
-          		.setTimestamp();			
+				.setDescription(`New users will have their role set to **${role}**`)
+				.setTimestamp();			
 		}else{
 			replyEmbed.setColor('#FF0000')
-          		.setDescription(`You do not have the permission to use this command!`)
-          		.setTimestamp();	
+				.setDescription(`You do not have the permission to use this command!`)
+				.setTimestamp();	
 		}
 		
 		await interaction.reply({embeds: [replyEmbed]});

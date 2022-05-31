@@ -1,32 +1,44 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const { Client, MessageEmbed } = require('discord.js');
+const { MessageEmbed } = require('discord.js');
 
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('proxydm')
 		.setDescription('Use Savvy to direct message any user in this server').addStringOption(option =>
-            option.setName('userid')
-                .setDescription('unique user UUID')
+            option.setName('nickname')
+                .setDescription('discord username')
                 .setRequired(true))
 			.addStringOption(option =>
             option.setName('message')
                 .setDescription('message to send')
                 .setRequired(true)),
 	async execute(client, interaction, Tags) {
-        const userID = interaction.options.getString('userid');
-		const message = interaction.options.getString('message');
-		const user = await client.users.fetch(userID);
+        const nick = interaction.options.getString("nickname");
+		const message = interaction.options.getString("message");
+		let members = await interaction.guild.members.fetch();
+		members = members.map(u => u.user);
+		const member = members.filter(member =>{
+			if(String(member["username"]) === String(nick)){
+				return member;
+			}
+		})[0];
 		var replyEmbed = new MessageEmbed()
           .setColor('#0099ff')
           .setTimestamp();
 		try{
+			const user = await client.users.fetch(member.id);
 			await user.send(`Proxy message from **${interaction.user.username}**: ${message}`);
-			replyEmbed.setDescription(`Sent **${message}** to userID **${userID}**`)
+			replyEmbed.setDescription(`Sent **${message}** to user **${nick}**`)
 		}catch(error){
 			replyEmbed.setColor('#ff0000');
-			replyEmbed.setTitle(`Error while sending message! Error code: ${error.code}`)
+			replyEmbed.setTitle(`Oops! Something went wrong`);
+			if(String(error).includes("undefined")){
+				replyEmbed.setDescription("User does not exist!");
+			}else{
+				replyEmbed.setDescription("Error message: " + error)
+			}
 		}
-		
+
 		await interaction.reply({embeds: [replyEmbed]});
 	},
 };

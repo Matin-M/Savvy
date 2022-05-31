@@ -1,6 +1,5 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const fs = require('fs');
-const { Client, MessageEmbed } = require('discord.js');
+const { MessageEmbed } = require('discord.js');
 const {dbConnectionString} = require('../config.json');
 const Sequelize = require('sequelize');
 const sequelize = new Sequelize(dbConnectionString);

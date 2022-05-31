@@ -3,8 +3,6 @@ const { Client, Collection, Intents } = require('discord.js');
 const { MessageEmbed } = require('discord.js');
 const Sequelize = require('sequelize');
 const { token, dbConnectionString } = require('./config.json');
-const { strictEqual } = require('assert');
-const { channel } = require('diagnostics_channel');
 
 const intents = [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MESSAGE_REACTIONS
     ,Intents.FLAGS.GUILD_MESSAGE_TYPING, Intents.FLAGS.DIRECT_MESSAGES, Intents.FLAGS.GUILD_VOICE_STATES, Intents.FLAGS.GUILD_MEMBERS,
@@ -52,10 +50,6 @@ for (const file of commandFiles) {
 	client.commands.set(command.data.name, command);
 }
 
-function getPosition(string, subString, index) {
-  return string.split(subString, index).join(subString).length;
-}
-
 client.once('ready', () => {
 	const Guilds = client.guilds.cache.map(guild => guild.id);
     console.log("Serving in Guilds: ");
@@ -70,7 +64,7 @@ client.once('ready', () => {
 //Handle guild joins
 client.on('guildCreate', async (guild) => {
   console.log("Savvy has joined server" + guild.name);
-  const newGuildTag = await Tags.create({
+  await Tags.create({
     guildId: guild.id,
     voice_subscribers_list: [],
     message_reply_phrases: [],
@@ -80,7 +74,7 @@ client.on('guildCreate', async (guild) => {
 
 //Handle guild leave/kick
 client.on("guildDelete", async (guild) => {
-  const rowCount = await Tags.destroy({ where: { guildId: guild.id } });
+  await Tags.destroy({ where: { guildId: guild.id } });
   console.log("Bot removed from guild");
 });
 
@@ -200,7 +194,6 @@ client.on("messageCreate", async (message) => {
   }catch(error){
     console.log("Invalid channel for leave!");
   }
-  
 });
 
 //Handle commands.
