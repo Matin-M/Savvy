@@ -15,14 +15,15 @@ module.exports = {
 		subscribedUsers = tag.get("voice_subscribers_list");
 
 		if(subscribedUsers.includes(interaction.user.id)){
-			replyEmbed.setColor('##ffcc00')
+			replyEmbed.setColor('#ffcc00')
 				.setDescription(`**${interaction.user.username}**, you will no longer receive voice status updates in this server.`)
 				.setTimestamp();
 			Tags.update({ voice_subscribers_list: subscribedUsers.splice(subscribedUsers.indexOf(interaction.user.id), 1) }, { where: { guildId: interaction.guild.id } });
 		}else{
 			await Tags.update({'voice_subscribers_list': sequelize.fn('array_append', sequelize.col('voice_subscribers_list'), `${interaction.user.id}`)}, { where: { guildId: interaction.guild.id } });
 
-			replyEmbed .setDescription(`**${interaction.user.username}**, you will now receive status updates for voice channels in this server.`)
+			replyEmbed.setColor('#00FF00')
+				.setDescription(`**${interaction.user.username}**, you will now receive status updates for voice channels in this server.`)
 				.setTimestamp();
 		}
 		
