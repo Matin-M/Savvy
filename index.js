@@ -97,7 +97,6 @@ client.on("guildDelete", async (guild) => {
 client.on("messageCreate", async (message) => {
   if (message.author.bot) return false;
   console.log(`Message from ${message.author.username}: ${message.content}`);
-  const attachment = message.attachments.first();
 
   if (message.channel.type === "DM") {
     const replyEmbed = new MessageEmbed()
@@ -178,7 +177,9 @@ client.on("guildMemberAdd", async (member) => {
   try {
     const replyEmbed = new MessageEmbed()
       .setColor("#00FF00")
-      .setDescription(`Welcome to ${member.guild.name}, ${member.user}!`)
+      .setDescription(
+        `Welcome to **${member.guild.name}**, **${member.user.username}**!`
+      )
       .setTimestamp();
     updateChannel.send({ embeds: [replyEmbed] });
   } catch (error) {
@@ -195,7 +196,7 @@ client.on("guildMemberAdd", async (member) => {
   } catch (error) {
     console.log("Role does not exist!");
   }
-  console.log(member.user.id + " has Joined");
+  console.log(member.user.username + " has Joined");
 });
 
 //Handle user leaves
@@ -222,7 +223,9 @@ client.on("guildMemberRemove", async (member) => {
 
   const replyEmbed = new MessageEmbed()
     .setColor("#FF0000")
-    .setDescription(`${member.user} has left ${member.guild.name}`)
+    .setDescription(
+      `**${member.user.username}** has left **${member.guild.name}**`
+    )
     .setTimestamp();
   try {
     updateChannel.send({ embeds: [replyEmbed] });
