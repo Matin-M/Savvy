@@ -1,5 +1,11 @@
+#NodeJS modules
 node_modules
+#Environment
 .env
 config.json
 .DS_Store
+#Savvy runtime data
 /Data
+#Log files
+/SavvyLogs
+/ProcessLogs

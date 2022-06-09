@@ -196,7 +196,7 @@ client.on("guildMemberAdd", async (member) => {
   } catch (error) {
     console.log("Role does not exist!");
   }
-  console.log(member.user.username + " has Joined");
+  console.log(member.user.username + " has joined server " + member.guild.id);
 });
 
 //Handle user leaves
@@ -232,6 +232,7 @@ client.on("guildMemberRemove", async (member) => {
   } catch (error) {
     console.log("Invalid channel for leave!");
   }
+  console.log(member.user.username + " has left server " + member.guild.id);
 });
 
 //Handle commands.
@@ -248,6 +249,7 @@ client.on("interactionCreate", async (interaction) => {
         "There was an error while executing this command! Error msg: " + error,
       ephemeral: true,
     });
+    console.log("Command execution error: " + error);
   }
 });
 
