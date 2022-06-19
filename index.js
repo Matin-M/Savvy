@@ -1,8 +1,8 @@
 const fs = require("fs");
 const { Client, Collection, Intents } = require("discord.js");
 const { MessageEmbed } = require("discord.js");
-const Sequelize = require("sequelize");
-const { token, dbConnectionString } = require("./config.json");
+const { Sequelize } = require("sequelize");
+const { token, dbConnectionString, dbName } = require("./config.json");
 
 const intents = [
   Intents.FLAGS.GUILDS,
@@ -22,10 +22,14 @@ const intents = [
 ];
 const client = new Client({ intents, partials: ["CHANNEL"] });
 
-const sequelize = new Sequelize(dbConnectionString);
+const sequelize = new Sequelize(dbConnectionString, {
+  dialect: "postgres",
+  logging: false,
+});
+const queryInterface = sequelize.getQueryInterface();
 
 //Postgres DB schema
-const Tags = sequelize.define("defaultschema", {
+var schemaColumns = {
   guildId: {
     type: Sequelize.STRING,
     allowNull: false,
@@ -35,6 +39,10 @@ const Tags = sequelize.define("defaultschema", {
     type: Sequelize.STRING,
     allowNull: false,
     defaultValue: "general",
+  },
+  self_assign_roles: {
+    type: Sequelize.ARRAY(Sequelize.DataTypes.STRING),
+    allowNull: false,
   },
   joinRole: {
     type: Sequelize.STRING,
@@ -53,7 +61,8 @@ const Tags = sequelize.define("defaultschema", {
     type: Sequelize.ARRAY(Sequelize.DataTypes.STRING),
     allowNull: true,
   },
-});
+};
+const Tags = sequelize.define("defaultschema", schemaColumns);
 
 client.commands = new Collection();
 const commandFiles = fs
@@ -65,11 +74,25 @@ for (const file of commandFiles) {
   client.commands.set(command.data.name, command);
 }
 
-client.once("ready", () => {
+client.once("ready", async () => {
   const Guilds = client.guilds.cache.map((guild) => guild.id);
   console.log("Serving in Guilds: ");
   console.log(Guilds);
   Tags.sync();
+  console.log("Updating db schema...");
+  for (var col in schemaColumns) {
+    await queryInterface.describeTable(dbName).then((tableDefinition) => {
+      if (tableDefinition[col]) {
+        console.log("\t" + col + " exists");
+        return Promise.resolve();
+      }
+      console.log("\t" + "adding col " + col);
+      return queryInterface.addColumn(dbName, col, {
+        type: schemaColumns[col]["type"],
+      });
+    });
+  }
+  console.log("Done");
   client.user.setStatus("online");
   client.user.setActivity("you", {
     type: "WATCHING",
@@ -81,6 +104,7 @@ client.on("guildCreate", async (guild) => {
   console.log("Savvy has joined server" + guild.name);
   await Tags.create({
     guildId: guild.id,
+    self_assign_roles: [],
     voice_subscribers_list: [],
     message_reply_phrases: [],
     message_reply_keywords: [],
@@ -126,13 +150,11 @@ client.on("messageCreate", async (message) => {
 //Handle join/leave voice channels
 client.on("voiceStateUpdate", async (oldState, newState) => {
   let subscribedUsers = [];
-
   if (newState.channelId != oldState.channelId && newState.channelId != null) {
     const tag = await Tags.findOne({
       where: { guildId: newState.member.guild.id },
     });
-    subscribedUsers = tag.get("voice_subscribers_list");
-    subscribedUsers = [...new Set(subscribedUsers)];
+    subscribedUsers = [...new Set(tag.get("voice_subscribers_list"))];
     for (const userID of subscribedUsers) {
       const subscribedUser = await client.users.fetch(`${userID}`);
       if (subscribedUser.id == newState.member.id) {
@@ -237,19 +259,69 @@ client.on("guildMemberRemove", async (member) => {
 
 //Handle commands.
 client.on("interactionCreate", async (interaction) => {
-  if (!interaction.isCommand()) return;
-  const command = client.commands.get(interaction.commandName);
-  if (!command) return;
-  try {
-    await command.execute(client, interaction, Tags);
-  } catch (error) {
-    console.error(error);
-    await interaction.reply({
-      content:
-        "There was an error while executing this command! Error msg: " + error,
-      ephemeral: true,
+  if (interaction.isCommand()) {
+    const command = client.commands.get(interaction.commandName);
+    if (!command) return;
+    try {
+      await command.execute(client, interaction, Tags);
+    } catch (error) {
+      console.error(error);
+      await interaction.reply({
+        content:
+          "There was an error while executing this command! Error msg: " +
+          error,
+        ephemeral: true,
+      });
+      console.log("Command execution error: " + error);
+    }
+  } else if (interaction.isModalSubmit()) {
+    const replyEmbed = new MessageEmbed();
+    await interaction.deferReply({ ephemeral: false });
+    const roles = interaction.fields
+      .getTextInputValue("role-list")
+      .replace(/\s/g, "")
+      .split(",");
+    await Tags.update(
+      { self_assign_roles: roles },
+      { where: { guildId: interaction.guild.id } }
+    );
+    replyEmbed
+      .setColor("#0099ff")
+      .setDescription(
+        `Success! Users can now select the following role(s) ${roles} using the /addrole command.`
+      )
+      .setTimestamp();
+    interaction.followUp({ embeds: [replyEmbed] });
+  } else if (interaction.isSelectMenu()) {
+    const replyEmbed = new MessageEmbed();
+    try {
+      await interaction.member.roles.add(
+        interaction.guild.roles.cache.find(
+          (role) => interaction.values[0] === role.name
+        )
+      );
+    } catch (error) {
+      console.log("There was an error! Role does not exist.");
+      replyEmbed
+        .setColor("#FF0000")
+        .setDescription(
+          `Role does not exist. Please contact the admin of this discord server.`
+        )
+        .setTimestamp();
+      await interaction.update({
+        embeds: [replyEmbed],
+        components: [],
+      });
+      return;
+    }
+    replyEmbed
+      .setColor("#0099ff")
+      .setDescription(`Role ${interaction.values[0]} assigned to you`)
+      .setTimestamp();
+    await interaction.update({
+      embeds: [replyEmbed],
+      components: [],
     });
-    console.log("Command execution error: " + error);
   }
 });
 

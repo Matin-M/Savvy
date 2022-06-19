@@ -11,10 +11,18 @@ module.exports = {
       "Replies with phrase if any channel message contains keyword"
     )
     .addStringOption((option) =>
-      option.setName("keyword").setDescription("keyword").setRequired(true)
+      option
+        .setName("keyword")
+        .setDescription("keyword")
+        .setRequired(true)
+        .setAutocomplete(true)
     )
     .addStringOption((option) =>
-      option.setName("phrase").setDescription("phrase").setRequired(true)
+      option
+        .setName("phrase")
+        .setDescription("phrase")
+        .setRequired(true)
+        .setAutocomplete(true)
     ),
   async execute(client, interaction, Tags) {
     const replyEmbed = new MessageEmbed();
