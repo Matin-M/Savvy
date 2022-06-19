@@ -1,8 +1,8 @@
 const fs = require("fs");
 const { Client, Collection, Intents } = require("discord.js");
 const { MessageEmbed } = require("discord.js");
-const { Sequelize, DataTypes } = require("sequelize");
-const { token, dbConnectionString } = require("./config.json");
+const { Sequelize } = require("sequelize");
+const { token, dbConnectionString, dbName } = require("./config.json");
 
 const intents = [
   Intents.FLAGS.GUILDS,
@@ -22,7 +22,10 @@ const intents = [
 ];
 const client = new Client({ intents, partials: ["CHANNEL"] });
 
-const sequelize = new Sequelize(dbConnectionString);
+const sequelize = new Sequelize(dbConnectionString, {
+  dialect: "postgres",
+  logging: false,
+});
 const queryInterface = sequelize.getQueryInterface();
 
 //Postgres DB schema
@@ -76,20 +79,20 @@ client.once("ready", async () => {
   console.log("Serving in Guilds: ");
   console.log(Guilds);
   Tags.sync();
+  console.log("Updating db schema...");
   for (var col in schemaColumns) {
-    await queryInterface
-      .describeTable("defaultschemas")
-      .then((tableDefinition) => {
-        if (tableDefinition[col]) {
-          console.log(col + " exists");
-          return Promise.resolve();
-        }
-        console.log("adding col " + col);
-        return queryInterface.addColumn("defaultschemas", col, {
-          type: schemaColumns[col]["type"],
-        });
+    await queryInterface.describeTable(dbName).then((tableDefinition) => {
+      if (tableDefinition[col]) {
+        console.log("\t" + col + " exists");
+        return Promise.resolve();
+      }
+      console.log("\t" + "adding col " + col);
+      return queryInterface.addColumn(dbName, col, {
+        type: schemaColumns[col]["type"],
       });
+    });
   }
+  console.log("Done");
   client.user.setStatus("online");
   client.user.setActivity("you", {
     type: "WATCHING",
@@ -291,7 +294,6 @@ client.on("interactionCreate", async (interaction) => {
     interaction.followUp({ embeds: [replyEmbed] });
   } else if (interaction.isSelectMenu()) {
     const replyEmbed = new MessageEmbed();
-    console.log(interaction.values[0]);
     try {
       await interaction.member.roles.add(
         interaction.guild.roles.cache.find(
@@ -299,11 +301,11 @@ client.on("interactionCreate", async (interaction) => {
         )
       );
     } catch (error) {
-      console.log(error);
+      console.log("There was an error! Role does not exist.");
       replyEmbed
         .setColor("#FF0000")
         .setDescription(
-          `Error, role does not exist. Please contact the admin of this discord server.`
+          `Role does not exist. Please contact the admin of this discord server.`
         )
         .setTimestamp();
       await interaction.update({
