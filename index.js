@@ -74,14 +74,14 @@ for (const file of commandFiles) {
   client.commands.set(command.data.name, command);
 }
 
-client.once("ready", async () => {
+client.once("ready", () => {
   const Guilds = client.guilds.cache.map((guild) => guild.id);
   console.log("Serving in Guilds: ");
   console.log(Guilds);
   Tags.sync();
   console.log("Updating db schema...");
   for (var col in schemaColumns) {
-    await queryInterface.describeTable(dbName).then((tableDefinition) => {
+    queryInterface.describeTable(dbName).then((tableDefinition) => {
       if (tableDefinition[col]) {
         console.log("\t" + col + " exists");
         return Promise.resolve();
@@ -92,7 +92,6 @@ client.once("ready", async () => {
       });
     });
   }
-  console.log("Done");
   client.user.setStatus("online");
   client.user.setActivity("you", {
     type: "WATCHING",
@@ -288,7 +287,9 @@ client.on("interactionCreate", async (interaction) => {
     replyEmbed
       .setColor("#0099ff")
       .setDescription(
-        `Success! Users can now select the following role(s) ${roles} using the /addrole command.`
+        `Success! Users can now select the following role(s) ${interaction.fields.getTextInputValue(
+          "role-list"
+        )} using the /addrole command.`
       )
       .setTimestamp();
     interaction.followUp({ embeds: [replyEmbed] });
@@ -301,11 +302,11 @@ client.on("interactionCreate", async (interaction) => {
         )
       );
     } catch (error) {
-      console.log("There was an error! Role does not exist.");
+      console.log("There was an error! Role does not exist");
       replyEmbed
         .setColor("#FF0000")
         .setDescription(
-          `Role does not exist. Please contact the admin of this discord server.`
+          `Role does not exist. Please contact the admin of this discord server`
         )
         .setTimestamp();
       await interaction.update({
