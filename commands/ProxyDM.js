@@ -10,12 +10,14 @@ module.exports = {
         .setName("nickname")
         .setDescription("discord username")
         .setRequired(true)
+        .setAutocomplete(true)
     )
     .addStringOption((option) =>
       option
         .setName("message")
         .setDescription("message to send")
         .setRequired(true)
+        .setAutocomplete(true)
     ),
   async execute(client, interaction, Tags) {
     const nick = interaction.options.getString("nickname");

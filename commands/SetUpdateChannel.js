@@ -6,7 +6,11 @@ module.exports = {
     .setName("setupdate")
     .setDescription("The text channel that Savvy will send updates to")
     .addStringOption((option) =>
-      option.setName("channel").setDescription("channel name").setRequired(true)
+      option
+        .setName("channel")
+        .setDescription("channel name")
+        .setRequired(true)
+        .setAutocomplete(true)
     ),
   async execute(client, interaction, Tags) {
     const replyEmbed = new MessageEmbed();

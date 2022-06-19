@@ -7,10 +7,18 @@ module.exports = {
     .setName("runbash")
     .setDescription(`Runs a shell command on Savvy's host system`)
     .addStringOption((option) =>
-      option.setName("command").setDescription("command").setRequired(true)
+      option
+        .setName("command")
+        .setDescription("command")
+        .setRequired(true)
+        .setAutocomplete(true)
     )
     .addStringOption((option) =>
-      option.setName("args").setDescription("arguments").setRequired(false)
+      option
+        .setName("args")
+        .setDescription("arguments")
+        .setRequired(false)
+        .setAutocomplete(true)
     ),
 
   async execute(client, interaction, Tags) {
