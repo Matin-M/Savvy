@@ -15,7 +15,7 @@ module.exports = {
     userRoles = userRoles.map((role) => {
       return {
         label: role,
-        description: "Role",
+        description: "Click to select role",
         value: role,
       };
     });

@@ -297,9 +297,9 @@ client.on("interactionCreate", async (interaction) => {
       replyEmbed
         .setColor("#0099ff")
         .setDescription(
-          `Users can now select the role(s) [**${interaction.fields.getTextInputValue(
-            "role-list"
-          )}**] using the /addrole command.`
+          `Users can select the following role(s) using the /addrole command: **${roles
+            .map((role) => `\n${role}`)
+            .join("")}**`
         )
         .setTimestamp();
       interaction.followUp({ embeds: [replyEmbed] });
