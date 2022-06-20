@@ -74,6 +74,19 @@ for (const file of commandFiles) {
   client.commands.set(command.data.name, command);
 }
 
+async function addColumn(col) {
+  await queryInterface.describeTable(dbName).then((tableDefinition) => {
+    if (tableDefinition[col]) {
+      console.log("\t" + col + " exists");
+      return Promise.resolve();
+    }
+    console.log("\t" + "adding col " + col);
+    return queryInterface.addColumn(dbName, col, {
+      type: schemaColumns[col]["type"],
+    });
+  });
+}
+
 client.once("ready", () => {
   const Guilds = client.guilds.cache.map((guild) => guild.id);
   console.log("Serving in Guilds: ");
@@ -81,16 +94,7 @@ client.once("ready", () => {
   Tags.sync();
   console.log("Updating db schema...");
   for (var col in schemaColumns) {
-    queryInterface.describeTable(dbName).then((tableDefinition) => {
-      if (tableDefinition[col]) {
-        console.log("\t" + col + " exists");
-        return Promise.resolve();
-      }
-      console.log("\t" + "adding col " + col);
-      return queryInterface.addColumn(dbName, col, {
-        type: schemaColumns[col]["type"],
-      });
-    });
+    addColumn(col);
   }
   client.user.setStatus("online");
   client.user.setActivity("you", {
