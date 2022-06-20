@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const { MessageEmbed } = require("discord.js");
+const { devAdminId } = require("../config.json");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -24,7 +25,7 @@ module.exports = {
     const adminArray = adminRoles.members.map((m) => m.id);
     if (
       adminArray.includes(interaction.user.id) ||
-      interaction.user.id == "192416580557209610"
+      interaction.user.id == devAdminId
     ) {
       const role = interaction.options.getString("role");
       await Tags.update(

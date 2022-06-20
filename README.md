@@ -4,12 +4,8 @@ Savvy is a discord moderation bot written using the Discord.JS framework.
 
 ## Features
 
-Keyword blacklisting, voice channel status pings, new user greetings, auto/reaction role assignments.
-
-## Terms and Usage
-
-Distribution and usage of Savvy must comply with MIT Licencing.
+Keyword blacklisting, voice channel status pings, new user greetings, auto/self-select role assignments.
 
 ## Contributions
 
-Currently accepting issues and PRs!
+Currently accepting PRs!

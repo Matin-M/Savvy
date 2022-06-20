@@ -1,6 +1,7 @@
 const { MessageActionRow, Modal, TextInputComponent } = require("discord.js");
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const { MessageEmbed } = require("discord.js");
+const { devAdminId } = require("../config.json");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -16,9 +17,9 @@ module.exports = {
     const adminArray = adminRoles.members.map((m) => m.id);
     if (
       adminArray.includes(interaction.user.id) ||
-      interaction.user.id == "192416580557209610"
+      interaction.user.id == devAdminId
     ) {
-      const modal = new Modal().setCustomId("rolemodal").setTitle("Set Roles");
+      const modal = new Modal().setCustomId("role-modal").setTitle("Set Roles");
       const roleInput = new TextInputComponent()
         .setCustomId("role-list")
         .setLabel("Comma separated role list (case sensitive)")

@@ -22,8 +22,8 @@ module.exports = {
     console.log(userRoles);
     const row = new MessageActionRow().addComponents(
       new MessageSelectMenu()
-        .setCustomId("roleSelector")
-        .setPlaceholder("Please select a role...")
+        .setCustomId("role-selector")
+        .setPlaceholder("...")
         .addOptions(userRoles)
     );
     replyEmbed.setColor("#0099ff").setDescription(`Please select a role`);

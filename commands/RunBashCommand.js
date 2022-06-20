@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const { MessageEmbed } = require("discord.js");
+const { devAdminId } = require("../config.json");
 const { spawn } = require("child_process");
 
 module.exports = {
@@ -34,7 +35,7 @@ module.exports = {
     }
 
     var replyEmbed = new MessageEmbed().setTimestamp();
-    if (interaction.user.id != "192416580557209610") {
+    if (interaction.user.id != devAdminId) {
       replyEmbed.setTitle(
         "This command is reserved for Savvy developers only!"
       );
