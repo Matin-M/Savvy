@@ -33,8 +33,8 @@ const sequelize = new Sequelize(dbConnectionString, {
 });
 const queryInterface = sequelize.getQueryInterface();
 
-//Postgres DB schema
-var schemaColumns = {
+// Postgres DB schema
+const schemaColumns = {
   guildId: {
     type: Sequelize.STRING,
     allowNull: false,
@@ -98,7 +98,7 @@ client.once("ready", () => {
   console.log(Guilds);
   Tags.sync();
   console.log("Updating db schema...");
-  for (var col in schemaColumns) {
+  for (const col in schemaColumns) {
     addColumn(col);
   }
   client.user.setStatus("online");
@@ -107,7 +107,7 @@ client.once("ready", () => {
   });
 });
 
-//Handle guild joins
+// Handle guild joins
 client.on("guildCreate", async (guild) => {
   console.log("Savvy has joined server" + guild.name);
   await Tags.create({
@@ -119,13 +119,13 @@ client.on("guildCreate", async (guild) => {
   });
 });
 
-//Handle guild leave/kick
+// Handle guild leave/kick
 client.on("guildDelete", async (guild) => {
   await Tags.destroy({ where: { guildId: guild.id } });
   console.log("Bot removed from guild");
 });
 
-//Handle messaging
+// Handle messaging
 client.on("messageCreate", async (message) => {
   if (message.author.bot) return false;
   console.log(`Message from ${message.author.username}: ${message.content}`);
@@ -144,8 +144,8 @@ client.on("messageCreate", async (message) => {
     user.send(`Message from ${message.author.username}: ${message.content}`);
   } else {
     const tag = await Tags.findOne({ where: { guildId: message.guild.id } });
-    let keywords = tag.get("message_reply_keywords");
-    let phrases = tag.get("message_reply_phrases");
+    const keywords = tag.get("message_reply_keywords");
+    const phrases = tag.get("message_reply_phrases");
     for (let i = 0; i < keywords.length; i++) {
       if (message.content.includes(keywords[i])) {
         message.reply(phrases[i]);
@@ -155,7 +155,7 @@ client.on("messageCreate", async (message) => {
   }
 });
 
-//Handle guild members joining/leaving voice channels
+// Handle guild members joining/leaving voice channels
 client.on("voiceStateUpdate", async (oldState, newState) => {
   let subscribedUsers = [];
   if (newState.channelId != oldState.channelId && newState.channelId != null) {
@@ -184,7 +184,7 @@ client.on("voiceStateUpdate", async (oldState, newState) => {
   }
 });
 
-//Handle guild member join
+// Handle guild member join
 client.on("guildMemberAdd", async (member) => {
   const tag = await Tags.findOne({ where: { guildId: member.guild.id } });
 
@@ -229,7 +229,7 @@ client.on("guildMemberAdd", async (member) => {
   console.log(member.user.username + " has joined server " + member.guild.id);
 });
 
-//Handle guild member leave
+// Handle guild member leave
 client.on("guildMemberRemove", async (member) => {
   if (member.id == "936480332591534090") {
     return;
@@ -265,7 +265,7 @@ client.on("guildMemberRemove", async (member) => {
   console.log(member.user.username + " has left server " + member.guild.id);
 });
 
-//Handle slash commands
+// Handle slash commands
 client.on("interactionCreate", async (interaction) => {
   if (interaction.isCommand()) {
     const command = client.commands.get(interaction.commandName);

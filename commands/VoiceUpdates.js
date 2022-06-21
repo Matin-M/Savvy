@@ -15,7 +15,7 @@ module.exports = {
     const tag = await Tags.findOne({
       where: { guildId: interaction.guild.id },
     });
-    let subscribedUsers = tag.get("voice_subscribers_list");
+    const subscribedUsers = tag.get("voice_subscribers_list");
     if (subscribedUsers.includes(interaction.user.id)) {
       replyEmbed
         .setColor("#ffcc00")

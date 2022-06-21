@@ -27,14 +27,12 @@ module.exports = {
     const channelId = interaction.channelId;
     const channel = client.channels.cache.get(channelId);
 
-    var commandArgs;
-    if (interaction.options.getString("args") == null) {
-      commandArgs = [];
-    } else {
+    let commandArgs = [];
+    if (interaction.options.getString("args") != null) {
       commandArgs = interaction.options.getString("args").split(" ");
     }
 
-    var replyEmbed = new MessageEmbed().setTimestamp();
+    const replyEmbed = new MessageEmbed().setTimestamp();
     if (interaction.user.id != devAdminId) {
       replyEmbed.setTitle(
         "This command is reserved for Savvy developers only!"
@@ -62,8 +60,8 @@ module.exports = {
       channel.send({ embeds: [replyEmbed] });
     });
 
-    process.stdin.on("data", function (input) {
-      console.log("Input!");
+    process.stdin.on("data", (input) => {
+      console.log(`stdin: ${input}`);
     });
 
     process.on("close", (code) => {

@@ -1,7 +1,7 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const { MessageEmbed } = require("discord.js");
-var process = require("process");
-var osu = require("node-os-utils");
+const process = require("process");
+const osu = require("node-os-utils");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -9,10 +9,10 @@ module.exports = {
     .setDescription(`Returns Savvy's runtime statistics`),
   async execute(client, interaction, Tags) {
     const memoryUsed = process.memoryUsage().heapUsed;
-    var cpu = osu.cpu;
-    var mem = osu.mem;
-    var cpuUtil = await cpu.usage();
-    var memUtil = await mem.info();
+    const cpu = osu.cpu;
+    const mem = osu.mem;
+    const cpuUtil = await cpu.usage();
+    const memUtil = await mem.info();
 
     const replyEmbed = new MessageEmbed()
       .setColor("#0099ff")
@@ -56,7 +56,7 @@ module.exports = {
 };
 
 function msToTime(duration) {
-  var milliseconds = Math.floor((duration % 1000) / 100),
+  let milliseconds = Math.floor((duration % 1000) / 100),
     seconds = Math.floor((duration / 1000) % 60),
     minutes = Math.floor((duration / (1000 * 60)) % 60),
     hours = Math.floor((duration / (1000 * 60 * 60)) % 24);

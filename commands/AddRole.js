@@ -11,7 +11,7 @@ module.exports = {
     const tag = await Tags.findOne({
       where: { guildId: interaction.guild.id },
     });
-    var userRoles = tag.get("self_assign_roles");
+    let userRoles = tag.get("self_assign_roles");
     userRoles = userRoles.map((role) => {
       return {
         label: role,

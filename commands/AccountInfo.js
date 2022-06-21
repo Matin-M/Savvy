@@ -6,7 +6,7 @@ module.exports = {
     .setName("accountinfo")
     .setDescription("Replies with information about your discord account"),
   async execute(client, interaction) {
-    var accDate = new Date(
+    const accDate = new Date(
       interaction.user.createdTimestamp
     ).toLocaleDateString("en-US");
     const replyEmbed = new MessageEmbed()

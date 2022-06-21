@@ -25,7 +25,7 @@ module.exports = {
       adminArray.includes(interaction.user.id) ||
       interaction.user.id == devAdminId
     ) {
-      let newChannel = interaction.options.getString("channel");
+      const newChannel = interaction.options.getString("channel");
       await Tags.update(
         { updateChannel: newChannel },
         { where: { guildId: interaction.guild.id } }

@@ -24,14 +24,14 @@ module.exports = {
     const message = interaction.options.getString("message");
     let members = await interaction.guild.members.fetch();
     members = members.map((u) => u.user);
-    const member = members.filter((member) => {
+    const selectedMember = members.filter((member) => {
       if (String(member["username"]) === String(nick)) {
         return member;
       }
     })[0];
-    var replyEmbed = new MessageEmbed().setColor("#0099ff").setTimestamp();
+    const replyEmbed = new MessageEmbed().setColor("#0099ff").setTimestamp();
     try {
-      const user = await client.users.fetch(member.id);
+      const user = await client.users.fetch(selectedMember.id);
       await user.send(
         `Proxy message from **${interaction.user.username}**: ${message}`
       );
