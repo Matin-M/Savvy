@@ -19,12 +19,22 @@ module.exports = {
       adminArray.includes(interaction.user.id) ||
       interaction.user.id == devAdminId
     ) {
-      const modal = new Modal().setCustomId("role-modal").setTitle("Set Roles");
+      const tag = await Tags.findOne({
+        where: { guildId: interaction.guild.id },
+      });
+      let userRoles = tag.get("self_assign_roles");
+      userRoles =
+        userRoles.length == 0 || !userRoles || userRoles[0] == ""
+          ? "i.e. Role1, Role2, Role3 ..."
+          : userRoles.toString();
+      const modal = new Modal()
+        .setCustomId("role-modal")
+        .setTitle("Set the roles users can select");
       const roleInput = new TextInputComponent()
         .setCustomId("role-list")
         .setLabel("Comma separated role list (case sensitive)")
-        .setPlaceholder("i.e. Role1, Role2, Role3 ...")
-        .setRequired(true)
+        .setPlaceholder(userRoles)
+        .setRequired(false)
         .setStyle("PARAGRAPH");
       const firstActionRow = new MessageActionRow().addComponents(roleInput);
       modal.addComponents(firstActionRow);

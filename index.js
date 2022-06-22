@@ -56,15 +56,15 @@ const schemaColumns = {
   },
   voice_subscribers_list: {
     type: Sequelize.ARRAY(Sequelize.DataTypes.STRING),
-    allowNull: true,
+    allowNull: false,
   },
   message_reply_phrases: {
     type: Sequelize.ARRAY(Sequelize.DataTypes.STRING),
-    allowNull: true,
+    allowNull: false,
   },
   message_reply_keywords: {
     type: Sequelize.ARRAY(Sequelize.DataTypes.STRING),
-    allowNull: true,
+    allowNull: false,
   },
 };
 const Tags = sequelize.define("defaultschema", schemaColumns);
@@ -102,9 +102,12 @@ client.once("ready", () => {
     addColumn(col);
   }
   client.user.setStatus("online");
-  client.user.setActivity("you", {
-    type: "WATCHING",
-  });
+  setInterval(() => {
+    console.log("Setting user activity");
+    client.user.setActivity("you", {
+      type: "WATCHING",
+    });
+  }, 21600000);
 });
 
 // Handle guild joins
@@ -275,9 +278,7 @@ client.on("interactionCreate", async (interaction) => {
     } catch (error) {
       console.error(error);
       await interaction.reply({
-        content:
-          "There was an error while executing this command! Error msg: " +
-          error,
+        content: "Error! " + error,
         ephemeral: true,
       });
       console.log("Command execution error: " + error);
@@ -290,6 +291,18 @@ client.on("interactionCreate", async (interaction) => {
         .getTextInputValue("role-list")
         .replace(/\s/g, "")
         .split(",");
+      if (roles.length == 0 || roles[0] == "") {
+        replyEmbed
+          .setColor("#ffcc00")
+          .setDescription(`You have not set any roles`)
+          .setTimestamp();
+        await Tags.update(
+          { self_assign_roles: [] },
+          { where: { guildId: interaction.guild.id } }
+        );
+        interaction.followUp({ embeds: [replyEmbed] });
+        return;
+      }
       await Tags.update(
         { self_assign_roles: roles },
         { where: { guildId: interaction.guild.id } }
@@ -297,9 +310,9 @@ client.on("interactionCreate", async (interaction) => {
       replyEmbed
         .setColor("#0099ff")
         .setDescription(
-          `Users can select the following role(s) using the /addrole command: **${roles
-            .map((role) => `\n${role}`)
-            .join("")}**`
+          `Users can select the following role(s) using the /addrole command: ${roles
+            .map((role) => `\n\n\t:arrow_right:\t**${role}** \t:arrow_left:`)
+            .join("")}`
         )
         .setTimestamp();
       interaction.followUp({ embeds: [replyEmbed] });
@@ -331,6 +344,9 @@ client.on("interactionCreate", async (interaction) => {
         .setColor("#0099ff")
         .setDescription(`Role **${interaction.values[0]}** assigned to you`)
         .setTimestamp();
+      console.log(
+        `/addrole used, ${interaction.values[0]} assigned to ${interaction.user.username}`
+      );
       await interaction.update({
         embeds: [replyEmbed],
         components: [],
