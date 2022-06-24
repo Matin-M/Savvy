@@ -33,14 +33,14 @@ module.exports = {
 
       replyEmbed
         .setColor("#0099ff")
-        .setDescription(
+        .setTitle(
           `Savvy will now send server updates to text channel **${newChannel}**`
         )
         .setTimestamp();
     } else {
       replyEmbed
         .setColor("#FF0000")
-        .setDescription(`You do not have the permission to use this command!`)
+        .setTitle(`You do not have the permission to use this command!`)
         .setTimestamp();
     }
 

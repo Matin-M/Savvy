@@ -12,12 +12,12 @@ module.exports = {
       where: { guildId: interaction.guild.id },
     });
     let userRoles = tag.get("self_assign_roles");
-    if (userRoles.length == 0 || userRoles[0] == "") {
+    if (!userRoles || userRoles.length == 0 || userRoles[0] == "") {
       replyEmbed
         .setColor("#ffcc00")
-        .setDescription(`No roles available at this time`)
+        .setTitle(`No roles available at this time`)
         .setTimestamp();
-      interaction.reply({ embeds: [replyEmbed] });
+      interaction.reply({ embeds: [replyEmbed], ephemeral: true });
       return;
     }
     userRoles = userRoles.map((role) => {

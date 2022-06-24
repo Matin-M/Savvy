@@ -35,12 +35,12 @@ module.exports = {
 
       replyEmbed
         .setColor("#0099ff")
-        .setDescription(`New users will have their role set to **${role}**`)
+        .setTitle(`New users will have their role set to **${role}**`)
         .setTimestamp();
     } else {
       replyEmbed
         .setColor("#FF0000")
-        .setDescription(`You do not have the permission to use this command!`)
+        .setTitle(`You do not have the permission to use this command!`)
         .setTimestamp();
     }
 

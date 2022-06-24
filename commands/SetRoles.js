@@ -24,7 +24,7 @@ module.exports = {
       });
       let userRoles = tag.get("self_assign_roles");
       userRoles =
-        userRoles.length == 0 || !userRoles || userRoles[0] == ""
+        !userRoles || userRoles.length == 0 || userRoles[0] == ""
           ? "i.e. Role1, Role2, Role3 ..."
           : userRoles.toString();
       const modal = new Modal()
@@ -42,7 +42,7 @@ module.exports = {
     } else {
       replyEmbed
         .setColor("#FF0000")
-        .setDescription(`You do not have the permission to use this command!`)
+        .setTitle(`You do not have the permission to use this command!`)
         .setTimestamp();
       await interaction.reply({ embeds: [replyEmbed] });
     }

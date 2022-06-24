@@ -7,6 +7,8 @@ const {
   dbConnectionString,
   dbName,
   devAdminId,
+  clientActivityTitle,
+  clientActivityType,
 } = require("./config.json");
 
 const intents = [
@@ -104,10 +106,10 @@ client.once("ready", () => {
   client.user.setStatus("online");
   setInterval(() => {
     console.log("Setting user activity");
-    client.user.setActivity("you", {
-      type: "WATCHING",
+    client.user.setActivity(clientActivityTitle, {
+      type: clientActivityType,
     });
-  }, 21600000);
+  }, 10800000);
 });
 
 // Handle guild joins
@@ -210,7 +212,7 @@ client.on("guildMemberAdd", async (member) => {
   try {
     const replyEmbed = new MessageEmbed()
       .setColor("#00FF00")
-      .setDescription(
+      .setTitle(
         `Welcome to **${member.guild.name}**, **${member.user.username}**!`
       )
       .setTimestamp();
@@ -256,9 +258,7 @@ client.on("guildMemberRemove", async (member) => {
 
   const replyEmbed = new MessageEmbed()
     .setColor("#FF0000")
-    .setDescription(
-      `**${member.user.username}** has left **${member.guild.name}**`
-    )
+    .setTitle(`**${member.user.username}** has left **${member.guild.name}**`)
     .setTimestamp();
   try {
     updateChannel.send({ embeds: [replyEmbed] });
@@ -291,10 +291,10 @@ client.on("interactionCreate", async (interaction) => {
         .getTextInputValue("role-list")
         .replace(/\s/g, "")
         .split(",");
-      if (roles.length == 0 || roles[0] == "") {
+      if (!roles || roles.length == 0 || roles[0] == "") {
         replyEmbed
           .setColor("#ffcc00")
-          .setDescription(`You have not set any roles`)
+          .setTitle(`You have not set any roles`)
           .setTimestamp();
         await Tags.update(
           { self_assign_roles: [] },
@@ -309,9 +309,9 @@ client.on("interactionCreate", async (interaction) => {
       );
       replyEmbed
         .setColor("#0099ff")
-        .setDescription(
+        .setTitle(
           `Users can select the following role(s) using the /addrole command: ${roles
-            .map((role) => `\n\n\t:arrow_right:\t**${role}** \t:arrow_left:`)
+            .map((role) => `\n\n:arrow_right: *${role}*`)
             .join("")}`
         )
         .setTimestamp();
@@ -322,15 +322,17 @@ client.on("interactionCreate", async (interaction) => {
     if (interaction.customId == "role-selector") {
       try {
         await interaction.member.roles.add(
-          interaction.guild.roles.cache.find(
-            (role) => interaction.values[0] === role.name
-          )
+          interaction.guild.roles.cache.find((role) => {
+            if (interaction.values[0] === role.name) {
+              return true;
+            }
+          })
         );
       } catch (error) {
         console.log("There was an error! Role does not exist");
         replyEmbed
           .setColor("#FF0000")
-          .setDescription(
+          .setTitle(
             `Role does not exist. Please contact the admin of this discord server`
           )
           .setTimestamp();
@@ -342,7 +344,16 @@ client.on("interactionCreate", async (interaction) => {
       }
       replyEmbed
         .setColor("#0099ff")
-        .setDescription(`Role **${interaction.values[0]}** assigned to you`)
+        .setTitle(
+          `**${interaction.values[0]}** assigned to **${interaction.user.username}**`
+        )
+        .setDescription(
+          `Currently ${
+            interaction.guild.roles.cache.find(
+              (role) => role.name == interaction.values[0]
+            ).members.size
+          } users with this role`
+        )
         .setTimestamp();
       console.log(
         `/addrole used, ${interaction.values[0]} assigned to ${interaction.user.username}`
@@ -350,6 +361,7 @@ client.on("interactionCreate", async (interaction) => {
       await interaction.update({
         embeds: [replyEmbed],
         components: [],
+        ephemeral: false,
       });
     }
   }

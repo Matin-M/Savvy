@@ -38,8 +38,8 @@ module.exports = {
           inline: true,
         },
         {
-          name: `Server description`,
-          value: `**${interaction.guild.description}**`,
+          name: `Server ID`,
+          value: `**${interaction.guild.id}**`,
           inline: true,
         }
       )

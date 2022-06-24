@@ -19,7 +19,7 @@ module.exports = {
     if (subscribedUsers.includes(interaction.user.id)) {
       replyEmbed
         .setColor("#ffcc00")
-        .setDescription(
+        .setTitle(
           `**${interaction.user.username}**, you will no longer receive voice status updates in this server.`
         )
         .setTimestamp();
@@ -45,7 +45,7 @@ module.exports = {
 
       replyEmbed
         .setColor("#00FF00")
-        .setDescription(
+        .setTitle(
           `**${interaction.user.username}**, you will now receive status updates for voice channels in this server.`
         )
         .setTimestamp();
