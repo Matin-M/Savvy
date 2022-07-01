@@ -1,6 +1,6 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const { MessageEmbed } = require("discord.js");
-const { devAdminId } = require("../config.json");
+const { devAdminId } = require("../../config.json");
 const { spawn } = require("child_process");
 
 module.exports = {
@@ -41,7 +41,7 @@ module.exports = {
       interaction.reply({ embeds: [replyEmbed] });
       return;
     } else {
-      replyEmbed.setTitle((command + commandArgs).replaceAll(",", " "));
+      replyEmbed.setTitle((command + " " + commandArgs).replaceAll(",", " "));
     }
 
     const process = spawn(command, commandArgs);
@@ -71,6 +71,8 @@ module.exports = {
       channel.send({ embeds: [replyEmbed] });
     });
 
-    await interaction.reply("Executing...");
+    await interaction.reply(
+      `Executing ${(command + " " + commandArgs).replaceAll(",", " ")}...`
+    );
   },
 };

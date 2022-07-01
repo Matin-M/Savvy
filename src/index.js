@@ -9,7 +9,7 @@ const {
   devAdminId,
   clientActivityTitle,
   clientActivityType,
-} = require("./config.json");
+} = require("../config.json");
 
 const intents = [
   Intents.FLAGS.GUILDS,
@@ -109,7 +109,7 @@ client.once("ready", () => {
     client.user.setActivity(clientActivityTitle, {
       type: clientActivityType,
     });
-  }, 10800000);
+  }, 5100000);
 });
 
 // Handle guild joins
@@ -175,9 +175,8 @@ client.on("voiceStateUpdate", async (oldState, newState) => {
       }
       const replyEmbed = new MessageEmbed()
         .setColor("#0099ff")
-        .setTitle(`A user has joined a channel:`)
-        .setDescription(
-          `**${newState.member.displayName}** has joined voice channel **${newState.channel.name}** in server **${newState.guild.name}**`
+        .setTitle(
+          `${newState.member.displayName} has joined voice channel ${newState.channel.name} in server **${newState.guild.name}`
         )
         .setTimestamp();
       try {
@@ -236,7 +235,7 @@ client.on("guildMemberAdd", async (member) => {
 
 // Handle guild member leave
 client.on("guildMemberRemove", async (member) => {
-  if (member.id == "936480332591534090") {
+  if (member.id == client.id) {
     return;
   }
   const tag = await Tags.findOne({ where: { guildId: member.guild.id } });

@@ -1,6 +1,6 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const { MessageEmbed } = require("discord.js");
-const { dbConnectionString, devAdminId } = require("../config.json");
+const { dbConnectionString, devAdminId } = require("../../config.json");
 const Sequelize = require("sequelize");
 const sequelize = new Sequelize(dbConnectionString);
 
@@ -63,7 +63,7 @@ module.exports = {
       replyEmbed
         .setColor("#0099ff")
         .setDescription(
-          `${interaction.user.username}, Savvy will reply with **${phrase}** when a users' message contains **${keyword}**`
+          `${interaction.user.username}, Savvy will reply with **${phrase}** if a channel message contains the keyword **${keyword}**`
         )
         .setTimestamp();
     } else {

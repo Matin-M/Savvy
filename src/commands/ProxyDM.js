@@ -33,7 +33,7 @@ module.exports = {
     try {
       const user = await client.users.fetch(selectedMember.id);
       await user.send(
-        `Proxy message from **${interaction.user.username}**: ${message}`
+        `Proxy message from ${interaction.user.username}: ${message}`
       );
       replyEmbed.setTitle(`Sent **${message}** to user **${nick}**`);
     } catch (error) {
@@ -46,6 +46,6 @@ module.exports = {
       }
     }
 
-    await interaction.reply({ embeds: [replyEmbed] });
+    await interaction.reply({ embeds: [replyEmbed], ephemeral: true });
   },
 };
