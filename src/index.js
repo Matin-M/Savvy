@@ -84,10 +84,10 @@ for (const file of commandFiles) {
 async function addColumn(col) {
   await queryInterface.describeTable(dbName).then((tableDefinition) => {
     if (tableDefinition[col]) {
-      console.log("\t" + col + " exists");
+      console.log(col + " exists");
       return Promise.resolve();
     }
-    console.log("\t" + "adding col " + col);
+    console.log("adding col " + col);
     return queryInterface.addColumn(dbName, col, {
       type: schemaColumns[col]["type"],
     });
@@ -114,7 +114,7 @@ client.once("ready", () => {
 
 // Handle guild joins
 client.on("guildCreate", async (guild) => {
-  console.log("Savvy has joined server" + guild.name);
+  console.log("Savvy has joined server " + guild.name);
   await Tags.create({
     guildId: guild.id,
     self_assign_roles: [],
@@ -127,15 +127,14 @@ client.on("guildCreate", async (guild) => {
 // Handle guild leave/kick
 client.on("guildDelete", async (guild) => {
   await Tags.destroy({ where: { guildId: guild.id } });
-  console.log("Bot removed from guild");
+  console.log("Savvy removed from guild " + guild.name);
 });
 
 // Handle messaging
 client.on("messageCreate", async (message) => {
   if (message.author.bot) return false;
-  console.log(`Message from ${message.author.username}: ${message.content}`);
-
   if (message.channel.type === "DM") {
+    /*
     const replyEmbed = new MessageEmbed()
       .setColor("#0099ff")
       .setDescription(`Sorry! Savvy does not process replies`)
@@ -145,9 +144,13 @@ client.on("messageCreate", async (message) => {
     } catch (error) {
       console.log(error);
     }
+    */
     const user = await client.users.fetch(devAdminId);
     user.send(`Message from ${message.author.username}: ${message.content}`);
   } else {
+    console.log(
+      `User: ${message.author.username} in ${message.guild.name} [ChannelMessage]: ${message.content}`
+    );
     const tag = await Tags.findOne({ where: { guildId: message.guild.id } });
     const keywords = tag.get("message_reply_keywords");
     const phrases = tag.get("message_reply_phrases");
@@ -176,10 +179,13 @@ client.on("voiceStateUpdate", async (oldState, newState) => {
       const replyEmbed = new MessageEmbed()
         .setColor("#0099ff")
         .setTitle(
-          `${newState.member.displayName} has joined voice channel ${newState.channel.name} in server **${newState.guild.name}`
+          `${newState.member.displayName} has joined voice channel ${newState.channel.name} in ${newState.guild.name}`
         )
         .setTimestamp();
       try {
+        console.log(
+          `${newState.member.displayName} has joined voice channel ${newState.channel.name} in ${newState.guild.name}`
+        );
         await subscribedUser.send({ embeds: [replyEmbed] });
       } catch (error) {
         console.log(error);
@@ -210,14 +216,14 @@ client.on("guildMemberAdd", async (member) => {
 
   try {
     const replyEmbed = new MessageEmbed()
-      .setColor("#00FF00")
+      .setColor(member.user.hexAccentColor())
       .setTitle(
-        `Welcome to **${member.guild.name}**, **${member.user.username}**!`
+        `Welcome to **${member.guild.name}**, **${member.user.username}#${member.user.discriminator}**!`
       )
       .setTimestamp();
     updateChannel.send({ embeds: [replyEmbed] });
   } catch (error) {
-    console.log("Update channel does not exist!");
+    console.log("Error sending message! " + error);
   }
 
   if (tag.get("joinRole") == "NA") {
@@ -269,6 +275,7 @@ client.on("guildMemberRemove", async (member) => {
 
 // Handle slash commands
 client.on("interactionCreate", async (interaction) => {
+  console.log(`${interaction.user.username} used command: ${interaction.type}`);
   if (interaction.isCommand()) {
     const command = client.commands.get(interaction.commandName);
     if (!command) return;
