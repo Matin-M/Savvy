@@ -216,7 +216,7 @@ client.on("guildMemberAdd", async (member) => {
 
   try {
     const replyEmbed = new MessageEmbed()
-      .setColor(member.user.hexAccentColor())
+      .setColor("#4ca14e")
       .setTitle(
         `Welcome to **${member.guild.name}**, **${member.user.username}#${member.user.discriminator}**!`
       )
