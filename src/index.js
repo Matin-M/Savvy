@@ -134,22 +134,20 @@ client.on("guildDelete", async (guild) => {
 client.on("messageCreate", async (message) => {
   if (message.author.bot) return false;
   if (message.channel.type === "DM") {
-    /*
     const replyEmbed = new MessageEmbed()
       .setColor("#0099ff")
-      .setDescription(`Sorry! Savvy does not process replies`)
+      .setDescription(`Invalid command. Type /help to see available commands`)
       .setTimestamp();
     try {
       await message.reply({ embeds: [replyEmbed] });
     } catch (error) {
       console.log(error);
     }
-    */
     const user = await client.users.fetch(devAdminId);
     user.send(`Message from ${message.author.username}: ${message.content}`);
   } else {
     console.log(
-      `User: ${message.author.username} in ${message.guild.name} [ChannelMessage]: ${message.content}`
+      `[ChannelMessage]-FROM-${message.author.username}-IN-${message.guild.name}: ${message.content}`
     );
     const tag = await Tags.findOne({ where: { guildId: message.guild.id } });
     const keywords = tag.get("message_reply_keywords");
@@ -184,7 +182,7 @@ client.on("voiceStateUpdate", async (oldState, newState) => {
         .setTimestamp();
       try {
         console.log(
-          `${newState.member.displayName} has joined voice channel ${newState.channel.name} in ${newState.guild.name}`
+          `[VoiceUpdate]-FROM-${newState.member.displayName}-IN-${newState.member.guild.id}: ${newState.channel.name}`
         );
         await subscribedUser.send({ embeds: [replyEmbed] });
       } catch (error) {
@@ -275,7 +273,7 @@ client.on("guildMemberRemove", async (member) => {
 
 // Handle slash commands
 client.on("interactionCreate", async (interaction) => {
-  console.log(`${interaction.user.username} used command: ${interaction.type}`);
+  console.log(`[InteractionCreate]-FROM-${interaction.user.username}-IN-${interaction.guild.name}: ${interaction.type}`);
   if (interaction.isCommand()) {
     const command = client.commands.get(interaction.commandName);
     if (!command) return;
