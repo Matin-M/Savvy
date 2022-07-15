@@ -154,7 +154,11 @@ client.on("messageCreate", async (message) => {
     const phrases = tag.get("message_reply_phrases");
     for (let i = 0; i < keywords.length; i++) {
       if (message.content.includes(keywords[i])) {
-        message.reply(phrases[i]);
+        if (phrases[i] === "<DELETE>") {
+          message.delete();
+        } else {
+          message.reply(phrases[i]);
+        }
         break;
       }
     }
@@ -234,7 +238,9 @@ client.on("guildMemberAdd", async (member) => {
   } catch (error) {
     console.log("Role does not exist!");
   }
-  console.log(member.user.username + " has joined server " + member.guild.id);
+  console.log(
+    `[NewUserJoin]-FROM-${member.user.username}-IN-${member.guild.name}: ${member.id}`
+  );
 });
 
 // Handle guild member leave
@@ -268,13 +274,17 @@ client.on("guildMemberRemove", async (member) => {
   } catch (error) {
     console.log("Invalid channel for leave!");
   }
-  console.log(member.user.username + " has left server " + member.guild.id);
+  console.log(
+    `[UserLeave]-FROM-${member.user.username}-IN-${member.guild.name}: ${member.id}`
+  );
 });
 
 // Handle slash commands
 client.on("interactionCreate", async (interaction) => {
-  console.log(`[InteractionCreate]-FROM-${interaction.user.username}-IN-${interaction.guild.name}: ${interaction.type}`);
   if (interaction.isCommand()) {
+    console.log(
+      `[InteractionCreate]-FROM-${interaction.user.username}-IN-${interaction.guild.name}: ${interaction.type}`
+    );
     const command = client.commands.get(interaction.commandName);
     if (!command) return;
     try {

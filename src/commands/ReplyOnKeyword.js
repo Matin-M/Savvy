@@ -8,7 +8,7 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName("replyonkeyword")
     .setDescription(
-      "Replies with phrase if any channel message contains keyword"
+      "Auto-reply if message contains keyword. Set phrase to <DELETE> to delete message instead"
     )
     .addStringOption((option) =>
       option
@@ -60,12 +60,16 @@ module.exports = {
         { where: { guildId: interaction.guild.id } }
       );
 
-      replyEmbed
-        .setColor("#0099ff")
-        .setDescription(
-          `${interaction.user.username}, Savvy will reply with **${phrase}** if a channel message contains the keyword **${keyword}**`
-        )
-        .setTimestamp();
+      replyEmbed.setColor("#0099ff").setTimestamp();
+      if (phrase === "<DELETE>") {
+        replyEmbed.setTitle(
+          `Savvy will delete a channel message if it contains the keyword **${keyword}**`
+        );
+      } else {
+        replyEmbed.setTitle(
+          `Savvy will reply with **${phrase}** if a channel message contains the keyword **${keyword}**`
+        );
+      }
     } else {
       replyEmbed
         .setColor("#FF0000")

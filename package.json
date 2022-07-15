@@ -4,9 +4,9 @@
   "description": "A DiscordJS bot",
   "main": "src/index.js",
   "scripts": {
-    "format": "prettier --write \"commands/**/*.{js,ts}\"",
-    "format:check": "prettier --check \"commands/**/*.{ts}\"",
-    "lint": "eslint --fix \"commands/**/*.{js,ts}\" && echo 'Lint complete'"
+    "format": "prettier --write \"src/commands/**/*.{js,ts}\"",
+    "format:check": "prettier --check \"src/commands/**/*.{js,ts}\"",
+    "lint": "eslint --fix \"src/commands/**/*.{js,ts}\" && echo 'Lint complete'"
   },
   "dependencies": {
     "@discordjs/builders": "^0.12.0",
