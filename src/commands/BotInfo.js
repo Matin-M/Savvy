@@ -56,6 +56,7 @@ module.exports = {
 };
 
 function msToTime(duration) {
+  // eslint-disable-next-line prefer-const
   let milliseconds = Math.floor((duration % 1000) / 100),
     seconds = Math.floor((duration / 1000) % 60),
     minutes = Math.floor((duration / (1000 * 60)) % 60),

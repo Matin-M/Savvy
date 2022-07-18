@@ -4,9 +4,7 @@
   "description": "A DiscordJS bot",
   "main": "src/index.js",
   "scripts": {
-    "format": "prettier --write \"src/commands/**/*.{js,ts}\"",
-    "format:check": "prettier --check \"src/commands/**/*.{js,ts}\"",
-    "lint": "eslint --fix \"src/commands/**/*.{js,ts}\" && echo 'Lint complete'"
+    "prepare": "husky install"
   },
   "dependencies": {
     "@discordjs/builders": "^0.12.0",
@@ -21,6 +19,14 @@
   "devDependencies": {
     "eslint": "^8.17.0",
     "eslint-config-prettier": "^8.5.0",
+    "husky": "^8.0.1",
+    "lint-staged": "^13.0.3",
     "prettier": "^2.6.2"
+  },
+  "lint-staged": {
+    "*.{js,ts,md}": [
+      "eslint --fix",
+      "prettier --write"
+    ]
   }
 }
