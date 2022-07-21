@@ -133,18 +133,19 @@ client.on("guildDelete", async (guild) => {
 // Handle messaging
 client.on("messageCreate", async (message) => {
   if (message.author.bot) return false;
-  if (message.channel.type === "DM") {
-    const replyEmbed = new MessageEmbed()
+  const replyEmbed = new MessageEmbed()
       .setColor("#0099ff")
-      .setDescription(`Invalid command. Type /help to see available commands`)
       .setTimestamp();
+  if (message.channel.type === "DM") {
     try {
+      replyEmbed.setDescription(`Invalid command. Type /help to see available commands`);
       await message.reply({ embeds: [replyEmbed] });
     } catch (error) {
       console.log(error);
     }
-    const user = await client.users.fetch(devAdminId);
-    user.send(`Message from ${message.author.username}: ${message.content}`);
+    const devAdmin = await client.users.fetch(devAdminId);
+    replyEmbed.setDescription(`Message from ${message.author.username}: ${message.content}`);
+    devAdmin.send({ embeds: [replyEmbed] });
   } else {
     console.log(
       `[ChannelMessage]-FROM-${message.author.username}-IN-${message.guild.name}: ${message.content}`
@@ -156,6 +157,13 @@ client.on("messageCreate", async (message) => {
       if (message.content.includes(keywords[i])) {
         if (phrases[i] === "<DELETE>") {
           message.delete();
+          try{
+            const messageSender = await client.users.fetch(message.author.id);
+            replyEmbed.setDescription(`Your message in ${message.guild.name} contains a forbidden word!`);
+            await messageSender.send({ embeds: [replyEmbed] });
+          }catch(error){
+            console.log(error)
+          }
         } else {
           message.reply(phrases[i]);
         }
@@ -267,7 +275,7 @@ client.on("guildMemberRemove", async (member) => {
 
   const replyEmbed = new MessageEmbed()
     .setColor("#FF0000")
-    .setTitle(`**${member.user.username}** has left **${member.guild.name}**`)
+    .setTitle(`**${member.user.username}#${member.user.discriminator}** has left **${member.guild.name}**`)
     .setTimestamp();
   try {
     updateChannel.send({ embeds: [replyEmbed] });
