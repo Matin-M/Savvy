@@ -8,14 +8,14 @@ module.exports = {
     .addStringOption((option) =>
       option
         .setName("nickname")
-        .setDescription("discord username")
+        .setDescription("Discord username")
         .setRequired(true)
         .setAutocomplete(true)
     )
     .addStringOption((option) =>
       option
         .setName("message")
-        .setDescription("message to send")
+        .setDescription("Message to send")
         .setRequired(true)
         .setAutocomplete(true)
     ),

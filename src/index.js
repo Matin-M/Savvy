@@ -133,18 +133,20 @@ client.on("guildDelete", async (guild) => {
 // Handle messaging
 client.on("messageCreate", async (message) => {
   if (message.author.bot) return false;
-  const replyEmbed = new MessageEmbed()
-      .setColor("#0099ff")
-      .setTimestamp();
+  const replyEmbed = new MessageEmbed().setColor("#0099ff").setTimestamp();
   if (message.channel.type === "DM") {
     try {
-      replyEmbed.setDescription(`Invalid command. Type /help to see available commands`);
+      replyEmbed.setDescription(
+        `Invalid command. Type /help to see available commands`
+      );
       await message.reply({ embeds: [replyEmbed] });
     } catch (error) {
       console.log(error);
     }
     const devAdmin = await client.users.fetch(devAdminId);
-    replyEmbed.setDescription(`Message from ${message.author.username}: ${message.content}`);
+    replyEmbed.setDescription(
+      `Message from ${message.author.username}: ${message.content}`
+    );
     devAdmin.send({ embeds: [replyEmbed] });
   } else {
     console.log(
@@ -157,12 +159,14 @@ client.on("messageCreate", async (message) => {
       if (message.content.includes(keywords[i])) {
         if (phrases[i] === "<DELETE>") {
           message.delete();
-          try{
+          try {
             const messageSender = await client.users.fetch(message.author.id);
-            replyEmbed.setDescription(`Your message in ${message.guild.name} contains a forbidden word!`);
+            replyEmbed.setDescription(
+              `Your message in ${message.guild.name} contains a forbidden word!`
+            );
             await messageSender.send({ embeds: [replyEmbed] });
-          }catch(error){
-            console.log(error)
+          } catch (error) {
+            console.log(error);
           }
         } else {
           message.reply(phrases[i]);
@@ -257,6 +261,8 @@ client.on("guildMemberRemove", async (member) => {
     return;
   }
   const tag = await Tags.findOne({ where: { guildId: member.guild.id } });
+  if (tag.get("displayLeaveMessages")) return;
+
   let updateChannel;
   if (tag.get("updateChannel") == "NA") {
     updateChannel = member.guild.channels.cache.find(
@@ -275,7 +281,9 @@ client.on("guildMemberRemove", async (member) => {
 
   const replyEmbed = new MessageEmbed()
     .setColor("#FF0000")
-    .setTitle(`**${member.user.username}#${member.user.discriminator}** has left **${member.guild.name}**`)
+    .setTitle(
+      `**${member.user.username}#${member.user.discriminator}** has left **${member.guild.name}**`
+    )
     .setTimestamp();
   try {
     updateChannel.send({ embeds: [replyEmbed] });

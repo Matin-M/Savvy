@@ -9,9 +9,15 @@ module.exports = {
     .addStringOption((option) =>
       option
         .setName("channel")
-        .setDescription("channel name")
+        .setDescription("Channel name")
         .setRequired(true)
         .setAutocomplete(true)
+    )
+    .addBooleanOption((option) =>
+      option
+        .setName("userleave")
+        .setDescription("Disable or enable user leave messages")
+        .setRequired(false)
     ),
   async execute(client, interaction, Tags) {
     const replyEmbed = new MessageEmbed();
@@ -26,8 +32,12 @@ module.exports = {
       interaction.user.id == devAdminId
     ) {
       const newChannel = interaction.options.getString("channel");
+      const showLeaves = interaction.options.getBoolean("userleave");
       await Tags.update(
-        { updateChannel: newChannel },
+        {
+          updateChannel: newChannel,
+          displayLeaveMessages: showLeaves === "true",
+        },
         { where: { guildId: interaction.guild.id } }
       );
 
@@ -44,6 +54,6 @@ module.exports = {
         .setTimestamp();
     }
 
-    await interaction.reply({ embeds: [replyEmbed] });
+    await interaction.reply({ ephemeral: true, embeds: [replyEmbed] });
   },
 };
