@@ -2,6 +2,7 @@ const fs = require("fs");
 const { Client, Collection, Intents } = require("discord.js");
 const { MessageEmbed } = require("discord.js");
 const { Sequelize } = require("sequelize");
+const schemaColumns = require("./database/schema");
 const {
   token,
   dbConnectionString,
@@ -34,41 +35,6 @@ const sequelize = new Sequelize(dbConnectionString, {
   logging: false,
 });
 const queryInterface = sequelize.getQueryInterface();
-
-// Postgres DB schema
-const schemaColumns = {
-  guildId: {
-    type: Sequelize.STRING,
-    allowNull: false,
-    unique: true,
-  },
-  updateChannel: {
-    type: Sequelize.STRING,
-    allowNull: false,
-    defaultValue: "general",
-  },
-  self_assign_roles: {
-    type: Sequelize.ARRAY(Sequelize.DataTypes.STRING),
-    allowNull: false,
-  },
-  joinRole: {
-    type: Sequelize.STRING,
-    allowNull: false,
-    defaultValue: "NA",
-  },
-  voice_subscribers_list: {
-    type: Sequelize.ARRAY(Sequelize.DataTypes.STRING),
-    allowNull: false,
-  },
-  message_reply_phrases: {
-    type: Sequelize.ARRAY(Sequelize.DataTypes.STRING),
-    allowNull: false,
-  },
-  message_reply_keywords: {
-    type: Sequelize.ARRAY(Sequelize.DataTypes.STRING),
-    allowNull: false,
-  },
-};
 const Tags = sequelize.define("defaultschema", schemaColumns);
 
 client.commands = new Collection();
@@ -84,10 +50,10 @@ for (const file of commandFiles) {
 async function addColumn(col) {
   await queryInterface.describeTable(dbName).then((tableDefinition) => {
     if (tableDefinition[col]) {
-      console.log(col + " exists");
+      console.log(`Column ${col} exists`);
       return Promise.resolve();
     }
-    console.log("adding col " + col);
+    console.log(`Adding column ${col}`);
     return queryInterface.addColumn(dbName, col, {
       type: schemaColumns[col]["type"],
     });
@@ -99,7 +65,7 @@ client.once("ready", () => {
   console.log("Serving in Guilds: ");
   console.log(Guilds);
   Tags.sync();
-  console.log("Updating db schema...");
+  console.log("Checking for database schema updates...");
   for (const col in schemaColumns) {
     addColumn(col);
   }
@@ -114,7 +80,7 @@ client.once("ready", () => {
 
 // Handle guild joins
 client.on("guildCreate", async (guild) => {
-  console.log("Savvy has joined server " + guild.name);
+  console.log(`Savvy has joined server ${guild.name}`);
   await Tags.create({
     guildId: guild.id,
     self_assign_roles: [],
@@ -127,7 +93,7 @@ client.on("guildCreate", async (guild) => {
 // Handle guild leave/kick
 client.on("guildDelete", async (guild) => {
   await Tags.destroy({ where: { guildId: guild.id } });
-  console.log("Savvy removed from guild " + guild.name);
+  console.log(`Savvy removed from guild ${guild.name}`);
 });
 
 // Handle messaging
@@ -237,7 +203,7 @@ client.on("guildMemberAdd", async (member) => {
       .setTimestamp();
     updateChannel.send({ embeds: [replyEmbed] });
   } catch (error) {
-    console.log("Error sending message! " + error);
+    console.log(`Error sending message! ${error}`);
   }
 
   if (tag.get("joinRole") == "NA") {
@@ -261,7 +227,7 @@ client.on("guildMemberRemove", async (member) => {
     return;
   }
   const tag = await Tags.findOne({ where: { guildId: member.guild.id } });
-  if (tag.get("displayLeaveMessages")) return;
+  if (!tag.get("displayLeaveMessages")) return;
 
   let updateChannel;
   if (tag.get("updateChannel") == "NA") {
@@ -308,10 +274,10 @@ client.on("interactionCreate", async (interaction) => {
     } catch (error) {
       console.error(error);
       await interaction.reply({
-        content: "Error! " + error,
+        content: `Error! ${error}`,
         ephemeral: true,
       });
-      console.log("Command execution error: " + error);
+      console.log(`Command execution error: ${error}`);
     }
   } else if (interaction.isModalSubmit()) {
     const replyEmbed = new MessageEmbed();
