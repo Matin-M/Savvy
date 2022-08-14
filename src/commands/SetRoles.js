@@ -1,6 +1,10 @@
-const { MessageActionRow, Modal, TextInputComponent } = require("discord.js");
+const {
+  ActionRowBuilder,
+  ModalBuilder,
+  TextInputBuilder,
+} = require("discord.js");
 const { SlashCommandBuilder } = require("@discordjs/builders");
-const { MessageEmbed } = require("discord.js");
+const { EmbedBuilder } = require("discord.js");
 const { devAdminId } = require("../../config.json");
 
 module.exports = {
@@ -8,9 +12,9 @@ module.exports = {
     .setName("setroles")
     .setDescription("Set the roles that users can assign to themselves"),
   async execute(client, interaction, Tags) {
-    const replyEmbed = new MessageEmbed();
+    const replyEmbed = new EmbedBuilder();
     const adminRoles = interaction.guild.roles.cache.find((role) => {
-      if (role.permissions.toArray().includes("ADMINISTRATOR")) {
+      if (role.permissions.toArray().includes("Administrator")) {
         return role;
       }
     });
@@ -27,16 +31,16 @@ module.exports = {
         !userRoles || userRoles.length == 0 || userRoles[0] == ""
           ? "i.e. Role1, Role2, Role3 ..."
           : userRoles.toString();
-      const modal = new Modal()
+      const modal = new ModalBuilder()
         .setCustomId("role-modal")
         .setTitle("Set the roles users can select");
-      const roleInput = new TextInputComponent()
+      const roleInput = new TextInputBuilder()
         .setCustomId("role-list")
         .setLabel("Comma separated role list (case sensitive)")
         .setPlaceholder(userRoles)
         .setRequired(false)
-        .setStyle("PARAGRAPH");
-      const firstActionRow = new MessageActionRow().addComponents(roleInput);
+        .setStyle("Paragraph");
+      const firstActionRow = new ActionRowBuilder().addComponents(roleInput);
       modal.addComponents(firstActionRow);
       await interaction.showModal(modal);
     } else {

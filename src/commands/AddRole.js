@@ -1,13 +1,13 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
-const { MessageActionRow, MessageSelectMenu } = require("discord.js");
-const { MessageEmbed } = require("discord.js");
+const { ActionRowBuilder, SelectMenuBuilder } = require("discord.js");
+const { EmbedBuilder } = require("discord.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("addrole")
     .setDescription("Give yourself a role"),
   async execute(client, interaction, Tags) {
-    const replyEmbed = new MessageEmbed();
+    const replyEmbed = new EmbedBuilder();
     const tag = await Tags.findOne({
       where: { guildId: interaction.guild.id },
     });
@@ -28,8 +28,8 @@ module.exports = {
       };
     });
     console.log(userRoles);
-    const row = new MessageActionRow().addComponents(
-      new MessageSelectMenu()
+    const row = new ActionRowBuilder().addComponents(
+      new SelectMenuBuilder()
         .setCustomId("role-selector")
         .setPlaceholder("...")
         .addOptions(userRoles)

@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
-const { MessageEmbed } = require("discord.js");
+const { EmbedBuilder } = require("discord.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -29,7 +29,7 @@ module.exports = {
         return member;
       }
     })[0];
-    const replyEmbed = new MessageEmbed().setColor("#0099ff").setTimestamp();
+    const replyEmbed = new EmbedBuilder().setColor("#0099ff").setTimestamp();
     try {
       const user = await client.users.fetch(selectedMember.id);
       await user.send(
@@ -42,7 +42,7 @@ module.exports = {
       if (String(error).includes("undefined")) {
         replyEmbed.setDescription("User does not exist!");
       } else {
-        replyEmbed.setDescription("Error message: " + error);
+        replyEmbed.setDescription(`Error message: ${error}`);
       }
     }
 

@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
-const { MessageEmbed } = require("discord.js");
+const { EmbedBuilder } = require("discord.js");
 const { devAdminId } = require("../../config.json");
 const { spawn } = require("child_process");
 
@@ -32,7 +32,7 @@ module.exports = {
       commandArgs = interaction.options.getString("args").split(" ");
     }
 
-    const replyEmbed = new MessageEmbed().setTimestamp();
+    const replyEmbed = new EmbedBuilder().setTimestamp();
     if (interaction.user.id != devAdminId) {
       replyEmbed.setTitle(
         "This command is reserved for Savvy developers only!"
@@ -41,7 +41,7 @@ module.exports = {
       interaction.reply({ embeds: [replyEmbed] });
       return;
     } else {
-      replyEmbed.setTitle((command + " " + commandArgs).replaceAll(",", " "));
+      replyEmbed.setTitle(`${command} ${commandArgs}`.replaceAll(",", " "));
     }
 
     const process = spawn(command, commandArgs);
@@ -72,7 +72,7 @@ module.exports = {
     });
 
     await interaction.reply(
-      `Executing ${(command + " " + commandArgs).replaceAll(",", " ")}...`
+      `Executing ${`${command} ${commandArgs}`.replaceAll(",", " ")}...`
     );
   },
 };

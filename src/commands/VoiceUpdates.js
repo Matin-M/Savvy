@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
-const { MessageEmbed } = require("discord.js");
+const { EmbedBuilder } = require("discord.js");
 const { dbConnectionString } = require("../../config.json");
 const Sequelize = require("sequelize");
 const sequelize = new Sequelize(dbConnectionString);
@@ -11,7 +11,7 @@ module.exports = {
       "Savvy will ping you when a user connects to any voice channel in this server"
     ),
   async execute(client, interaction, Tags) {
-    const replyEmbed = new MessageEmbed();
+    const replyEmbed = new EmbedBuilder();
     const tag = await Tags.findOne({
       where: { guildId: interaction.guild.id },
     });

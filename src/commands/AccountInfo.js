@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
-const { MessageEmbed } = require("discord.js");
+const { EmbedBuilder } = require("discord.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -9,7 +9,7 @@ module.exports = {
     const accDate = new Date(
       interaction.user.createdTimestamp
     ).toLocaleDateString("en-US");
-    const replyEmbed = new MessageEmbed()
+    const replyEmbed = new EmbedBuilder()
       .setColor("#0099ff")
       .setTitle(`Account info for ${interaction.user.username}`)
       .addFields(

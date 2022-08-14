@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
-const { MessageEmbed } = require("discord.js");
+const { EmbedBuilder } = require("discord.js");
 const process = require("process");
 const osu = require("node-os-utils");
 
@@ -14,7 +14,7 @@ module.exports = {
     const cpuUtil = await cpu.usage();
     const memUtil = await mem.info();
 
-    const replyEmbed = new MessageEmbed()
+    const replyEmbed = new EmbedBuilder()
       .setColor("#0099ff")
       .setTitle(`Savvy's current status`)
       .addFields(
@@ -62,9 +62,9 @@ function msToTime(duration) {
     minutes = Math.floor((duration / (1000 * 60)) % 60),
     hours = Math.floor(duration / (1000 * 60 * 60) / 24);
 
-  hours = hours < 10 ? "0" + hours : hours;
-  minutes = minutes < 10 ? "0" + minutes : minutes;
-  seconds = seconds < 10 ? "0" + seconds : seconds;
+  hours = hours < 10 ? `0${hours}` : hours;
+  minutes = minutes < 10 ? `0${minutes}` : minutes;
+  seconds = seconds < 10 ? `0${seconds}` : seconds;
 
-  return hours + ":" + minutes + ":" + seconds + "." + milliseconds;
+  return `${hours}:${minutes}:${seconds}.${milliseconds}`;
 }

@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
-const { MessageEmbed } = require("discord.js");
+const { EmbedBuilder } = require("discord.js");
 const { devAdminId } = require("../../config.json");
 
 module.exports = {
@@ -16,7 +16,7 @@ module.exports = {
         .setAutocomplete(true)
     ),
   async execute(client, interaction, Tags) {
-    const replyEmbed = new MessageEmbed();
+    const replyEmbed = new EmbedBuilder();
     const adminRoles = interaction.guild.roles.cache.find((role) => {
       if (role.permissions.toArray().includes("ADMINISTRATOR")) {
         return role;

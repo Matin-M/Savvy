@@ -1,6 +1,13 @@
 const fs = require("fs");
-const { Client, Collection, Intents } = require("discord.js");
-const { MessageEmbed } = require("discord.js");
+const {
+  Client,
+  Collection,
+  GatewayIntentBits,
+  InteractionType,
+  ChannelType,
+  Partials,
+} = require("discord.js");
+const { EmbedBuilder } = require("discord.js");
 const { Sequelize } = require("sequelize");
 const schemaColumns = require("./database/schema");
 const {
@@ -13,22 +20,34 @@ const {
 } = require("../config.json");
 
 const intents = [
-  Intents.FLAGS.GUILDS,
-  Intents.FLAGS.GUILD_MESSAGES,
-  Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
-  Intents.FLAGS.GUILD_MESSAGE_TYPING,
-  Intents.FLAGS.DIRECT_MESSAGES,
-  Intents.FLAGS.GUILD_VOICE_STATES,
-  Intents.FLAGS.GUILD_MEMBERS,
-  Intents.FLAGS.GUILD_EMOJIS_AND_STICKERS,
-  Intents.FLAGS.GUILD_INVITES,
-  Intents.FLAGS.GUILD_PRESENCES,
-  Intents.FLAGS.GUILD_WEBHOOKS,
-  Intents.FLAGS.GUILD_INTEGRATIONS,
-  Intents.FLAGS.GUILD_BANS,
-  Intents.FLAGS.GUILD_INVITES,
+  GatewayIntentBits.Guilds,
+  GatewayIntentBits.GuildMessageReactions,
+  GatewayIntentBits.GuildMessageTyping,
+  GatewayIntentBits.DirectMessages,
+  GatewayIntentBits.MessageContent,
+  GatewayIntentBits.GuildVoiceStates,
+  GatewayIntentBits.GuildMembers,
+  GatewayIntentBits.GuildEmojisAndStickers,
+  GatewayIntentBits.GuildInvites,
+  GatewayIntentBits.GuildPresences,
+  GatewayIntentBits.GuildWebhooks,
+  GatewayIntentBits.GuildIntegrations,
+  GatewayIntentBits.GuildBans,
+  GatewayIntentBits.GuildInvites,
+  GatewayIntentBits.GuildMessages,
+  GatewayIntentBits.DirectMessageReactions,
 ];
-const client = new Client({ intents, partials: ["CHANNEL"] });
+const client = new Client({
+  intents,
+  partials: [
+    Partials.Message,
+    Partials.Channel,
+    Partials.GuildMember,
+    Partials.ThreadMember,
+    Partials.User,
+    Partials.Reaction,
+  ],
+});
 
 const sequelize = new Sequelize(dbConnectionString, {
   dialect: "postgres",
@@ -99,8 +118,8 @@ client.on("guildDelete", async (guild) => {
 // Handle messaging
 client.on("messageCreate", async (message) => {
   if (message.author.bot) return false;
-  const replyEmbed = new MessageEmbed().setColor("#0099ff").setTimestamp();
-  if (message.channel.type === "DM") {
+  const replyEmbed = new EmbedBuilder().setColor("#0099ff").setTimestamp();
+  if (message.channel.type === ChannelType.DM) {
     try {
       replyEmbed.setDescription(
         `Invalid command. Type /help to see available commands`
@@ -114,7 +133,8 @@ client.on("messageCreate", async (message) => {
       `Message from ${message.author.username}: ${message.content}`
     );
     devAdmin.send({ embeds: [replyEmbed] });
-  } else {
+    console.log(`[UserDM]-FROM-${message.author.username}: ${message.content}`);
+  } else if (message.channel.type === ChannelType.GuildText) {
     console.log(
       `[ChannelMessage]-FROM-${message.author.username}-IN-${message.guild.name}: ${message.content}`
     );
@@ -156,7 +176,7 @@ client.on("voiceStateUpdate", async (oldState, newState) => {
       if (subscribedUser.id == newState.member.id) {
         break;
       }
-      const replyEmbed = new MessageEmbed()
+      const replyEmbed = new EmbedBuilder()
         .setColor("#0099ff")
         .setTitle(
           `${newState.member.displayName} has joined voice channel ${newState.channel.name} in ${newState.guild.name}`
@@ -195,7 +215,7 @@ client.on("guildMemberAdd", async (member) => {
   }
 
   try {
-    const replyEmbed = new MessageEmbed()
+    const replyEmbed = new EmbedBuilder()
       .setColor("#4ca14e")
       .setTitle(
         `Welcome to **${member.guild.name}**, **${member.user.username}#${member.user.discriminator}**!`
@@ -245,7 +265,7 @@ client.on("guildMemberRemove", async (member) => {
     );
   }
 
-  const replyEmbed = new MessageEmbed()
+  const replyEmbed = new EmbedBuilder()
     .setColor("#FF0000")
     .setTitle(
       `**${member.user.username}#${member.user.discriminator}** has left **${member.guild.name}**`
@@ -265,7 +285,9 @@ client.on("guildMemberRemove", async (member) => {
 client.on("interactionCreate", async (interaction) => {
   if (interaction.isCommand()) {
     console.log(
-      `[InteractionCreate]-FROM-${interaction.user.username}-IN-${interaction.guild.name}: ${interaction.type}`
+      `[InteractionCreate]-FROM-${interaction.user.username}-IN-${
+        interaction.guild ? interaction.guild.name : "UserDM"
+      }: ${interaction.type}`
     );
     const command = client.commands.get(interaction.commandName);
     if (!command) return;
@@ -279,8 +301,8 @@ client.on("interactionCreate", async (interaction) => {
       });
       console.log(`Command execution error: ${error}`);
     }
-  } else if (interaction.isModalSubmit()) {
-    const replyEmbed = new MessageEmbed();
+  } else if (interaction.type === InteractionType.ModalSubmit) {
+    const replyEmbed = new EmbedBuilder();
     if (interaction.customId == "role-modal") {
       await interaction.deferReply({ ephemeral: false });
       const roles = interaction.fields
@@ -313,8 +335,9 @@ client.on("interactionCreate", async (interaction) => {
         .setTimestamp();
       interaction.followUp({ embeds: [replyEmbed] });
     }
-  } else if (interaction.isSelectMenu()) {
-    const replyEmbed = new MessageEmbed();
+    // Need catch clause for dropdown menus
+  } else {
+    const replyEmbed = new EmbedBuilder();
     if (interaction.customId == "role-selector") {
       try {
         await interaction.member.roles.add(
