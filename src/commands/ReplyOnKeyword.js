@@ -27,7 +27,7 @@ module.exports = {
   async execute(client, interaction, Tags) {
     const replyEmbed = new EmbedBuilder();
     const adminRoles = interaction.guild.roles.cache.find((role) => {
-      if (role.permissions.toArray().includes("ADMINISTRATOR")) {
+      if (role.permissions.toArray().includes("Administrator")) {
         return role;
       }
     });

@@ -6,6 +6,7 @@ const {
   InteractionType,
   ChannelType,
   Partials,
+  ActivityType,
 } = require("discord.js");
 const { EmbedBuilder } = require("discord.js");
 const { Sequelize } = require("sequelize");
@@ -37,6 +38,7 @@ const intents = [
   GatewayIntentBits.GuildMessages,
   GatewayIntentBits.DirectMessageReactions,
 ];
+
 const client = new Client({
   intents,
   partials: [
@@ -91,8 +93,11 @@ client.once("ready", () => {
   client.user.setStatus("online");
   setInterval(() => {
     console.log("Setting user activity");
-    client.user.setActivity(clientActivityTitle, {
-      type: clientActivityType,
+    client.user.setPresence({
+      activities: [
+        { name: clientActivityTitle, type: ActivityType[clientActivityType] },
+      ],
+      status: "online",
     });
   }, 5100000);
 });
@@ -147,7 +152,7 @@ client.on("messageCreate", async (message) => {
           message.delete();
           try {
             const messageSender = await client.users.fetch(message.author.id);
-            replyEmbed.setDescription(
+            replyEmbed.setTitle(
               `Your message in ${message.guild.name} contains a forbidden word!`
             );
             await messageSender.send({ embeds: [replyEmbed] });
@@ -196,34 +201,30 @@ client.on("voiceStateUpdate", async (oldState, newState) => {
 
 // Handle guild member join
 client.on("guildMemberAdd", async (member) => {
+  console.log(
+    `[NewUserJoin]-FROM-${member.user.username}-IN-${member.guild.name}: ${member.id}`
+  );
   const tag = await Tags.findOne({ where: { guildId: member.guild.id } });
 
-  let updateChannel;
-  if (tag.get("updateChannel") == "NA") {
-    updateChannel = member.guild.channels.cache.find(
-      (c) =>
-        c.type === "GUILD_TEXT" &&
-        c.permissionsFor(member.guild.me).has("SEND_MESSAGES")
-    );
-  } else {
-    updateChannel = member.guild.channels.cache.find(
-      (c) =>
-        c.type === "GUILD_TEXT" &&
-        c.permissionsFor(member.guild.me).has("SEND_MESSAGES") &&
+  if (tag.get("updateChannel") != "NA") {
+    member.guild.channels.cache.find((c) => {
+      if (
+        c.type === ChannelType.GuildText &&
         c.name == tag.get("updateChannel")
-    );
-  }
-
-  try {
-    const replyEmbed = new EmbedBuilder()
-      .setColor("#4ca14e")
-      .setTitle(
-        `Welcome to **${member.guild.name}**, **${member.user.username}#${member.user.discriminator}**!`
-      )
-      .setTimestamp();
-    updateChannel.send({ embeds: [replyEmbed] });
-  } catch (error) {
-    console.log(`Error sending message! ${error}`);
+      ) {
+        try {
+          const replyEmbed = new EmbedBuilder()
+            .setColor("#4ca14e")
+            .setTitle(
+              `Welcome to **${member.guild.name}**, **${member.user.username}#${member.user.discriminator}**!`
+            )
+            .setTimestamp();
+          c.send({ embeds: [replyEmbed] });
+        } catch (error) {
+          console.log(`Error sending message! ${error}`);
+        }
+      }
+    });
   }
 
   if (tag.get("joinRole") == "NA") {
@@ -236,49 +237,40 @@ client.on("guildMemberAdd", async (member) => {
   } catch (error) {
     console.log("Role does not exist!");
   }
-  console.log(
-    `[NewUserJoin]-FROM-${member.user.username}-IN-${member.guild.name}: ${member.id}`
-  );
 });
 
 // Handle guild member leave
 client.on("guildMemberRemove", async (member) => {
-  if (member.id == client.id) {
-    return;
-  }
-  const tag = await Tags.findOne({ where: { guildId: member.guild.id } });
-  if (!tag.get("displayLeaveMessages")) return;
-
-  let updateChannel;
-  if (tag.get("updateChannel") == "NA") {
-    updateChannel = member.guild.channels.cache.find(
-      (c) =>
-        c.type === "GUILD_TEXT" &&
-        c.permissionsFor(member.guild.me).has("SEND_MESSAGES")
-    );
-  } else {
-    updateChannel = member.guild.channels.cache.find(
-      (c) =>
-        c.type === "GUILD_TEXT" &&
-        c.permissionsFor(member.guild.me).has("SEND_MESSAGES") &&
-        c.name == tag.get("updateChannel")
-    );
-  }
-
-  const replyEmbed = new EmbedBuilder()
-    .setColor("#FF0000")
-    .setTitle(
-      `**${member.user.username}#${member.user.discriminator}** has left **${member.guild.name}**`
-    )
-    .setTimestamp();
-  try {
-    updateChannel.send({ embeds: [replyEmbed] });
-  } catch (error) {
-    console.log("Invalid channel for leave!");
-  }
   console.log(
     `[UserLeave]-FROM-${member.user.username}-IN-${member.guild.name}: ${member.id}`
   );
+  if (member.id === client.id) {
+    return;
+  }
+  const tag = await Tags.findOne({ where: { guildId: member.guild.id } });
+  console.log(tag.get("displayLeaveMessages"));
+  if (!tag.get("displayLeaveMessages")) return;
+
+  if (tag.get("updateChannel") != "NA") {
+    member.guild.channels.cache.find((c) => {
+      if (
+        c.type === ChannelType.GuildText &&
+        c.name == tag.get("updateChannel")
+      ) {
+        try {
+          const replyEmbed = new EmbedBuilder()
+            .setColor("#FF0000")
+            .setTitle(
+              `**${member.user.username}#${member.user.discriminator}** has left **${member.guild.name}**`
+            )
+            .setTimestamp();
+          c.send({ embeds: [replyEmbed] });
+        } catch (error) {
+          console.log(`Error sending message! ${error}`);
+        }
+      }
+    });
+  }
 });
 
 // Handle slash commands

@@ -22,7 +22,7 @@ module.exports = {
   async execute(client, interaction, Tags) {
     const replyEmbed = new EmbedBuilder();
     const adminRoles = interaction.guild.roles.cache.find((role) => {
-      if (role.permissions.toArray().includes("ADMINISTRATOR")) {
+      if (role.permissions.toArray().includes("Administrator")) {
         return role;
       }
     });
@@ -36,7 +36,7 @@ module.exports = {
       await Tags.update(
         {
           updateChannel: newChannel,
-          displayLeaveMessages: showLeaves === "true",
+          displayLeaveMessages: showLeaves ? true : false,
         },
         { where: { guildId: interaction.guild.id } }
       );
