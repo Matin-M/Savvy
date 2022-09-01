@@ -44,7 +44,7 @@ module.exports = {
       replyEmbed
         .setColor("#0099ff")
         .setTitle(
-          `Savvy will now send server updates to text channel **${newChannel}**`
+          `Savvy will now send server updates to text channel ${newChannel}`
         )
         .setTimestamp();
     } else {

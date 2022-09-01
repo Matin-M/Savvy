@@ -35,7 +35,7 @@ module.exports = {
       await user.send(
         `Proxy message from ${interaction.user.username}: ${message}`
       );
-      replyEmbed.setTitle(`Sent **${message}** to **${nick}**`);
+      replyEmbed.setTitle(`Sent ${message} to ${nick}`);
     } catch (error) {
       replyEmbed.setColor("#ff0000");
       replyEmbed.setTitle(`Oops! Something went wrong`);

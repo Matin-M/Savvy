@@ -35,7 +35,7 @@ module.exports = {
 
       replyEmbed
         .setColor("#0099ff")
-        .setTitle(`New users will have their role set to **${role}**`)
+        .setTitle(`New users will have their role set to ${role}`)
         .setTimestamp();
     } else {
       replyEmbed

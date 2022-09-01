@@ -24,7 +24,9 @@ module.exports = {
         },
         {
           name: `\tMax VC bitrate`,
-          value: `\t**${interaction.guild.maximumBitrate} bits/s**`,
+          value: `\t**${
+            parseFloat(interaction.guild.maximumBitrate) / 1000
+          } kbps**`,
           inline: true,
         },
         {

@@ -20,7 +20,7 @@ module.exports = {
       replyEmbed
         .setColor("#ffcc00")
         .setTitle(
-          `**${interaction.user.username}**, you will no longer receive voice status updates in this server`
+          `${interaction.user.username}, you will no longer receive voice status updates in this server`
         )
         .setTimestamp();
       Tags.update(
@@ -46,7 +46,7 @@ module.exports = {
       replyEmbed
         .setColor("#00FF00")
         .setTitle(
-          `**${interaction.user.username}**, you will now receive status updates for voice channels in this server`
+          `${interaction.user.username}, you will now receive status updates for voice channels in this server`
         )
         .setTimestamp();
     }

@@ -41,6 +41,7 @@ const intents = [
 
 const client = new Client({
   intents,
+  allowedMentions: { parse: ["users", "roles"] },
   partials: [
     Partials.Message,
     Partials.Channel,
@@ -82,7 +83,9 @@ async function addColumn(col) {
 }
 
 client.once("ready", () => {
-  const Guilds = client.guilds.cache.map((guild) => guild.id);
+  const Guilds = client.guilds.cache.map(
+    (guild) => `${guild.id}:${guild.name}`
+  );
   console.log("Serving in Guilds: ");
   console.log(Guilds);
   Tags.sync();
@@ -159,6 +162,14 @@ client.on("messageCreate", async (message) => {
           } catch (error) {
             console.log(error);
           }
+        } else if (keywords[i] === "<RESET>") {
+          await Tags.update(
+            {
+              message_reply_keywords: [],
+              displayLeaveMessages: [],
+            },
+            { where: { guildId: message.guild.id } }
+          );
         } else {
           message.reply(phrases[i]);
         }
@@ -216,7 +227,7 @@ client.on("guildMemberAdd", async (member) => {
           const replyEmbed = new EmbedBuilder()
             .setColor("#4ca14e")
             .setTitle(
-              `Welcome to **${member.guild.name}**, **${member.user.username}#${member.user.discriminator}**!`
+              `Welcome to ${member.guild.name}, ${member.user.username}#${member.user.discriminator}!`
             )
             .setTimestamp();
           c.send({ embeds: [replyEmbed] });
@@ -248,7 +259,6 @@ client.on("guildMemberRemove", async (member) => {
     return;
   }
   const tag = await Tags.findOne({ where: { guildId: member.guild.id } });
-  console.log(tag.get("displayLeaveMessages"));
   if (!tag.get("displayLeaveMessages")) return;
 
   if (tag.get("updateChannel") != "NA") {
@@ -261,7 +271,7 @@ client.on("guildMemberRemove", async (member) => {
           const replyEmbed = new EmbedBuilder()
             .setColor("#FF0000")
             .setTitle(
-              `**${member.user.username}#${member.user.discriminator}** has left **${member.guild.name}**`
+              `${member.user.username}#${member.user.discriminator} has left ${member.guild.name}`
             )
             .setTimestamp();
           c.send({ embeds: [replyEmbed] });
@@ -275,6 +285,7 @@ client.on("guildMemberRemove", async (member) => {
 
 // Handle slash commands
 client.on("interactionCreate", async (interaction) => {
+  if (!interaction.guild) return;
   if (interaction.isCommand()) {
     console.log(
       `[InteractionCreate]-FROM-${interaction.user.username}-IN-${
@@ -356,7 +367,7 @@ client.on("interactionCreate", async (interaction) => {
       replyEmbed
         .setColor("#0099ff")
         .setTitle(
-          `**${interaction.values[0]}** assigned to **${interaction.user.username}**`
+          `${interaction.values[0]} assigned to ${interaction.user.username}`
         )
         .setDescription(
           `Currently ${
