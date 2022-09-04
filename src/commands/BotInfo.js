@@ -37,7 +37,7 @@ module.exports = {
         },
         {
           name: `Heap usage`,
-          value: `**${Math.round(memoryUsed * 100) / 100} bytes**`,
+          value: `**${Math.round(memoryUsed * 100) / 100 / 1000.0} kB**`,
           inline: true,
         },
         {

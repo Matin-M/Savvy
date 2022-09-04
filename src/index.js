@@ -84,7 +84,7 @@ async function addColumn(col) {
 
 client.once("ready", () => {
   const Guilds = client.guilds.cache.map(
-    (guild) => `${guild.id}:${guild.name}`
+    (guild) => `${guild.id}: ${guild.name}`
   );
   console.log("Serving in Guilds: ");
   console.log(Guilds);
@@ -103,6 +103,7 @@ client.once("ready", () => {
       status: "online",
     });
   }, 5100000);
+  console.log("-----------------------READY-----------------------");
 });
 
 // Handle guild joins
@@ -134,7 +135,7 @@ client.on("messageCreate", async (message) => {
       );
       await message.reply({ embeds: [replyEmbed] });
     } catch (error) {
-      console.log(error);
+      console.log(`ERROR: ${error}`);
     }
     const devAdmin = await client.users.fetch(devAdminId);
     replyEmbed.setDescription(
@@ -144,7 +145,7 @@ client.on("messageCreate", async (message) => {
     console.log(`[UserDM]-FROM-${message.author.username}: ${message.content}`);
   } else if (message.channel.type === ChannelType.GuildText) {
     console.log(
-      `[ChannelMessage]-FROM-${message.author.username}-IN-${message.guild.name}: ${message.content}`
+      `[ChannelMessage]-FROM-${message.author.id}-IN-${message.guild.id}: ${message.content}`
     );
     const tag = await Tags.findOne({ where: { guildId: message.guild.id } });
     const keywords = tag.get("message_reply_keywords");
@@ -160,13 +161,15 @@ client.on("messageCreate", async (message) => {
             );
             await messageSender.send({ embeds: [replyEmbed] });
           } catch (error) {
-            console.log(error);
+            console.log(`[ERROR]: ${error}`);
           }
         } else if (keywords[i] === "<RESET>") {
+          keywords.splice(i, 1);
+          phrases.splice(i, 1);
           await Tags.update(
             {
-              message_reply_keywords: [],
-              displayLeaveMessages: [],
+              message_reply_keywords: keywords,
+              displayLeaveMessages: phrases,
             },
             { where: { guildId: message.guild.id } }
           );
@@ -200,11 +203,11 @@ client.on("voiceStateUpdate", async (oldState, newState) => {
         .setTimestamp();
       try {
         console.log(
-          `[VoiceUpdate]-FROM-${newState.member.displayName}-IN-${newState.member.guild.id}: ${newState.channel.name}`
+          `[VoiceUpdate]-FROM-${newState.member.id}-IN-${newState.member.guild.id}: ${newState.channel.id}`
         );
         await subscribedUser.send({ embeds: [replyEmbed] });
       } catch (error) {
-        console.log(error);
+        console.log(`[ERROR]: ${error}`);
       }
     }
   }
@@ -212,9 +215,7 @@ client.on("voiceStateUpdate", async (oldState, newState) => {
 
 // Handle guild member join
 client.on("guildMemberAdd", async (member) => {
-  console.log(
-    `[NewUserJoin]-FROM-${member.user.username}-IN-${member.guild.name}: ${member.id}`
-  );
+  console.log(`[NewUserJoin]-FROM-${member.user.id}-IN-${member.guild.id}`);
   const tag = await Tags.findOne({ where: { guildId: member.guild.id } });
 
   if (tag.get("updateChannel") != "NA") {
@@ -232,7 +233,7 @@ client.on("guildMemberAdd", async (member) => {
             .setTimestamp();
           c.send({ embeds: [replyEmbed] });
         } catch (error) {
-          console.log(`Error sending message! ${error}`);
+          console.log(`[ERROR]: ${error}`);
         }
       }
     });
@@ -246,15 +247,13 @@ client.on("guildMemberAdd", async (member) => {
       member.guild.roles.cache.find((role) => tag.get("joinRole") === role.name)
     );
   } catch (error) {
-    console.log("Role does not exist!");
+    console.log(`[ERROR]: ${error}`);
   }
 });
 
 // Handle guild member leave
 client.on("guildMemberRemove", async (member) => {
-  console.log(
-    `[UserLeave]-FROM-${member.user.username}-IN-${member.guild.name}: ${member.id}`
-  );
+  console.log(`[UserLeave]-FROM-${member.user.id}-IN-${member.guild.id}`);
   if (member.id === client.id) {
     return;
   }
@@ -276,19 +275,21 @@ client.on("guildMemberRemove", async (member) => {
             .setTimestamp();
           c.send({ embeds: [replyEmbed] });
         } catch (error) {
-          console.log(`Error sending message! ${error}`);
+          console.log(`[ERROR]: ${error}`);
         }
       }
     });
   }
 });
 
+client.on("warn", async (info) => console.log(`[WARN]: ${info}`));
+
 // Handle slash commands
 client.on("interactionCreate", async (interaction) => {
   if (!interaction.guild) return;
   if (interaction.isCommand()) {
     console.log(
-      `[InteractionCreate]-FROM-${interaction.user.username}-IN-${
+      `[InteractionCreate]-FROM-${interaction.user.id}-IN-${
         interaction.guild ? interaction.guild.name : "UserDM"
       }: ${interaction.type}`
     );
@@ -358,6 +359,7 @@ client.on("interactionCreate", async (interaction) => {
             `Role does not exist. Please contact the admin of this discord server`
           )
           .setTimestamp();
+        console.log(`[ERROR]: ${error}`);
         await interaction.update({
           embeds: [replyEmbed],
           components: [],
