@@ -37,4 +37,20 @@ module.exports = {
     type: Sequelize.ARRAY(Sequelize.DataTypes.STRING),
     allowNull: false,
   },
+  user_message_logs: {
+    type: Sequelize.ARRAY(Sequelize.DataTypes.JSON),
+    allowNull: false,
+  },
+  user_joined_logs: {
+    type: Sequelize.ARRAY(Sequelize.DataTypes.JSON),
+    allowNull: false,
+  },
+  user_left_logs: {
+    type: Sequelize.ARRAY(Sequelize.DataTypes.JSON),
+    allowNull: false,
+  },
+  deleted_user_message_logs: {
+    type: Sequelize.ARRAY(Sequelize.DataTypes.JSON),
+    allowNull: false,
+  },
 };

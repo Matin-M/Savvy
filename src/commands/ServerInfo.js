@@ -6,6 +6,11 @@ module.exports = {
     .setName("serverinfo")
     .setDescription("Returns info about this discord server"),
   async execute(client, interaction, Tags) {
+    const tag = await Tags.findOne({
+      where: { guildId: interaction.guild.id },
+    });
+    const messages = [...new Set(tag.get("user_message_logs"))];
+    const deleted_messages = [...new Set(tag.get("deleted_user_message_logs"))];
     const replyEmbed = new EmbedBuilder()
       .setColor("#0099ff")
       .setTitle(`Server info for ${interaction.guild.name}`)
@@ -30,13 +35,13 @@ module.exports = {
           inline: true,
         },
         {
-          name: `Max members`,
-          value: `**${interaction.guild.maximumMembers}**`,
+          name: `Messages sent`,
+          value: `**${messages.length}**`,
           inline: true,
         },
         {
-          name: `\tNumber of boosts`,
-          value: `\t**${interaction.guild.premiumSubscriptionCount}**`,
+          name: `Messages deleted`,
+          value: `\t**${deleted_messages.length}**`,
           inline: true,
         },
         {
@@ -47,6 +52,6 @@ module.exports = {
       )
       .setImage(`${interaction.guild.iconURL()}`)
       .setTimestamp();
-    await interaction.reply({ embeds: [replyEmbed] });
+    await interaction.reply({ embeds: [replyEmbed], ephemeral: true });
   },
 };

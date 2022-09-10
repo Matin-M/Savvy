@@ -147,6 +147,21 @@ client.on("messageCreate", async (message) => {
     console.log(
       `[ChannelMessage]-FROM-${message.author.id}-IN-${message.guild.id}: ${message.content}`
     );
+    await Tags.update(
+      {
+        user_message_logs: sequelize.fn(
+          "array_append",
+          sequelize.col("user_message_logs"),
+          JSON.stringify({
+            guildIdent: message.guild.id,
+            userID: message.author.id,
+            userMessage: message.content,
+            timeStamp: Date.now(),
+          })
+        ),
+      },
+      { where: { guildId: message.guild.id } }
+    );
     const tag = await Tags.findOne({ where: { guildId: message.guild.id } });
     const keywords = tag.get("message_reply_keywords");
     const phrases = tag.get("message_reply_phrases");
@@ -180,6 +195,28 @@ client.on("messageCreate", async (message) => {
       }
     }
   }
+});
+
+// Handle deleted messages
+client.on("messageDelete", async (message) => {
+  console.log(
+    `[ChannelMessage]-FROM-${message.author.id}-IN-${message.guild.id}: ${message.content}`
+  );
+  await Tags.update(
+    {
+      deleted_user_message_logs: sequelize.fn(
+        "array_append",
+        sequelize.col("deleted_user_message_logs"),
+        JSON.stringify({
+          guildID: message.guild.id,
+          userID: message.author.id,
+          userMessage: message.content,
+          timeStamp: Date.now(),
+        })
+      ),
+    },
+    { where: { guildId: message.guild.id } }
+  );
 });
 
 // Handle guild members joining/leaving voice channels
@@ -249,6 +286,20 @@ client.on("guildMemberAdd", async (member) => {
   } catch (error) {
     console.log(`[ERROR]: ${error}`);
   }
+  await Tags.update(
+    {
+      user_joined_logs: sequelize.fn(
+        "array_append",
+        sequelize.col("user_joined_logs"),
+        JSON.stringify({
+          guildID: member.guild.id,
+          userID: member.id,
+          timeStamp: Date.now(),
+        })
+      ),
+    },
+    { where: { guildId: member.guild.id } }
+  );
 });
 
 // Handle guild member leave
@@ -280,6 +331,20 @@ client.on("guildMemberRemove", async (member) => {
       }
     });
   }
+  await Tags.update(
+    {
+      user_left_logs: sequelize.fn(
+        "array_append",
+        sequelize.col("user_left_logs"),
+        JSON.stringify({
+          guildID: member.guild.id,
+          userID: member.author.id,
+          timeStamp: Date.now(),
+        })
+      ),
+    },
+    { where: { guildId: member.guild.id } }
+  );
 });
 
 client.on("warn", async (info) => console.log(`[WARN]: ${info}`));
