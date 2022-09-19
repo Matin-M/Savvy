@@ -262,13 +262,7 @@ client.on("guildMemberAdd", async (member) => {
         c.name == tag.get("updateChannel")
       ) {
         try {
-          const replyEmbed = new EmbedBuilder()
-            .setColor("#4ca14e")
-            .setTitle(
-              `Welcome to ${member.guild.name}, ${member.user.username}#${member.user.discriminator}!`
-            )
-            .setTimestamp();
-          c.send({ embeds: [replyEmbed] });
+          c.send(`Welcome to **${member.guild.name}**, <@${member.id}>!`);
         } catch (error) {
           console.log(`[ERROR]: ${error}`);
         }
@@ -318,13 +312,7 @@ client.on("guildMemberRemove", async (member) => {
         c.name == tag.get("updateChannel")
       ) {
         try {
-          const replyEmbed = new EmbedBuilder()
-            .setColor("#FF0000")
-            .setTitle(
-              `${member.user.username}#${member.user.discriminator} has left ${member.guild.name}`
-            )
-            .setTimestamp();
-          c.send({ embeds: [replyEmbed] });
+          c.send(`<@${member.id}> has left **${member.guild.name}**`);
         } catch (error) {
           console.log(`[ERROR]: ${error}`);
         }
