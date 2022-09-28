@@ -19,7 +19,7 @@ module.exports = {
         return freq[b] - freq[a];
       })
       .forEach((word, index) => {
-        index < 3 ? (freqTable += `${word} → ${freq[word]}\n`) : undefined;
+        index < 10 ? (freqTable += `${word} → ${freq[word]}\n`) : undefined;
       });
 
     const replyEmbed = new EmbedBuilder()
@@ -77,7 +77,7 @@ function wordFreq(strings) {
   strings.forEach((string) => {
     const words = string.replace(/[.]/g, "").split(/\s/);
     words.forEach((w) => {
-      if (w.includes("https://")) return;
+      if (w.includes("https://") || w === "" || !w) return;
       if (!freqMap[w]) {
         freqMap[w] = 0;
       }

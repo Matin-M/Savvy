@@ -8,7 +8,7 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName("replyonkeyword")
     .setDescription(
-      "Auto-reply if message contains keyword. Optionally set phrase to <DELETE> or keyword to <CLEAR>"
+      "Auto-reply with phrase if message contains keyword. Optionally set phrase to <DELETE> or <CLEAR>"
     )
     .addStringOption((option) =>
       option
@@ -65,8 +65,10 @@ module.exports = {
         replyEmbed.setTitle(
           `Savvy will delete a channel message if it contains the keyword ${keyword}`
         );
-      } else if (keyword === "<CLEAR>") {
-        replyEmbed.setTitle(`Resetting all responses to keywords...`);
+      } else if (phrase === "<CLEAR>") {
+        replyEmbed.setTitle(
+          `Savvy will no longer reply to messages containing keyword ${keyword}`
+        );
       } else {
         replyEmbed.setTitle(
           `Savvy will reply with ${phrase} if a channel message contains the keyword ${keyword}`

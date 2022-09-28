@@ -11,6 +11,8 @@ const {
 const { EmbedBuilder } = require("discord.js");
 const { Sequelize } = require("sequelize");
 const schemaColumns = require("./database/schema");
+// TODO - Add DB schema for message logging
+// const messageSchema = require("./database/messageSchema");
 const {
   token,
   dbConnectionString,
@@ -178,7 +180,7 @@ client.on("messageCreate", async (message) => {
           } catch (error) {
             console.log(`[ERROR]: ${error}`);
           }
-        } else if (keywords[i] === "<RESET>") {
+        } else if (phrases[i] === "<RESET>") {
           keywords.splice(i, 1);
           phrases.splice(i, 1);
           await Tags.update(
@@ -229,7 +231,10 @@ client.on("voiceStateUpdate", async (oldState, newState) => {
     subscribedUsers = [...new Set(tag.get("voice_subscribers_list"))];
     for (const userID of subscribedUsers) {
       const subscribedUser = await client.users.fetch(`${userID}`);
-      if (subscribedUser.id == newState.member.id) {
+      if (
+        subscribedUser.id == newState.member.id ||
+        subscribedUser.presence.status == "dnd"
+      ) {
         break;
       }
       const replyEmbed = new EmbedBuilder()
