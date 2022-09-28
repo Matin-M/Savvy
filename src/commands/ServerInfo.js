@@ -13,11 +13,13 @@ module.exports = {
     const deleted_messages = [...new Set(tag.get("deleted_user_message_logs"))];
 
     const freq = wordFreq(messages.map((msg) => msg.userMessage));
-    let retString = "";
+    let freqTable = "";
     Object.keys(freq)
-      .sort((word) => parseInt(freq[word]))
-      .forEach((word) => {
-        retString += `${word} → ${freq[word]}\n`;
+      .sort((a, b) => {
+        return freq[b] - freq[a];
+      })
+      .forEach((word, index) => {
+        index < 3 ? (freqTable += `${word} → ${freq[word]}\n`) : undefined;
       });
 
     const replyEmbed = new EmbedBuilder()
@@ -60,7 +62,7 @@ module.exports = {
         },
         {
           name: `Message frequency distribution`,
-          value: `**${retString}**`,
+          value: `**${freqTable}**`,
           inline: true,
         }
       )
@@ -75,6 +77,7 @@ function wordFreq(strings) {
   strings.forEach((string) => {
     const words = string.replace(/[.]/g, "").split(/\s/);
     words.forEach((w) => {
+      if (w.includes("https://")) return;
       if (!freqMap[w]) {
         freqMap[w] = 0;
       }
