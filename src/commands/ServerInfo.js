@@ -61,7 +61,7 @@ module.exports = {
           inline: true,
         },
         {
-          name: `Message frequency distribution`,
+          name: `Word frequency`,
           value: `**${freqTable}**`,
           inline: true,
         }

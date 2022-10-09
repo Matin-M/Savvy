@@ -230,10 +230,12 @@ client.on("voiceStateUpdate", async (oldState, newState) => {
     });
     subscribedUsers = [...new Set(tag.get("voice_subscribers_list"))];
     for (const userID of subscribedUsers) {
-      const subscribedUser = await client.users.fetch(`${userID}`);
+      const subscribedUser = await newState.guild.members.cache.find(
+        (member) => member.id === userID
+      );
       if (
-        subscribedUser.id == newState.member.id ||
-        subscribedUser.presence.status == "dnd"
+        subscribedUser.id === newState.member.id ||
+        subscribedUser.presence.status === "dnd"
       ) {
         break;
       }
@@ -344,7 +346,13 @@ client.on("warn", async (info) => console.log(`[WARN]: ${info}`));
 
 // Handle slash commands
 client.on("interactionCreate", async (interaction) => {
-  if (!interaction.guild) return;
+  if (!interaction.guild) {
+    await interaction.reply({
+      content: `This command can only be used in servers!`,
+      ephemeral: false,
+    });
+    return;
+  }
   if (interaction.isCommand()) {
     console.log(
       `[InteractionCreate]-FROM-${interaction.user.id}-IN-${
