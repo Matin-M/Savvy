@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const { EmbedBuilder } = require("discord.js");
+const { wordFreq, keySort } = require("../helpers/formatting");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -13,14 +14,13 @@ module.exports = {
     const deleted_messages = [...new Set(tag.get("deleted_user_message_logs"))];
 
     const freq = wordFreq(messages.map((msg) => msg.userMessage));
-    let freqTable = "";
-    Object.keys(freq)
-      .sort((a, b) => {
-        return freq[b] - freq[a];
-      })
-      .forEach((word, index) => {
-        index < 10 ? (freqTable += `${word} → ${freq[word]}\n`) : undefined;
-      });
+    const freqTable = keySort(freq, (item) => item);
+
+    const members = await interaction.guild.members.fetch();
+    const userFreq = wordFreq(messages.map((msg) => msg.userID));
+    const userFreqTable = keySort(userFreq, (userID) =>
+      members.find((member) => member.id === userID)
+    );
 
     const replyEmbed = new EmbedBuilder()
       .setColor("#0099ff")
@@ -64,6 +64,11 @@ module.exports = {
           name: `Word frequency`,
           value: `**${freqTable}**`,
           inline: true,
+        },
+        {
+          name: `Most active chatters`,
+          value: `**${userFreqTable}**`,
+          inline: true,
         }
       )
       .setImage(`${interaction.guild.iconURL()}`)
@@ -71,19 +76,3 @@ module.exports = {
     await interaction.reply({ embeds: [replyEmbed], ephemeral: true });
   },
 };
-
-function wordFreq(strings) {
-  const freqMap = {};
-  strings.forEach((string) => {
-    const words = string.replace(/[.]/g, "").split(/\s/);
-    words.forEach((w) => {
-      if (w.includes("https://") || w === "" || !w) return;
-      if (!freqMap[w]) {
-        freqMap[w] = 0;
-      }
-      freqMap[w] += 1;
-    });
-  });
-
-  return freqMap;
-}
