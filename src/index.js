@@ -165,8 +165,8 @@ client.on("messageCreate", async (message) => {
       { where: { guildId: message.guild.id } }
     );
     const tag = await Tags.findOne({ where: { guildId: message.guild.id } });
-    const keywords = tag.get("message_reply_keywords");
-    const phrases = tag.get("message_reply_phrases");
+    const keywords = tag.get("message_reply_keywords").reverse();
+    const phrases = tag.get("message_reply_phrases").reverse();
     for (let i = 0; i < keywords.length; i++) {
       if (message.content.includes(keywords[i])) {
         if (phrases[i] === "<DELETE>") {

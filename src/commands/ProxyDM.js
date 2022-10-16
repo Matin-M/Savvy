@@ -32,9 +32,7 @@ module.exports = {
     const replyEmbed = new EmbedBuilder().setColor("#0099ff").setTimestamp();
     try {
       const user = await client.users.fetch(selectedMember.id);
-      await user.send(
-        `Proxy message from ${interaction.user.username}: ${message}`
-      );
+      await user.send(`Message from ${interaction.user.username}: ${message}`);
       replyEmbed.setTitle(`Sent ${message} to ${nick}`);
     } catch (error) {
       replyEmbed.setColor("#ff0000");
