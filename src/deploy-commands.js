@@ -17,19 +17,26 @@ for (const file of commandFiles) {
   commands.push(command.data.toJSON());
 }
 
+const audioCommands = require("./commands/audio_player/AudioCommands");
+commands.push(
+  ...Object.keys(audioCommands).map((command) =>
+    audioCommands[command].data.toJSON()
+  )
+);
+
 const rest = new REST({ version: "9" }).setToken(token);
 
 readline.question(
   "Deploy commands globally or locally? Enter either global or local: ",
   (response) => {
-    if (response == "global") {
+    if (response === "global") {
       rest
         .put(Routes.applicationCommands(clientId), { body: commands })
         .then(() =>
           console.log("Successfully registered application commands globally.")
         )
         .catch(console.error);
-    } else if (response == "local") {
+    } else if (response === "local") {
       rest
         .put(Routes.applicationGuildCommands(clientId, guildId), {
           body: commands,
