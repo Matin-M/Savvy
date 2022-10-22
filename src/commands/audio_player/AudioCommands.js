@@ -7,11 +7,14 @@ const Play = {
     .setName("play")
     .setDescription(`Stream music from YouTube`)
     .addStringOption((option) =>
-      option.setName("link").setDescription("Video link").setRequired(true)
+      option
+        .setName("video")
+        .setDescription("Enter a YouTube link or search query")
+        .setRequired(true)
     ),
   async execute(client, interaction, Tags) {
     const replyEmbed = new EmbedBuilder().setColor("#0099ff").setTimestamp();
-    const videoLink = interaction.options.getString("link");
+    const videoLink = interaction.options.getString("video");
     let member = await interaction.guild.members.fetch();
     member = member.find((m) => m.id === interaction.user.id);
     console.log(`[MusicPlayer]: ${interaction.guild.id}`);
@@ -25,19 +28,22 @@ const Play = {
         ephemeral: false,
         fetchReply: true,
       });
-      replyEmbed
-        .setColor("#0099ff")
-        .setDescription(
-          `Now playing ${videoLink} in **${queue.connection.channel.name}**`
-        );
-      await queue.play(videoLink).catch((err) => {
+
+      const video = await queue.play(videoLink).catch((err) => {
         replyEmbed.setColor("#FF0000").setDescription(`Invalid search query!`);
         if (!guildQueue) queue.stop();
       });
+      replyEmbed
+        .setColor(video ? "#0099ff" : "#FF0000")
+        .setDescription(
+          `${video ? "now playing" : "unable to play"} **${
+            video ? video : videoLink
+          }** in voice channel **${queue.connection.channel.name}**`
+        );
       await interaction.editReply({ embeds: [replyEmbed], ephemeral: false });
     } catch (e) {
       replyEmbed.setColor("#FF0000").setDescription(`${e}`);
-      await interaction.reply({ embeds: [replyEmbed], ephemeral: false });
+      await interaction.reply({ embeds: [replyEmbed], ephemeral: true });
     }
   },
 };

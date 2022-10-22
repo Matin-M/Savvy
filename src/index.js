@@ -246,8 +246,7 @@ client.on("voiceStateUpdate", async (oldState, newState) => {
       );
       if (
         subscribedUser.id === newState.member.id ||
-        subscribedUser.presence.status === "dnd" ||
-        newState.member.username === "Savvy"
+        subscribedUser.presence.status === "dnd"
       ) {
         break;
       }
