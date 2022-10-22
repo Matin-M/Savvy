@@ -11,6 +11,7 @@ const {
 const { EmbedBuilder } = require("discord.js");
 const { Sequelize } = require("sequelize");
 const schemaColumns = require("./database/schema");
+const { Player } = require("discord-music-player");
 // TODO - Add DB schema for message logging
 // const messageSchema = require("./database/messageSchema");
 const {
@@ -54,6 +55,11 @@ const client = new Client({
   ],
 });
 
+const player = new Player(client, {
+  leaveOnEmpty: false,
+});
+client.player = player;
+
 const sequelize = new Sequelize(dbConnectionString, {
   dialect: "postgres",
   logging: false,
@@ -70,6 +76,11 @@ for (const file of commandFiles) {
   const command = require(`./commands/${file}`);
   client.commands.set(command.data.name, command);
 }
+
+const audioCommands = require("./commands/audio_player/AudioCommands");
+Object.keys(audioCommands).map((command) =>
+  client.commands.set(audioCommands[command].data.name, audioCommands[command])
+);
 
 async function addColumn(col) {
   await queryInterface.describeTable(dbName).then((tableDefinition) => {
@@ -104,7 +115,7 @@ client.once("ready", () => {
       ],
       status: "online",
     });
-  }, 5100000);
+  }, 3000000);
   console.log("-----------------------READY-----------------------");
 });
 
@@ -202,7 +213,7 @@ client.on("messageCreate", async (message) => {
 // Handle deleted messages
 client.on("messageDelete", async (message) => {
   console.log(
-    `[ChannelMessage]-FROM-${message.author.id}-IN-${message.guild.id}: ${message.content}`
+    `[MessageDelete]-FROM-${message.author.id}-IN-${message.guild.id}: ${message.content}`
   );
   await Tags.update(
     {
@@ -235,7 +246,8 @@ client.on("voiceStateUpdate", async (oldState, newState) => {
       );
       if (
         subscribedUser.id === newState.member.id ||
-        subscribedUser.presence.status === "dnd"
+        subscribedUser.presence.status === "dnd" ||
+        client.id === newState.member.id
       ) {
         break;
       }
