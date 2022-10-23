@@ -12,7 +12,7 @@ Savvy uses PM2 for production process management, PostgreSQL as its database, an
 
 ### config.json parameters
 
-`{ 
+```{ 
   "clientId": "<The client ID of your bot>",
   "guildId": "<The disord server you are using to test the bot>",
   "dbName": "<Name of your DB table>",
@@ -20,7 +20,7 @@ Savvy uses PM2 for production process management, PostgreSQL as its database, an
   "clientActivityTitle": "<A presence title>",
   "clientActivityType": "<A presence activity>",
   "token": "<Your discord Auth token>",
-  "dbConnectionString": "<DB connection URL>" } `
+  "dbConnectionString": "<DB connection URL>" } ```
 
 The parameter `clientActivityType` must be a string set to either `Watching`, `Playing`, or `Streaming`.
 
