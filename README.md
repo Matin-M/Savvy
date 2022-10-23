@@ -20,7 +20,8 @@ Savvy uses PM2 for production process management, PostgreSQL as its database, an
   "clientActivityTitle": "<A presence title>",
   "clientActivityType": "<A presence activity>",
   "token": "<Your discord Auth token>",
-  "dbConnectionString": "<DB connection URL>" } ```
+  "dbConnectionString": "<DB connection URL>" } 
+  ```
   
   ---
 
