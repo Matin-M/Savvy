@@ -12,8 +12,6 @@ const { EmbedBuilder } = require("discord.js");
 const { Sequelize } = require("sequelize");
 const schemaColumns = require("./database/schema");
 const { Player } = require("discord-music-player");
-// TODO - Add DB schema for message logging
-// const messageSchema = require("./database/messageSchema");
 const {
   token,
   dbConnectionString,
@@ -65,7 +63,7 @@ const sequelize = new Sequelize(dbConnectionString, {
   logging: false,
 });
 const queryInterface = sequelize.getQueryInterface();
-const Tags = sequelize.define("defaultschema", schemaColumns);
+const Tags = sequelize.define(dbName.slice(0, -1), schemaColumns);
 
 client.commands = new Collection();
 const commandFiles = fs
@@ -246,7 +244,8 @@ client.on("voiceStateUpdate", async (oldState, newState) => {
       );
       if (
         subscribedUser.id === newState.member.id ||
-        subscribedUser.presence.status === "dnd"
+        subscribedUser.presence.status === "dnd" ||
+        newState.member.id === client.user.id
       ) {
         break;
       }
@@ -354,6 +353,19 @@ client.on("guildMemberRemove", async (member) => {
 });
 
 client.on("warn", async (info) => console.log(`[WARN]: ${info}`));
+
+// Music player events
+client.player.on("songAdd", async (queue, song) =>
+  console.log(`[SongAdd]:${song} in ${queue.guild.name}`)
+);
+
+client.player.on("error", async (error, queue) => {
+  console.log(`[SongError]:${error} in ${queue.guild.name}`);
+});
+
+client.player.on("songChanged", async (queue, newSong, oldSong) =>
+  console.log(`[SongPlaying]:${newSong} in ${queue.guild.name}`)
+);
 
 // Handle slash commands
 client.on("interactionCreate", async (interaction) => {
