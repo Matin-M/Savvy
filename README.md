@@ -21,6 +21,8 @@ Savvy uses PM2 for production process management, PostgreSQL as its database, an
   "clientActivityType": "<A presence activity>",
   "token": "<Your discord Auth token>",
   "dbConnectionString": "<DB connection URL>" } ```
+  
+  ---
 
 The parameter `clientActivityType` must be a string set to either `Watching`, `Playing`, or `Streaming`.
 
