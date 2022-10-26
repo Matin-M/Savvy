@@ -1,25 +1,31 @@
-const fs = require("fs");
-const {
-  Client,
+import {
   Collection,
   GatewayIntentBits,
   InteractionType,
   ChannelType,
   Partials,
   ActivityType,
-} = require("discord.js");
-const { EmbedBuilder } = require("discord.js");
-const { Sequelize } = require("sequelize");
-const schemaColumns = require("./database/schema");
-const { Player } = require("discord-music-player");
-const {
+  EmbedBuilder,
+  Role,
+  CacheType,
+  Interaction,
+  SelectMenuInteraction,
+  ChatInputCommandInteraction,
+  Guild,
+  Message,
+} from 'discord.js';
+import { Sequelize } from 'sequelize';
+import schemaColumns from './database/schema';
+import { CustomClient } from './types/CustomClient';
+import { Player } from 'discord-music-player';
+import {
   token,
   dbConnectionString,
   dbName,
   devAdminId,
   clientActivityTitle,
-  clientActivityType,
-} = require("../config.json");
+} from './config.json';
+// import audioCommands from './commands/audio_player/AudioCommands';
 
 const intents = [
   GatewayIntentBits.Guilds,
@@ -40,9 +46,9 @@ const intents = [
   GatewayIntentBits.DirectMessageReactions,
 ];
 
-const client = new Client({
+const client = new CustomClient({
   intents,
-  allowedMentions: { parse: ["users", "roles"] },
+  allowedMentions: { parse: ['users', 'roles'] },
   partials: [
     Partials.Message,
     Partials.Channel,
@@ -58,29 +64,16 @@ const player = new Player(client, {
 });
 client.player = player;
 
+// TODO: Assign commands from imports to client.commands
+
 const sequelize = new Sequelize(dbConnectionString, {
-  dialect: "postgres",
+  dialect: 'postgres',
   logging: false,
 });
 const queryInterface = sequelize.getQueryInterface();
 const Tags = sequelize.define(dbName.slice(0, -1), schemaColumns);
 
-client.commands = new Collection();
-const commandFiles = fs
-  .readdirSync("./commands")
-  .filter((file) => file.endsWith(".js"));
-
-for (const file of commandFiles) {
-  const command = require(`./commands/${file}`);
-  client.commands.set(command.data.name, command);
-}
-
-const audioCommands = require("./commands/audio_player/AudioCommands");
-Object.keys(audioCommands).map((command) =>
-  client.commands.set(audioCommands[command].data.name, audioCommands[command])
-);
-
-async function addColumn(col) {
+async function addColumn(col: string) {
   await queryInterface.describeTable(dbName).then((tableDefinition) => {
     if (tableDefinition[col]) {
       console.log(`Column ${col} exists`);
@@ -88,37 +81,40 @@ async function addColumn(col) {
     }
     console.log(`Adding column ${col}`);
     return queryInterface.addColumn(dbName, col, {
-      type: schemaColumns[col]["type"],
+      type: schemaColumns[col as keyof typeof schemaColumns].type,
     });
   });
 }
 
-client.once("ready", () => {
+client.once('ready', () => {
   const Guilds = client.guilds.cache.map(
     (guild) => `${guild.id}: ${guild.name}`
   );
-  console.log("Serving in Guilds: ");
+  console.log('Serving in Guilds: ');
   console.log(Guilds);
   Tags.sync();
-  console.log("Checking for database schema updates...");
+  console.log('Checking for database schema updates...');
   for (const col in schemaColumns) {
     addColumn(col);
   }
-  client.user.setStatus("online");
+  client.user!.setStatus('online');
   setInterval(() => {
-    console.log("Setting user activity");
-    client.user.setPresence({
+    console.log('Setting user activity');
+    client.user!.setPresence({
       activities: [
-        { name: clientActivityTitle, type: ActivityType[clientActivityType] },
+        {
+          name: clientActivityTitle,
+          type: ActivityType.Listening,
+        },
       ],
-      status: "online",
+      status: 'online',
     });
   }, 3000000);
-  console.log("-----------------------READY-----------------------");
+  console.log('-----------------------READY-----------------------');
 });
 
 // Handle guild joins
-client.on("guildCreate", async (guild) => {
+client.on('guildCreate', async (guild: Guild) => {
   console.log(`Savvy has joined server ${guild.name}`);
   await Tags.create({
     guildId: guild.id,
@@ -130,15 +126,15 @@ client.on("guildCreate", async (guild) => {
 });
 
 // Handle guild leave/kick
-client.on("guildDelete", async (guild) => {
+client.on('guildDelete', async (guild: Guild) => {
   await Tags.destroy({ where: { guildId: guild.id } });
   console.log(`Savvy removed from guild ${guild.name}`);
 });
 
 // Handle messaging
-client.on("messageCreate", async (message) => {
-  if (message.author.bot) return false;
-  const replyEmbed = new EmbedBuilder().setColor("#0099ff").setTimestamp();
+client.on('messageCreate', async (message: Message<boolean>) => {
+  if (message.author.bot) return;
+  const replyEmbed = new EmbedBuilder().setColor('#0099ff').setTimestamp();
   if (message.channel.type === ChannelType.DM) {
     try {
       replyEmbed.setDescription(
@@ -156,40 +152,44 @@ client.on("messageCreate", async (message) => {
     console.log(`[UserDM]-FROM-${message.author.username}: ${message.content}`);
   } else if (message.channel.type === ChannelType.GuildText) {
     console.log(
-      `[ChannelMessage]-FROM-${message.author.id}-IN-${message.guild.id}: ${message.content}`
+      `[ChannelMessage]-FROM-${message.author.id}-IN-${message.guild!.id}: ${
+        message.content
+      }`
     );
     await Tags.update(
       {
         user_message_logs: sequelize.fn(
-          "array_append",
-          sequelize.col("user_message_logs"),
+          'array_append',
+          sequelize.col('user_message_logs'),
           JSON.stringify({
-            guildIdent: message.guild.id,
+            guildIdent: message.guild!.id,
             userID: message.author.id,
             userMessage: message.content,
             timeStamp: Date.now(),
           })
         ),
       },
-      { where: { guildId: message.guild.id } }
+      { where: { guildId: message.guild!.id } }
     );
-    const tag = await Tags.findOne({ where: { guildId: message.guild.id } });
-    const keywords = tag.get("message_reply_keywords").reverse();
-    const phrases = tag.get("message_reply_phrases").reverse();
+    const tag = await Tags.findOne({ where: { guildId: message.guild!.id } });
+    const keywords = (tag!.get('message_reply_keywords') as string[]).reverse();
+    const phrases = (tag!.get('message_reply_phrases') as string[]).reverse();
     for (let i = 0; i < keywords.length; i++) {
       if (message.content.includes(keywords[i])) {
-        if (phrases[i] === "<DELETE>") {
+        if (phrases[i] === '<DELETE>') {
           message.delete();
           try {
             const messageSender = await client.users.fetch(message.author.id);
             replyEmbed.setTitle(
-              `Your message in ${message.guild.name} contains a forbidden word!`
+              `Your message in ${
+                message.guild!.name
+              } contains a forbidden word!`
             );
             await messageSender.send({ embeds: [replyEmbed] });
           } catch (error) {
             console.log(`[ERROR]: ${error}`);
           }
-        } else if (phrases[i] === "<RESET>") {
+        } else if (phrases[i] === '<RESET>') {
           keywords.splice(i, 1);
           phrases.splice(i, 1);
           await Tags.update(
@@ -197,7 +197,7 @@ client.on("messageCreate", async (message) => {
               message_reply_keywords: keywords,
               displayLeaveMessages: phrases,
             },
-            { where: { guildId: message.guild.id } }
+            { where: { guildId: message.guild!.id } }
           );
         } else {
           message.reply(phrases[i]);
@@ -209,57 +209,65 @@ client.on("messageCreate", async (message) => {
 });
 
 // Handle deleted messages
-client.on("messageDelete", async (message) => {
+client.on('messageDelete', async (message) => {
   console.log(
-    `[MessageDelete]-FROM-${message.author.id}-IN-${message.guild.id}: ${message.content}`
+    `[MessageDelete]-FROM-${message.author!.id}-IN-${message.guild!.id}: ${
+      message.content
+    }`
   );
   await Tags.update(
     {
       deleted_user_message_logs: sequelize.fn(
-        "array_append",
-        sequelize.col("deleted_user_message_logs"),
+        'array_append',
+        sequelize.col('deleted_user_message_logs'),
         JSON.stringify({
-          guildID: message.guild.id,
-          userID: message.author.id,
+          guildID: message.guild!.id,
+          userID: message.author!.id,
           userMessage: message.content,
           timeStamp: Date.now(),
         })
       ),
     },
-    { where: { guildId: message.guild.id } }
+    { where: { guildId: message.guild!.id } }
   );
 });
 
 // Handle guild members joining/leaving voice channels
-client.on("voiceStateUpdate", async (oldState, newState) => {
+client.on('voiceStateUpdate', async (oldState, newState) => {
   let subscribedUsers = [];
   if (newState.channelId != oldState.channelId && newState.channelId != null) {
     const tag = await Tags.findOne({
-      where: { guildId: newState.member.guild.id },
+      where: { guildId: newState.member!.guild.id },
     });
-    subscribedUsers = [...new Set(tag.get("voice_subscribers_list"))];
+    subscribedUsers = [
+      ...new Set(tag!.get('voice_subscribers_list') as string[]),
+    ];
     for (const userID of subscribedUsers) {
-      const subscribedUser = await newState.guild.members.cache.find(
+      const subscribedUser = newState.guild.members.cache.find(
         (member) => member.id === userID
       );
       if (
-        subscribedUser.id === newState.member.id ||
-        subscribedUser.presence.status === "dnd" ||
-        newState.member.id === client.user.id
+        subscribedUser!.id === newState.member!.id ||
+        subscribedUser!.presence!.status === 'dnd' ||
+        newState.member!.id === client.user!.id
       ) {
         break;
       }
       const replyEmbed = new EmbedBuilder()
-        .setColor("#0099ff")
+        .setColor('#0099ff')
         .setTitle(
-          `${newState.member.displayName} has joined voice channel ${newState.channel.name} in ${newState.guild.name}`
+          `${newState.member!.displayName} has joined voice channel ${
+            newState.channel!.name
+          } in ${newState.guild.name}`
         )
         .setTimestamp();
       try {
         console.log(
-          `[VoiceUpdate]-FROM-${newState.member.id}-IN-${newState.member.guild.id}: ${newState.channel.id}`
+          `[VoiceUpdate]-FROM-${newState.member!.id}-IN-${
+            newState.member!.guild.id
+          }: ${newState.channel!.id}`
         );
-        await subscribedUser.send({ embeds: [replyEmbed] });
+        await subscribedUser!.send({ embeds: [replyEmbed] });
       } catch (error) {
         console.log(`[ERROR]: ${error}`);
       }
@@ -268,15 +276,15 @@ client.on("voiceStateUpdate", async (oldState, newState) => {
 });
 
 // Handle guild member join
-client.on("guildMemberAdd", async (member) => {
+client.on('guildMemberAdd', async (member) => {
   console.log(`[NewUserJoin]-FROM-${member.user.id}-IN-${member.guild.id}`);
   const tag = await Tags.findOne({ where: { guildId: member.guild.id } });
 
-  if (tag.get("updateChannel") != "NA") {
+  if (tag!.get('updateChannel') != 'NA') {
     member.guild.channels.cache.find((c) => {
       if (
         c.type === ChannelType.GuildText &&
-        c.name == tag.get("updateChannel")
+        c.name == tag!.get('updateChannel')
       ) {
         try {
           c.send(`Welcome to **${member.guild.name}**, <@${member.id}>!`);
@@ -287,12 +295,14 @@ client.on("guildMemberAdd", async (member) => {
     });
   }
 
-  if (tag.get("joinRole") == "NA") {
+  if (tag!.get('joinRole') == 'NA') {
     return;
   }
   try {
     await member.roles.add(
-      member.guild.roles.cache.find((role) => tag.get("joinRole") === role.name)
+      member.guild.roles.cache.find(
+        (role) => tag!.get('joinRole') === role.name
+      ) as unknown as Collection<string, Role>
     );
   } catch (error) {
     console.log(`[ERROR]: ${error}`);
@@ -300,8 +310,8 @@ client.on("guildMemberAdd", async (member) => {
   await Tags.update(
     {
       user_joined_logs: sequelize.fn(
-        "array_append",
-        sequelize.col("user_joined_logs"),
+        'array_append',
+        sequelize.col('user_joined_logs'),
         JSON.stringify({
           guildID: member.guild.id,
           userID: member.id,
@@ -314,19 +324,19 @@ client.on("guildMemberAdd", async (member) => {
 });
 
 // Handle guild member leave
-client.on("guildMemberRemove", async (member) => {
+client.on('guildMemberRemove', async (member) => {
   console.log(`[UserLeave]-FROM-${member.user.id}-IN-${member.guild.id}`);
-  if (member.id === client.id) {
+  if (member.id === client.user!.id) {
     return;
   }
   const tag = await Tags.findOne({ where: { guildId: member.guild.id } });
-  if (!tag.get("displayLeaveMessages")) return;
+  if (!tag!.get('displayLeaveMessages')) return;
 
-  if (tag.get("updateChannel") != "NA") {
+  if (tag!.get('updateChannel') != 'NA') {
     member.guild.channels.cache.find((c) => {
       if (
         c.type === ChannelType.GuildText &&
-        c.name == tag.get("updateChannel")
+        c.name == tag!.get('updateChannel')
       ) {
         try {
           c.send(`<@${member.id}> has left **${member.guild.name}**`);
@@ -339,11 +349,11 @@ client.on("guildMemberRemove", async (member) => {
   await Tags.update(
     {
       user_left_logs: sequelize.fn(
-        "array_append",
-        sequelize.col("user_left_logs"),
+        'array_append',
+        sequelize.col('user_left_logs'),
         JSON.stringify({
           guildID: member.guild.id,
-          userID: member.author.id,
+          userID: member.id,
           timeStamp: Date.now(),
         })
       ),
@@ -352,24 +362,12 @@ client.on("guildMemberRemove", async (member) => {
   );
 });
 
-client.on("warn", async (info) => console.log(`[WARN]: ${info}`));
-
-// Music player events
-client.player.on("songAdd", async (queue, song) =>
-  console.log(`[SongAdd]:${song} in ${queue.guild.name}`)
-);
-
-client.player.on("error", async (error, queue) => {
-  console.log(`[SongError]:${error} in ${queue.guild.name}`);
-});
-
-client.player.on("songChanged", async (queue, newSong, oldSong) =>
-  console.log(`[SongPlaying]:${newSong} in ${queue.guild.name}`)
-);
+client.on('warn', (info) => console.log(`[WARN]: ${info}`));
 
 // Handle slash commands
-client.on("interactionCreate", async (interaction) => {
+client.on('interactionCreate', async (interaction: Interaction<CacheType>) => {
   if (!interaction.guild) {
+    interaction = interaction as ChatInputCommandInteraction<CacheType>;
     await interaction.reply({
       content: `This command can only be used in servers!`,
       ephemeral: false,
@@ -379,12 +377,16 @@ client.on("interactionCreate", async (interaction) => {
   if (interaction.isCommand()) {
     console.log(
       `[InteractionCreate]-FROM-${interaction.user.id}-IN-${
-        interaction.guild ? interaction.guild.name : "UserDM"
+        interaction.guild ? interaction.guild.name : 'UserDM'
       }: ${interaction.type}`
     );
-    const command = client.commands.get(interaction.commandName);
+    const command = client.commands.get(interaction.commandName) as Record<
+      string,
+      any
+    >;
     if (!command) return;
     try {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
       await command.execute(client, interaction, Tags);
     } catch (error) {
       console.error(error);
@@ -396,15 +398,15 @@ client.on("interactionCreate", async (interaction) => {
     }
   } else if (interaction.type === InteractionType.ModalSubmit) {
     const replyEmbed = new EmbedBuilder();
-    if (interaction.customId == "role-modal") {
+    if (interaction.customId == 'role-modal') {
       await interaction.deferReply({ ephemeral: false });
       const roles = interaction.fields
-        .getTextInputValue("role-list")
-        .replace(/\s/g, "")
-        .split(",");
-      if (!roles || roles.length == 0 || roles[0] == "") {
+        .getTextInputValue('role-list')
+        .replace(/\s/g, '')
+        .split(',');
+      if (!roles || roles.length == 0 || roles[0] == '') {
         replyEmbed
-          .setColor("#ffcc00")
+          .setColor('#ffcc00')
           .setTitle(`You have not set any roles`)
           .setTimestamp();
         await Tags.update(
@@ -419,31 +421,35 @@ client.on("interactionCreate", async (interaction) => {
         { where: { guildId: interaction.guild.id } }
       );
       replyEmbed
-        .setColor("#0099ff")
+        .setColor('#0099ff')
         .setTitle(
           `Users can select the following role(s) using the /addrole command: ${roles
             .map((role) => `\n\n:arrow_right: *${role}*`)
-            .join("")}`
+            .join('')}`
         )
         .setTimestamp();
       interaction.followUp({ embeds: [replyEmbed] });
     }
-    // Need catch clause for dropdown menus
   } else {
     const replyEmbed = new EmbedBuilder();
-    if (interaction.customId == "role-selector") {
+    interaction = interaction as SelectMenuInteraction<CacheType>;
+    const interactionValues = interaction.values;
+    if (interaction.customId === 'role-selector') {
       try {
-        await interaction.member.roles.add(
-          interaction.guild.roles.cache.find((role) => {
-            if (interaction.values[0] === role.name) {
+        // TODO: Fix this
+        /*
+        await interaction.member!.roles.add(
+          interaction.guild!.roles.cache.find((role) => {
+            if (interactionValues[0] === role.name) {
               return true;
             }
           })
         );
+        */
       } catch (error) {
-        console.log("There was an error! Role does not exist");
+        console.log('There was an error! Role does not exist');
         replyEmbed
-          .setColor("#FF0000")
+          .setColor('#FF0000')
           .setTitle(
             `Role does not exist. Please contact the admin of this discord server`
           )
@@ -456,17 +462,20 @@ client.on("interactionCreate", async (interaction) => {
         return;
       }
       replyEmbed
-        .setColor("#0099ff")
+        .setColor('#0099ff')
         .setTitle(
-          `${interaction.values[0]} assigned to ${interaction.user.username}`
+          `${interactionValues[0]} assigned to ${interaction.user.username}`
         )
+        // TODO: Fix this
+        /*
         .setDescription(
           `Currently ${
-            interaction.guild.roles.cache.find(
-              (role) => role.name == interaction.values[0]
-            ).members.size
+            interaction.guild!.roles.cache.find(
+              (role) => role!.name == interactionValues[0]
+            ).members.size | 0
           } users with this role`
         )
+        */
         .setTimestamp();
       console.log(
         `/addrole used, ${interaction.values[0]} assigned to ${interaction.user.username}`
@@ -474,7 +483,6 @@ client.on("interactionCreate", async (interaction) => {
       await interaction.update({
         embeds: [replyEmbed],
         components: [],
-        ephemeral: false,
       });
     }
   }
