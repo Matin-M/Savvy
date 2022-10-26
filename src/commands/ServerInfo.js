@@ -1,17 +1,17 @@
-const { SlashCommandBuilder } = require("@discordjs/builders");
-const { EmbedBuilder } = require("discord.js");
-const { wordFreq, keySort } = require("../helpers/formatting");
+const { SlashCommandBuilder } = require('@discordjs/builders');
+const { EmbedBuilder } = require('discord.js');
+const { wordFreq, keySort } = require('../helpers/formatting');
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("serverinfo")
-    .setDescription("Returns info about this discord server"),
+    .setName('serverinfo')
+    .setDescription('Returns info about this discord server'),
   async execute(client, interaction, Tags) {
     const tag = await Tags.findOne({
       where: { guildId: interaction.guild.id },
     });
-    const messages = [...new Set(tag.get("user_message_logs"))];
-    const deleted_messages = [...new Set(tag.get("deleted_user_message_logs"))];
+    const messages = [...new Set(tag.get('user_message_logs'))];
+    const deleted_messages = [...new Set(tag.get('deleted_user_message_logs'))];
 
     const freq = wordFreq(messages.map((msg) => msg.userMessage));
     const freqTable = keySort(freq, (item) => item);
@@ -23,19 +23,19 @@ module.exports = {
     );
 
     const replyEmbed = new EmbedBuilder()
-      .setColor("#0099ff")
+      .setColor('#0099ff')
       .setTitle(`Server info for ${interaction.guild.name}`)
       .addFields(
         {
-          name: "Member count",
+          name: 'Member count',
           value: `\t**${interaction.guild.memberCount}**`,
           inline: true,
         },
         {
-          name: "\tCreated on",
+          name: '\tCreated on',
           value: `**${new Date(
             interaction.guild.createdTimestamp
-          ).toLocaleDateString("en-US")}**`,
+          ).toLocaleDateString('en-US')}**`,
           inline: true,
         },
         {

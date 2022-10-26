@@ -13,6 +13,9 @@ import {
   ChatInputCommandInteraction,
   Guild,
   Message,
+  PartialMessage,
+  VoiceState,
+  GuildMember,
 } from 'discord.js';
 import { Sequelize } from 'sequelize';
 import schemaColumns from './database/schema';
@@ -25,7 +28,9 @@ import {
   devAdminId,
   clientActivityTitle,
 } from './config.json';
-// import audioCommands from './commands/audio_player/AudioCommands';
+import audioCommands from './commands/audio_player/AudioCommands';
+import clientCommands from '../src/commands/index';
+import ICommand from './types/Command';
 
 const intents = [
   GatewayIntentBits.Guilds,
@@ -65,6 +70,10 @@ const player = new Player(client, {
 client.player = player;
 
 // TODO: Assign commands from imports to client.commands
+const audioCommandList = audioCommands as [ICommand];
+const commands = clientCommands as [ICommand];
+commands.concat(audioCommandList);
+commands.map((command) => client.commands.set(command.data, command));
 
 const sequelize = new Sequelize(dbConnectionString, {
   dialect: 'postgres',
@@ -209,82 +218,91 @@ client.on('messageCreate', async (message: Message<boolean>) => {
 });
 
 // Handle deleted messages
-client.on('messageDelete', async (message) => {
-  console.log(
-    `[MessageDelete]-FROM-${message.author!.id}-IN-${message.guild!.id}: ${
-      message.content
-    }`
-  );
-  await Tags.update(
-    {
-      deleted_user_message_logs: sequelize.fn(
-        'array_append',
-        sequelize.col('deleted_user_message_logs'),
-        JSON.stringify({
-          guildID: message.guild!.id,
-          userID: message.author!.id,
-          userMessage: message.content,
-          timeStamp: Date.now(),
-        })
-      ),
-    },
-    { where: { guildId: message.guild!.id } }
-  );
-});
+client.on(
+  'messageDelete',
+  async (message: Message<boolean> | PartialMessage) => {
+    console.log(
+      `[MessageDelete]-FROM-${message.author!.id}-IN-${message.guild!.id}: ${
+        message.content
+      }`
+    );
+    await Tags.update(
+      {
+        deleted_user_message_logs: sequelize.fn(
+          'array_append',
+          sequelize.col('deleted_user_message_logs'),
+          JSON.stringify({
+            guildID: message.guild!.id,
+            userID: message.author!.id,
+            userMessage: message.content,
+            timeStamp: Date.now(),
+          })
+        ),
+      },
+      { where: { guildId: message.guild!.id } }
+    );
+  }
+);
 
 // Handle guild members joining/leaving voice channels
-client.on('voiceStateUpdate', async (oldState, newState) => {
-  let subscribedUsers = [];
-  if (newState.channelId != oldState.channelId && newState.channelId != null) {
-    const tag = await Tags.findOne({
-      where: { guildId: newState.member!.guild.id },
-    });
-    subscribedUsers = [
-      ...new Set(tag!.get('voice_subscribers_list') as string[]),
-    ];
-    for (const userID of subscribedUsers) {
-      const subscribedUser = newState.guild.members.cache.find(
-        (member) => member.id === userID
-      );
-      if (
-        subscribedUser!.id === newState.member!.id ||
-        subscribedUser!.presence!.status === 'dnd' ||
-        newState.member!.id === client.user!.id
-      ) {
-        break;
-      }
-      const replyEmbed = new EmbedBuilder()
-        .setColor('#0099ff')
-        .setTitle(
-          `${newState.member!.displayName} has joined voice channel ${
-            newState.channel!.name
-          } in ${newState.guild.name}`
-        )
-        .setTimestamp();
-      try {
-        console.log(
-          `[VoiceUpdate]-FROM-${newState.member!.id}-IN-${
-            newState.member!.guild.id
-          }: ${newState.channel!.id}`
+client.on(
+  'voiceStateUpdate',
+  async (oldState: VoiceState, newState: VoiceState) => {
+    let subscribedUsers = [];
+    if (
+      newState.channelId != oldState.channelId &&
+      newState.channelId != null
+    ) {
+      const tag = await Tags.findOne({
+        where: { guildId: newState.member!.guild.id },
+      });
+      subscribedUsers = [
+        ...new Set(tag!.get('voice_subscribers_list') as string[]),
+      ];
+      for (const userID of subscribedUsers) {
+        const subscribedUser = newState.guild.members.cache.find(
+          (member) => member.id === userID
         );
-        await subscribedUser!.send({ embeds: [replyEmbed] });
-      } catch (error) {
-        console.log(`[ERROR]: ${error}`);
+        if (
+          subscribedUser!.id === newState.member!.id ||
+          subscribedUser!.presence!.status === 'dnd' ||
+          newState.member!.id === client.user!.id
+        ) {
+          break;
+        }
+        const replyEmbed = new EmbedBuilder()
+          .setColor('#0099ff')
+          .setTitle(
+            `${newState.member!.displayName} has joined voice channel ${
+              newState.channel!.name
+            } in ${newState.guild.name}`
+          )
+          .setTimestamp();
+        try {
+          console.log(
+            `[VoiceUpdate]-FROM-${newState.member!.id}-IN-${
+              newState.member!.guild.id
+            }: ${newState.channel!.id}`
+          );
+          await subscribedUser!.send({ embeds: [replyEmbed] });
+        } catch (error) {
+          console.log(`[ERROR]: ${error}`);
+        }
       }
     }
   }
-});
+);
 
 // Handle guild member join
-client.on('guildMemberAdd', async (member) => {
+client.on('guildMemberAdd', async (member: GuildMember) => {
   console.log(`[NewUserJoin]-FROM-${member.user.id}-IN-${member.guild.id}`);
-  const tag = await Tags.findOne({ where: { guildId: member.guild.id } });
+  const tag = (await Tags.findOne({ where: { guildId: member.guild.id } }))!;
 
-  if (tag!.get('updateChannel') != 'NA') {
+  if (tag.get('updateChannel') != 'NA') {
     member.guild.channels.cache.find((c) => {
       if (
         c.type === ChannelType.GuildText &&
-        c.name == tag!.get('updateChannel')
+        c.name == tag.get('updateChannel')
       ) {
         try {
           c.send(`Welcome to **${member.guild.name}**, <@${member.id}>!`);
@@ -295,13 +313,13 @@ client.on('guildMemberAdd', async (member) => {
     });
   }
 
-  if (tag!.get('joinRole') == 'NA') {
+  if (tag.get('joinRole') == 'NA') {
     return;
   }
   try {
     await member.roles.add(
       member.guild.roles.cache.find(
-        (role) => tag!.get('joinRole') === role.name
+        (role) => tag.get('joinRole') === role.name
       ) as unknown as Collection<string, Role>
     );
   } catch (error) {
@@ -380,13 +398,14 @@ client.on('interactionCreate', async (interaction: Interaction<CacheType>) => {
         interaction.guild ? interaction.guild.name : 'UserDM'
       }: ${interaction.type}`
     );
-    const command = client.commands.get(interaction.commandName) as Record<
-      string,
-      any
-    >;
+    // TODO: Commands need to be fixed
+    const commandName = interaction.commandName;
+    const command = client.commands.get(
+      (inter: ICommand) => inter.data.name === commandName
+    );
+    console.log(command);
     if (!command) return;
     try {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
       await command.execute(client, interaction, Tags);
     } catch (error) {
       console.error(error);

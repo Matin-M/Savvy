@@ -12,9 +12,9 @@ const msToTime = (ms) => {
 const wordFreq = (strings) => {
   const freqMap = {};
   strings.forEach((string) => {
-    const words = string.replace(/[.]/g, "").split(/\s/);
+    const words = string.replace(/[.]/g, '').split(/\s/);
     words.forEach((w) => {
-      if (w.includes("https://") || w === "" || !w) return;
+      if (w.includes('https://') || w === '' || !w) return;
       if (!freqMap[w]) {
         freqMap[w] = 0;
       }
@@ -25,7 +25,7 @@ const wordFreq = (strings) => {
 };
 
 const keySort = (arr, formatter) => {
-  let freqTable = "";
+  let freqTable = '';
   Object.keys(arr)
     .sort((a, b) => {
       return arr[b] - arr[a];
