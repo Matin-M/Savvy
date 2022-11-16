@@ -262,10 +262,10 @@ client.on(
       for (const userID of subscribedUsers) {
         const subscribedUser = newState.guild.members.cache.find(
           (member) => member.id === userID
-        );
+        )!;
         if (
-          subscribedUser!.id === newState.member!.id ||
-          subscribedUser!.presence!.status === 'dnd' ||
+          subscribedUser.id === newState.member!.id ||
+          subscribedUser.presence!.status === 'dnd' ||
           newState.member!.id === client.user!.id
         ) {
           break;
@@ -284,7 +284,7 @@ client.on(
               newState.member!.guild.id
             }: ${newState.channel!.id}`
           );
-          await subscribedUser!.send({ embeds: [replyEmbed] });
+          await subscribedUser.send({ embeds: [replyEmbed] });
         } catch (error) {
           console.log(`[ERROR]: ${error}`);
         }
@@ -347,14 +347,14 @@ client.on('guildMemberRemove', async (member) => {
   if (member.id === client.user!.id) {
     return;
   }
-  const tag = await Tags.findOne({ where: { guildId: member.guild.id } });
-  if (!tag!.get('displayLeaveMessages')) return;
+  const tag = (await Tags.findOne({ where: { guildId: member.guild.id } }))!;
+  if (!tag.get('displayLeaveMessages')) return;
 
-  if (tag!.get('updateChannel') != 'NA') {
+  if (tag.get('updateChannel') != 'NA') {
     member.guild.channels.cache.find((c) => {
       if (
         c.type === ChannelType.GuildText &&
-        c.name == tag!.get('updateChannel')
+        c.name == tag.get('updateChannel')
       ) {
         try {
           c.send(`<@${member.id}> has left **${member.guild.name}**`);
@@ -400,10 +400,9 @@ client.on('interactionCreate', async (interaction: Interaction<CacheType>) => {
     );
     // TODO: Commands need to be fixed
     const commandName = interaction.commandName;
-    const command = client.commands.get(
-      (inter: ICommand) => inter.data.name === commandName
+    const command = client.commands.find(
+      (int) => int.data.name === commandName
     );
-    console.log(command);
     if (!command) return;
     try {
       await command.execute(client, interaction, Tags);

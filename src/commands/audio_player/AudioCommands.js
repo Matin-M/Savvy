@@ -165,13 +165,4 @@ const VideoProgress = {
   },
 };
 
-/*
-exports.Play = Play;
-exports.Stop = Stop;
-exports.Skip = Skip;
-exports.ClearQueue = ClearQueue;
-exports.VideoProgress = VideoProgress;
-exports.Pause = Pause;
-exports.Resume = Resume;
-*/
 module.exports = [Play, Stop, Skip, ClearQueue, VideoProgress, Pause, Resume];
