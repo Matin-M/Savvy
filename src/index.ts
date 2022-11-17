@@ -69,10 +69,9 @@ const player = new Player(client, {
 });
 client.player = player;
 
-// TODO: Assign commands from imports to client.commands
 const audioCommandList = audioCommands as [ICommand];
-const commands = clientCommands as [ICommand];
-commands.concat(audioCommandList);
+let commands = clientCommands as [ICommand];
+commands = commands.concat(audioCommandList) as [ICommand];
 commands.map((command) => client.commands.set(command.data, command));
 
 const sequelize = new Sequelize(dbConnectionString, {
@@ -180,9 +179,11 @@ client.on('messageCreate', async (message: Message<boolean>) => {
       },
       { where: { guildId: message.guild!.id } }
     );
-    const tag = await Tags.findOne({ where: { guildId: message.guild!.id } });
-    const keywords = (tag!.get('message_reply_keywords') as string[]).reverse();
-    const phrases = (tag!.get('message_reply_phrases') as string[]).reverse();
+    const tag = (await Tags.findOne({
+      where: { guildId: message.guild!.id },
+    }))!;
+    const keywords = (tag.get('message_reply_keywords') as string[]).reverse();
+    const phrases = (tag.get('message_reply_phrases') as string[]).reverse();
     for (let i = 0; i < keywords.length; i++) {
       if (message.content.includes(keywords[i])) {
         if (phrases[i] === '<DELETE>') {
@@ -253,11 +254,11 @@ client.on(
       newState.channelId != oldState.channelId &&
       newState.channelId != null
     ) {
-      const tag = await Tags.findOne({
+      const tag = (await Tags.findOne({
         where: { guildId: newState.member!.guild.id },
-      });
+      }))!;
       subscribedUsers = [
-        ...new Set(tag!.get('voice_subscribers_list') as string[]),
+        ...new Set(tag.get('voice_subscribers_list') as string[]),
       ];
       for (const userID of subscribedUsers) {
         const subscribedUser = newState.guild.members.cache.find(
