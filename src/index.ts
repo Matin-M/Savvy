@@ -1,12 +1,10 @@
 import {
-  Collection,
   GatewayIntentBits,
   InteractionType,
   ChannelType,
   Partials,
   ActivityType,
   EmbedBuilder,
-  Role,
   CacheType,
   Interaction,
   SelectMenuInteraction,
@@ -16,6 +14,8 @@ import {
   PartialMessage,
   VoiceState,
   GuildMember,
+  Role,
+  UserResolvable,
 } from 'discord.js';
 import { Sequelize } from 'sequelize';
 import schemaColumns from './database/schema';
@@ -320,7 +320,7 @@ client.on('guildMemberAdd', async (member: GuildMember) => {
     await member.roles.add(
       member.guild.roles.cache.find(
         (role) => tag.get('joinRole') === role.name
-      ) as unknown as Collection<string, Role>
+      )!
     );
   } catch (error) {
     console.log(`[ERROR]: ${error}`);
@@ -450,20 +450,17 @@ client.on('interactionCreate', async (interaction: Interaction<CacheType>) => {
     }
   } else {
     const replyEmbed = new EmbedBuilder();
-    interaction = interaction as SelectMenuInteraction<CacheType>;
-    const interactionValues = interaction.values;
-    if (interaction.customId === 'role-selector') {
+    const menuInteraction = interaction as SelectMenuInteraction<CacheType>;
+    const interactionValues = menuInteraction.values;
+    if (menuInteraction.customId === 'role-selector') {
       try {
-        // TODO: Fix this
-        /*
-        await interaction.member!.roles.add(
-          interaction.guild!.roles.cache.find((role) => {
-            if (interactionValues[0] === role.name) {
-              return true;
-            }
-          })
-        );
-        */
+        const member = await menuInteraction.guild!.members.fetch({
+          user: menuInteraction.user as UserResolvable,
+        });
+        const role = menuInteraction.guild!.roles.cache.find(
+          (r) => r.name === interactionValues[0]
+        ) as Role;
+        member.roles.add(role);
       } catch (error) {
         console.log('There was an error! Role does not exist');
         replyEmbed
@@ -473,7 +470,7 @@ client.on('interactionCreate', async (interaction: Interaction<CacheType>) => {
           )
           .setTimestamp();
         console.log(`[ERROR]: ${error}`);
-        await interaction.update({
+        await menuInteraction.update({
           embeds: [replyEmbed],
           components: [],
         });
@@ -496,9 +493,9 @@ client.on('interactionCreate', async (interaction: Interaction<CacheType>) => {
         */
         .setTimestamp();
       console.log(
-        `/addrole used, ${interaction.values[0]} assigned to ${interaction.user.username}`
+        `/addrole used, ${menuInteraction.values[0]} assigned to ${interaction.user.username}`
       );
-      await interaction.update({
+      await menuInteraction.update({
         embeds: [replyEmbed],
         components: [],
       });
