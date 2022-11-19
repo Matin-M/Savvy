@@ -16,6 +16,7 @@ import {
   GuildMember,
   Role,
   UserResolvable,
+  Events,
 } from 'discord.js';
 import { Sequelize } from 'sequelize';
 import schemaColumns from './database/schema';
@@ -94,7 +95,7 @@ async function addColumn(col: string) {
   });
 }
 
-client.once('ready', () => {
+client.once(Events.ClientReady, () => {
   const Guilds = client.guilds.cache.map(
     (guild) => `${guild.id}: ${guild.name}`
   );
@@ -117,12 +118,12 @@ client.once('ready', () => {
       ],
       status: 'online',
     });
-  }, 3000000);
+  }, 300000);
   console.log('-----------------------READY-----------------------');
 });
 
 // Handle guild joins
-client.on('guildCreate', async (guild: Guild) => {
+client.on(Events.GuildCreate, async (guild: Guild) => {
   console.log(`Savvy has joined server ${guild.name}`);
   await Tags.create({
     guildId: guild.id,
@@ -134,13 +135,13 @@ client.on('guildCreate', async (guild: Guild) => {
 });
 
 // Handle guild leave/kick
-client.on('guildDelete', async (guild: Guild) => {
+client.on(Events.GuildDelete, async (guild: Guild) => {
   await Tags.destroy({ where: { guildId: guild.id } });
   console.log(`Savvy removed from guild ${guild.name}`);
 });
 
 // Handle messaging
-client.on('messageCreate', async (message: Message<boolean>) => {
+client.on(Events.MessageCreate, async (message: Message<boolean>) => {
   if (message.author.bot) return;
   const replyEmbed = new EmbedBuilder().setColor('#0099ff').setTimestamp();
   if (message.channel.type === ChannelType.DM) {
@@ -218,9 +219,10 @@ client.on('messageCreate', async (message: Message<boolean>) => {
   }
 });
 
+// TODO: FIX THIS
 // Handle deleted messages
 client.on(
-  'messageDelete',
+  Events.MessageDelete,
   async (message: Message<boolean> | PartialMessage) => {
     console.log(
       `[MessageDelete]-FROM-${message.author!.id}-IN-${message.guild!.id}: ${
@@ -247,7 +249,7 @@ client.on(
 
 // Handle guild members joining/leaving voice channels
 client.on(
-  'voiceStateUpdate',
+  Events.VoiceStateUpdate,
   async (oldState: VoiceState, newState: VoiceState) => {
     let subscribedUsers = [];
     if (
@@ -295,7 +297,7 @@ client.on(
 );
 
 // Handle guild member join
-client.on('guildMemberAdd', async (member: GuildMember) => {
+client.on(Events.GuildMemberAdd, async (member: GuildMember) => {
   console.log(`[NewUserJoin]-FROM-${member.user.id}-IN-${member.guild.id}`);
   const tag = (await Tags.findOne({ where: { guildId: member.guild.id } }))!;
 
@@ -343,7 +345,7 @@ client.on('guildMemberAdd', async (member: GuildMember) => {
 });
 
 // Handle guild member leave
-client.on('guildMemberRemove', async (member) => {
+client.on(Events.GuildMemberRemove, async (member) => {
   console.log(`[UserLeave]-FROM-${member.user.id}-IN-${member.guild.id}`);
   if (member.id === client.user!.id) {
     return;
@@ -384,124 +386,123 @@ client.on('guildMemberRemove', async (member) => {
 client.on('warn', (info) => console.log(`[WARN]: ${info}`));
 
 // Handle slash commands
-client.on('interactionCreate', async (interaction: Interaction<CacheType>) => {
-  if (!interaction.guild) {
-    interaction = interaction as ChatInputCommandInteraction<CacheType>;
-    await interaction.reply({
-      content: `This command can only be used in servers!`,
-      ephemeral: false,
-    });
-    return;
-  }
-  if (interaction.isCommand()) {
-    console.log(
-      `[InteractionCreate]-FROM-${interaction.user.id}-IN-${
-        interaction.guild ? interaction.guild.name : 'UserDM'
-      }: ${interaction.type}`
-    );
-    // TODO: Commands need to be fixed
-    const commandName = interaction.commandName;
-    const command = client.commands.find(
-      (int) => int.data.name === commandName
-    );
-    if (!command) return;
-    try {
-      await command.execute(client, interaction, Tags);
-    } catch (error) {
-      console.error(error);
+client.on(
+  Events.InteractionCreate,
+  async (interaction: Interaction<CacheType>) => {
+    if (!interaction.guild) {
+      interaction = interaction as ChatInputCommandInteraction<CacheType>;
       await interaction.reply({
-        content: `Error! ${error}`,
-        ephemeral: true,
+        content: `This command can only be used in servers!`,
+        ephemeral: false,
       });
-      console.log(`Command execution error: ${error}`);
+      return;
     }
-  } else if (interaction.type === InteractionType.ModalSubmit) {
-    const replyEmbed = new EmbedBuilder();
-    if (interaction.customId == 'role-modal') {
-      await interaction.deferReply({ ephemeral: false });
-      const roles = interaction.fields
-        .getTextInputValue('role-list')
-        .replace(/\s/g, '')
-        .split(',');
-      if (!roles || roles.length == 0 || roles[0] == '') {
-        replyEmbed
-          .setColor('#ffcc00')
-          .setTitle(`You have not set any roles`)
-          .setTimestamp();
+    if (interaction.isCommand()) {
+      console.log(
+        `[InteractionCreate]-FROM-${interaction.user.id}-IN-${
+          interaction.guild ? interaction.guild.name : 'UserDM'
+        }: ${interaction.type}`
+      );
+      const commandName = interaction.commandName;
+      const command = client.commands.find(
+        (int) => int.data.name === commandName
+      );
+      if (!command) return;
+      try {
+        await command.execute(client, interaction, Tags);
+      } catch (error) {
+        console.error(error);
+        await interaction.reply({
+          content: `Error! ${error}`,
+          ephemeral: true,
+        });
+        console.log(`Command execution error: ${error}`);
+      }
+    } else if (interaction.type === InteractionType.ModalSubmit) {
+      const replyEmbed = new EmbedBuilder();
+      if (interaction.customId == 'role-modal') {
+        await interaction.deferReply({ ephemeral: false });
+        const roles = interaction.fields
+          .getTextInputValue('role-list')
+          .replace(/\s/g, '')
+          .split(',');
+        if (!roles || roles.length == 0 || roles[0] == '') {
+          replyEmbed
+            .setColor('#ffcc00')
+            .setTitle(`You have not set any roles`)
+            .setTimestamp();
+          await Tags.update(
+            { self_assign_roles: [] },
+            { where: { guildId: interaction.guild.id } }
+          );
+          interaction.followUp({ embeds: [replyEmbed] });
+          return;
+        }
         await Tags.update(
-          { self_assign_roles: [] },
+          { self_assign_roles: roles },
           { where: { guildId: interaction.guild.id } }
         );
-        interaction.followUp({ embeds: [replyEmbed] });
-        return;
-      }
-      await Tags.update(
-        { self_assign_roles: roles },
-        { where: { guildId: interaction.guild.id } }
-      );
-      replyEmbed
-        .setColor('#0099ff')
-        .setTitle(
-          `Users can select the following role(s) using the /addrole command: ${roles
-            .map((role) => `\n\n:arrow_right: *${role}*`)
-            .join('')}`
-        )
-        .setTimestamp();
-      interaction.followUp({ embeds: [replyEmbed] });
-    }
-  } else {
-    const replyEmbed = new EmbedBuilder();
-    const menuInteraction = interaction as SelectMenuInteraction<CacheType>;
-    const interactionValues = menuInteraction.values;
-    if (menuInteraction.customId === 'role-selector') {
-      try {
-        const member = await menuInteraction.guild!.members.fetch({
-          user: menuInteraction.user as UserResolvable,
-        });
-        const role = menuInteraction.guild!.roles.cache.find(
-          (r) => r.name === interactionValues[0]
-        ) as Role;
-        member.roles.add(role);
-      } catch (error) {
-        console.log('There was an error! Role does not exist');
         replyEmbed
-          .setColor('#FF0000')
+          .setColor('#0099ff')
           .setTitle(
-            `Role does not exist. Please contact the admin of this discord server`
+            `Users can select the following role(s) using the /addrole command: ${roles
+              .map((role) => `\n:arrow_right: *${role}*`)
+              .join('')}`
           )
           .setTimestamp();
-        console.log(`[ERROR]: ${error}`);
+        interaction.followUp({ embeds: [replyEmbed] });
+      }
+    } else {
+      const replyEmbed = new EmbedBuilder();
+      const menuInteraction = interaction as SelectMenuInteraction<CacheType>;
+      const selectedRole = menuInteraction.values[0];
+      if (menuInteraction.customId === 'role-selector') {
+        try {
+          const member = await menuInteraction.guild!.members.fetch({
+            user: menuInteraction.user as UserResolvable,
+          });
+          const role = menuInteraction.guild!.roles.cache.find(
+            (r) => r.name === selectedRole
+          ) as Role;
+          member.roles.add(role);
+        } catch (error) {
+          console.log('There was an error! Role does not exist');
+          replyEmbed
+            .setColor('#FF0000')
+            .setTitle(
+              `Role does not exist. Please contact the admin of this discord server`
+            )
+            .setTimestamp();
+          console.log(`[ERROR]: ${error}`);
+          await menuInteraction.update({
+            embeds: [replyEmbed],
+            components: [],
+          });
+          return;
+        }
+        replyEmbed
+          .setColor('#0099ff')
+          .setTitle(
+            `Role ${selectedRole} assigned to ${interaction.user.username}`
+          )
+          .setDescription(
+            `Currently ${
+              interaction.guild.roles.cache.find(
+                (role) => role.name === selectedRole
+              )?.members.size
+            } users with this role`
+          )
+          .setTimestamp();
+        console.log(
+          `/addrole used, ${menuInteraction.values[0]} assigned to ${interaction.user.username}`
+        );
         await menuInteraction.update({
           embeds: [replyEmbed],
           components: [],
         });
-        return;
       }
-      replyEmbed
-        .setColor('#0099ff')
-        .setTitle(
-          `${interactionValues[0]} assigned to ${interaction.user.username}`
-        )
-        // TODO: Fix this
-        /*
-        .setDescription(
-          `Currently ${
-            interaction.guild!.roles.cache.find(
-              (role) => role!.name == interactionValues[0]
-            ).members.size | 0
-          } users with this role`
-        )
-        */
-        .setTimestamp();
-      console.log(
-        `/addrole used, ${menuInteraction.values[0]} assigned to ${interaction.user.username}`
-      );
-      await menuInteraction.update({
-        embeds: [replyEmbed],
-        components: [],
-      });
     }
   }
-});
+);
 
 client.login(token);
