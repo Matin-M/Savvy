@@ -9,3 +9,5 @@ config.json
 #Log files
 /SavvyLogs
 /ProcessLogs
+#Transpiled JS
+/bin

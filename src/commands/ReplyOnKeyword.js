@@ -1,33 +1,33 @@
-const { SlashCommandBuilder } = require("@discordjs/builders");
-const { EmbedBuilder } = require("discord.js");
-const { dbConnectionString, devAdminId } = require("../../config.json");
-const Sequelize = require("sequelize");
+const { SlashCommandBuilder } = require('@discordjs/builders');
+const { EmbedBuilder } = require('discord.js');
+const { dbConnectionString, devAdminId } = require('../config.json');
+const Sequelize = require('sequelize');
 const sequelize = new Sequelize(dbConnectionString);
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("replyonkeyword")
+    .setName('replyonkeyword')
     .setDescription(
-      "Auto-reply with phrase if message contains keyword. Optionally set phrase to <DELETE> or <CLEAR>"
+      'Auto-reply with phrase if message contains keyword. Optionally set phrase to <DELETE> or <CLEAR>'
     )
     .addStringOption((option) =>
       option
-        .setName("keyword")
-        .setDescription("keyword")
+        .setName('keyword')
+        .setDescription('keyword')
         .setRequired(true)
         .setAutocomplete(true)
     )
     .addStringOption((option) =>
       option
-        .setName("phrase")
-        .setDescription("phrase")
+        .setName('phrase')
+        .setDescription('phrase')
         .setRequired(true)
         .setAutocomplete(true)
     ),
   async execute(client, interaction, Tags) {
     const replyEmbed = new EmbedBuilder();
     const adminRoles = interaction.guild.roles.cache.find((role) => {
-      if (role.permissions.toArray().includes("Administrator")) {
+      if (role.permissions.toArray().includes('Administrator')) {
         return role;
       }
     });
@@ -36,14 +36,14 @@ module.exports = {
       adminArray.includes(interaction.user.id) ||
       interaction.user.id == devAdminId
     ) {
-      const keyword = interaction.options.getString("keyword");
-      const phrase = interaction.options.getString("phrase");
+      const keyword = interaction.options.getString('keyword');
+      const phrase = interaction.options.getString('phrase');
 
       await Tags.update(
         {
           message_reply_keywords: sequelize.fn(
-            "array_append",
-            sequelize.col("message_reply_keywords"),
+            'array_append',
+            sequelize.col('message_reply_keywords'),
             `${keyword}`
           ),
         },
@@ -52,20 +52,20 @@ module.exports = {
       await Tags.update(
         {
           message_reply_phrases: sequelize.fn(
-            "array_append",
-            sequelize.col("message_reply_phrases"),
+            'array_append',
+            sequelize.col('message_reply_phrases'),
             `${phrase}`
           ),
         },
         { where: { guildId: interaction.guild.id } }
       );
 
-      replyEmbed.setColor("#0099ff").setTimestamp();
-      if (phrase === "<DELETE>") {
+      replyEmbed.setColor('#0099ff').setTimestamp();
+      if (phrase === '<DELETE>') {
         replyEmbed.setTitle(
           `Savvy will delete a channel message if it contains the keyword ${keyword}`
         );
-      } else if (phrase === "<CLEAR>") {
+      } else if (phrase === '<CLEAR>') {
         replyEmbed.setTitle(
           `Savvy will no longer reply to messages containing keyword ${keyword}`
         );
@@ -76,7 +76,7 @@ module.exports = {
       }
     } else {
       replyEmbed
-        .setColor("#FF0000")
+        .setColor('#FF0000')
         .setTitle(`You do not have the permission to use this command!`)
         .setTimestamp();
     }

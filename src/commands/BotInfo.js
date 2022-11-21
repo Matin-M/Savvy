@@ -1,12 +1,12 @@
-const { SlashCommandBuilder } = require("@discordjs/builders");
-const { EmbedBuilder } = require("discord.js");
-const process = require("process");
-const osu = require("node-os-utils");
-const { msToTime } = require("../helpers/formatting");
+const { SlashCommandBuilder } = require('@discordjs/builders');
+const { EmbedBuilder } = require('discord.js');
+const process = require('process');
+const osu = require('node-os-utils');
+const { msToTime } = require('../helpers/formatting');
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("status")
+    .setName('status')
     .setDescription(`Returns Savvy's runtime statistics`),
   async execute(client, interaction, Tags) {
     const memoryUsed = process.memoryUsage().heapUsed;
@@ -16,23 +16,23 @@ module.exports = {
     const memUtil = await mem.info();
 
     const replyEmbed = new EmbedBuilder()
-      .setColor("#0099ff")
+      .setColor('#0099ff')
       .setTitle(`Savvy's current status`)
       .addFields(
         {
-          name: "Uptime",
+          name: 'Uptime',
           value: `**${msToTime(client.uptime)}**`,
           inline: true,
         },
         {
-          name: "# of guilds joined",
+          name: '# of guilds joined',
           value: `**${client.guilds.cache.size}**`,
           inline: true,
         },
         {
           name: `Created on`,
           value: `**${client.application.createdAt.toLocaleDateString(
-            "en-US"
+            'en-US'
           )}**`,
           inline: true,
         },

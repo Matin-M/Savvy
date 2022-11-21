@@ -1,4 +1,4 @@
-const Sequelize = require("sequelize");
+const Sequelize = require('sequelize');
 
 module.exports = {
   guildId: {
@@ -9,7 +9,7 @@ module.exports = {
   updateChannel: {
     type: Sequelize.STRING,
     allowNull: false,
-    defaultValue: "general",
+    defaultValue: 'general',
   },
   self_assign_roles: {
     type: Sequelize.ARRAY(Sequelize.DataTypes.STRING),
@@ -18,7 +18,7 @@ module.exports = {
   joinRole: {
     type: Sequelize.STRING,
     allowNull: false,
-    defaultValue: "NA",
+    defaultValue: 'NA',
   },
   displayLeaveMessages: {
     type: Sequelize.BOOLEAN,

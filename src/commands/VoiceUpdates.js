@@ -1,24 +1,24 @@
-const { SlashCommandBuilder } = require("@discordjs/builders");
-const { EmbedBuilder } = require("discord.js");
-const { dbConnectionString } = require("../../config.json");
-const Sequelize = require("sequelize");
+const { SlashCommandBuilder } = require('@discordjs/builders');
+const { EmbedBuilder } = require('discord.js');
+const { dbConnectionString } = require('../config.json');
+const Sequelize = require('sequelize');
 const sequelize = new Sequelize(dbConnectionString);
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("voiceupdates")
+    .setName('voiceupdates')
     .setDescription(
-      "Savvy will ping you when a user connects to any voice channel in this server"
+      'Savvy will ping you when a user connects to any voice channel in this server'
     ),
   async execute(client, interaction, Tags) {
     const replyEmbed = new EmbedBuilder();
     const tag = await Tags.findOne({
       where: { guildId: interaction.guild.id },
     });
-    const subscribedUsers = tag.get("voice_subscribers_list");
+    const subscribedUsers = tag.get('voice_subscribers_list');
     if (subscribedUsers.includes(interaction.user.id)) {
       replyEmbed
-        .setColor("#ffcc00")
+        .setColor('#ffcc00')
         .setTitle(
           `${interaction.user.username}, you will no longer receive voice status updates in this server`
         )
@@ -35,8 +35,8 @@ module.exports = {
       await Tags.update(
         {
           voice_subscribers_list: sequelize.fn(
-            "array_append",
-            sequelize.col("voice_subscribers_list"),
+            'array_append',
+            sequelize.col('voice_subscribers_list'),
             `${interaction.user.id}`
           ),
         },
@@ -44,7 +44,7 @@ module.exports = {
       );
 
       replyEmbed
-        .setColor("#00FF00")
+        .setColor('#00FF00')
         .setTitle(
           `${interaction.user.username}, you will now receive status updates for voice channels in this server`
         )
