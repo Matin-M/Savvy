@@ -224,10 +224,10 @@ client.on(Events.MessageCreate, async (message: Message<boolean>) => {
 client.on(
   Events.MessageDelete,
   async (message: Message<boolean> | PartialMessage) => {
+    const messageAuthor = message.author?.id || 'NA';
+    const guildId = message.guildId || 'NA';
     console.log(
-      `[MessageDelete]-FROM-${message.author!.id}-IN-${message.guild!.id}: ${
-        message.content
-      }`
+      `[MessageDelete]-FROM-${messageAuthor}-IN-${guildId}: ${message.content}`
     );
     await Tags.update(
       {
@@ -235,8 +235,8 @@ client.on(
           'array_append',
           sequelize.col('deleted_user_message_logs'),
           JSON.stringify({
-            guildID: message.guild!.id,
-            userID: message.author!.id,
+            guildID: guildId,
+            userID: messageAuthor,
             userMessage: message.content,
             timeStamp: Date.now(),
           })
