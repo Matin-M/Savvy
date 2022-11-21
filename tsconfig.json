@@ -16,7 +16,8 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "allowUnreachableCode": false,
-    "useUnknownInCatchVariables": false
+    "useUnknownInCatchVariables": false,
+    "strictPropertyInitialization": false
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "<node_internals>/**"]
