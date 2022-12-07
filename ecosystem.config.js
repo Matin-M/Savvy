@@ -2,7 +2,7 @@ module.exports = {
   apps: [
     {
       name: 'Savvy',
-      cwd: './src/',
+      cwd: './bin/',
       script: './index.js',
       args: '',
       watch: false,

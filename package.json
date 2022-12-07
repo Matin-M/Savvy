@@ -6,7 +6,9 @@
   "scripts": {
     "prepare": "husky install",
     "prettier-format": "prettier --config .prettierrc 'src/**/*.ts' --write",
-    "eslint": "eslint --fix --ext .js,.ts ."
+    "eslint": "eslint --fix --ext .js,.ts .",
+    "build": "tsc --build",
+    "clean": "tsc --build --clean"
   },
   "dependencies": {
     "@discordjs/builders": "^1.1.0",
