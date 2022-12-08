@@ -17,6 +17,7 @@ import {
   Role,
   UserResolvable,
   Events,
+  GuildBasedChannel,
 } from 'discord.js';
 import { Sequelize } from 'sequelize';
 import schemaColumns from './database/schema';
@@ -302,7 +303,7 @@ client.on(Events.GuildMemberAdd, async (member: GuildMember) => {
   const tag = (await Tags.findOne({ where: { guildId: member.guild.id } }))!;
 
   if (tag.get('updateChannel') != 'NA') {
-    member.guild.channels.cache.find((c) => {
+    member.guild.channels.cache.find((c: GuildBasedChannel) => {
       if (
         c.type === ChannelType.GuildText &&
         c.name == tag.get('updateChannel')
@@ -313,6 +314,7 @@ client.on(Events.GuildMemberAdd, async (member: GuildMember) => {
           console.log(`[ERROR]: ${error}`);
         }
       }
+      return false;
     });
   }
 
@@ -354,7 +356,7 @@ client.on(Events.GuildMemberRemove, async (member) => {
   if (!tag.get('displayLeaveMessages')) return;
 
   if (tag.get('updateChannel') != 'NA') {
-    member.guild.channels.cache.find((c) => {
+    member.guild.channels.cache.find((c: GuildBasedChannel) => {
       if (
         c.type === ChannelType.GuildText &&
         c.name == tag.get('updateChannel')
@@ -365,6 +367,7 @@ client.on(Events.GuildMemberRemove, async (member) => {
           console.log(`[ERROR]: ${error}`);
         }
       }
+      return false;
     });
   }
   await Tags.update(
