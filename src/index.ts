@@ -132,6 +132,11 @@ client.on(Events.GuildCreate, async (guild: Guild) => {
     voice_subscribers_list: [],
     message_reply_phrases: [],
     message_reply_keywords: [],
+    displayLeaveMessages: true,
+    user_message_logs: [],
+    user_joined_logs: [],
+    user_left_logs: [],
+    deleted_user_message_logs: [],
   });
 });
 
@@ -392,6 +397,7 @@ client.on('warn', (info) => console.log(`[WARN]: ${info}`));
 client.on(
   Events.InteractionCreate,
   async (interaction: Interaction<CacheType>) => {
+    if (interaction.isAutocomplete()) return;
     if (!interaction.guild) {
       interaction = interaction as ChatInputCommandInteraction<CacheType>;
       await interaction.reply({
