@@ -225,7 +225,6 @@ client.on(Events.MessageCreate, async (message: Message<boolean>) => {
   }
 });
 
-// TODO: FIX THIS
 // Handle deleted messages
 client.on(
   Events.MessageDelete,

@@ -13,14 +13,21 @@ module.exports = {
     .addStringOption((option) =>
       option
         .setName('keyword')
-        .setDescription('keyword')
+        .setDescription('Keyword to trigger auto-reply')
         .setRequired(true)
         .setAutocomplete(true)
     )
     .addStringOption((option) =>
       option
         .setName('phrase')
-        .setDescription('phrase')
+        .setDescription('Phrase to auto-reply with')
+        .setRequired(true)
+        .setAutocomplete(true)
+    )
+    .addStringOption((option) =>
+      option
+        .setName('case')
+        .setDescription('Requires keyword matching to be case sensitive')
         .setRequired(true)
         .setAutocomplete(true)
     ),
