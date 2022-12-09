@@ -21,7 +21,7 @@ module.exports = {
   async execute(client, interaction, Tags) {
     const replyEmbed = new EmbedBuilder();
     const username = interaction.options.getString('username');
-    const timespan = interaction.options.getString('lifetime');
+    const timespan = interaction.options.getBoolean('lifetime');
     const res = await axios
       .get(
         `https://fortnite-api.com/v2/stats/br/v2?name=${username}&accountType=epic&timeWindow=${
