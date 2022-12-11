@@ -44,7 +44,45 @@ module.exports = {
           return;
         }
         const data = res.data.data;
-        interaction.reply(data.image);
+        const overallStats = data.stats.all.overall;
+        replyEmbed
+          .setTitle(
+            `${data.account.name}'s ${timespan ? 'lifetime' : 'season'} Stats`
+          )
+          .addFields(
+            {
+              name: 'Playtime',
+              value: `${(overallStats.minutesPlayed / 60).toFixed(2)} Hours`,
+              inline: true,
+            },
+            {
+              name: 'Battlepass Level',
+              value: `${data.battlePass.level}`,
+              inline: true,
+            },
+            {
+              name: 'Players Outlived',
+              value: `${overallStats.playersOutlived}`,
+              inline: true,
+            },
+            {
+              name: 'Top 10 Finishes',
+              value: `${overallStats.top10}`,
+              inline: true,
+            },
+            {
+              name: 'Score/min',
+              value: `${overallStats.scorePerMin}`,
+              inline: true,
+            },
+            {
+              name: 'Score/match',
+              value: `${overallStats.scorePerMatch}`,
+              inline: true,
+            }
+          )
+          .setImage(data.image);
+        interaction.reply({ embeds: [replyEmbed] });
         return;
       });
   },

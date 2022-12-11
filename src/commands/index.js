@@ -11,6 +11,7 @@ const SetRoles = require('./SetRoles');
 const SetUpdateChannel = require('./SetUpdateChannel');
 const VoiceUpdates = require('./VoiceUpdates');
 const GetGameStats = require('./GetGameStats');
+const ServerInfo = require('./ServerInfo');
 
 module.exports = [
   AccountInfo,
@@ -26,4 +27,5 @@ module.exports = [
   SetUpdateChannel,
   VoiceUpdates,
   GetGameStats,
+  ServerInfo,
 ];

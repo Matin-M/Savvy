@@ -71,7 +71,13 @@ module.exports = {
           inline: true,
         }
       )
-      .setImage(`${interaction.guild.iconURL()}`)
+      .setImage(
+        `${
+          interaction.guild.iconURL()
+            ? interaction.guild.iconURL()
+            : 'http://petsamaritan.org/images/animals/noImage.jpg'
+        }`
+      )
       .setTimestamp();
     await interaction.reply({ embeds: [replyEmbed], ephemeral: true });
   },

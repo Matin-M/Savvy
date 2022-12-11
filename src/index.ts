@@ -18,6 +18,7 @@ import {
   UserResolvable,
   Events,
   GuildBasedChannel,
+  PartialGuildMember,
 } from 'discord.js';
 import { Sequelize } from 'sequelize';
 import schemaColumns from './database/schema';
@@ -351,54 +352,61 @@ client.on(Events.GuildMemberAdd, async (member: GuildMember) => {
 });
 
 // Handle guild member leave
-client.on(Events.GuildMemberRemove, async (member) => {
-  console.log(`[UserLeave]-FROM-${member.user.id}-IN-${member.guild.id}`);
-  if (member.id === client.user!.id) {
-    return;
-  }
-  const tag = (await Tags.findOne({ where: { guildId: member.guild.id } }))!;
-  if (!tag.get('displayLeaveMessages')) return;
+client.on(
+  Events.GuildMemberRemove,
+  async (member: GuildMember | PartialGuildMember) => {
+    console.log(`[UserLeave]-FROM-${member.user.id}-IN-${member.guild.id}`);
+    if (member.id === client.user!.id) {
+      return;
+    }
+    const tag = (await Tags.findOne({ where: { guildId: member.guild.id } }))!;
+    if (!tag.get('displayLeaveMessages')) return;
 
-  if (tag.get('updateChannel') != 'NA') {
-    member.guild.channels.cache.find((c: GuildBasedChannel) => {
-      if (
-        c.type === ChannelType.GuildText &&
-        c.name == tag.get('updateChannel')
-      ) {
-        try {
-          c.send(`<@${member.id}> has left **${member.guild.name}**`);
-        } catch (error) {
-          console.log(`[ERROR]: ${error}`);
+    if (tag.get('updateChannel') != 'NA') {
+      member.guild.channels.cache.find((c: GuildBasedChannel) => {
+        if (
+          c.type === ChannelType.GuildText &&
+          c.name == tag.get('updateChannel')
+        ) {
+          try {
+            c.send(`<@${member.id}> has left **${member.guild.name}**`);
+          } catch (error) {
+            console.log(`[ERROR]: ${error}`);
+          }
         }
-      }
-      return false;
-    });
+        return false;
+      });
+    }
+    await Tags.update(
+      {
+        user_left_logs: sequelize.fn(
+          'array_append',
+          sequelize.col('user_left_logs'),
+          JSON.stringify({
+            guildID: member.guild.id,
+            userID: member.id,
+            timeStamp: Date.now(),
+          })
+        ),
+      },
+      { where: { guildId: member.guild.id } }
+    );
   }
-  await Tags.update(
-    {
-      user_left_logs: sequelize.fn(
-        'array_append',
-        sequelize.col('user_left_logs'),
-        JSON.stringify({
-          guildID: member.guild.id,
-          userID: member.id,
-          timeStamp: Date.now(),
-        })
-      ),
-    },
-    { where: { guildId: member.guild.id } }
-  );
-});
+);
 
 client.on('warn', (info) => console.log(`[WARN]: ${info}`));
 
 // Handle slash commands
 client.on(
   Events.InteractionCreate,
-  async (interaction: Interaction<CacheType>) => {
+  async (
+    interaction:
+      | Interaction<CacheType>
+      | ChatInputCommandInteraction<CacheType>
+      | SelectMenuInteraction<CacheType>
+  ) => {
     if (interaction.isAutocomplete()) return;
     if (!interaction.guild) {
-      interaction = interaction as ChatInputCommandInteraction<CacheType>;
       await interaction.reply({
         content: `This command can only be used in servers!`,
         ephemeral: false,
