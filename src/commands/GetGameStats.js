@@ -66,8 +66,8 @@ module.exports = {
               inline: true,
             },
             {
-              name: 'Top 10 Finishes',
-              value: `${overallStats.top10}`,
+              name: 'Score',
+              value: `${overallStats.score}`,
               inline: true,
             },
             {

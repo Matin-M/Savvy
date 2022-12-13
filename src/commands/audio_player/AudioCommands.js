@@ -4,7 +4,7 @@ const { EmbedBuilder } = require('discord.js');
 const Play = {
   data: new SlashCommandBuilder()
     .setName('play')
-    .setDescription(`Stream music from YouTube`)
+    .setDescription(`Stream audio from YouTube videos into a VC`)
     .addStringOption((option) =>
       option
         .setName('video')
@@ -35,7 +35,7 @@ const Play = {
       replyEmbed
         .setColor(video ? '#0099ff' : '#FF0000')
         .setDescription(
-          `${video ? 'now playing' : 'unable to play'} **${
+          `${video ? 'Now playing' : 'Unable to play'} **${
             video ? video : videoLink
           }** in voice channel **${queue.connection.channel.name}**`
         );
@@ -56,7 +56,7 @@ const Pause = {
     try {
       const queue = client.player.getQueue(interaction.guild.id);
       await queue.setPaused(true);
-      replyEmbed.setColor('#ffcc00').setDescription(`Pausing playback...`);
+      replyEmbed.setColor('#ffcc00').setDescription(`Pausing playback`);
     } catch (e) {
       replyEmbed
         .setColor('#FF0000')
@@ -75,7 +75,7 @@ const Resume = {
     try {
       const queue = client.player.getQueue(interaction.guild.id);
       await queue.setPaused(false);
-      replyEmbed.setColor('#ffcc00').setDescription(`Resuming playback...`);
+      replyEmbed.setColor('#ffcc00').setDescription(`Resuming playback`);
     } catch (e) {
       replyEmbed
         .setColor('#FF0000')
