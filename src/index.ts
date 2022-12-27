@@ -30,6 +30,7 @@ import {
   dbName,
   devAdminId,
   clientActivityTitle,
+  devGuildId,
 } from './config.json';
 import audioCommands from './commands/audio_player/AudioCommands';
 import clientCommands from '../src/commands/index';
@@ -172,56 +173,64 @@ client.on(Events.MessageCreate, async (message: Message<boolean>) => {
         message.content
       }`
     );
-    await Tags.update(
-      {
-        user_message_logs: sequelize.fn(
-          'array_append',
-          sequelize.col('user_message_logs'),
-          JSON.stringify({
-            guildIdent: message.guild!.id,
-            userID: message.author.id,
-            userMessage: message.content,
-            timeStamp: Date.now(),
-          })
-        ),
-      },
-      { where: { guildId: message.guild!.id } }
-    );
-    const tag = (await Tags.findOne({
-      where: { guildId: message.guild!.id },
-    }))!;
-    const keywords = (tag.get('message_reply_keywords') as string[]).reverse();
-    const phrases = (tag.get('message_reply_phrases') as string[]).reverse();
-    for (let i = 0; i < keywords.length; i++) {
-      if (message.content.includes(keywords[i])) {
-        if (phrases[i] === '<DELETE>') {
-          message.delete();
-          try {
-            const messageSender = await client.users.fetch(message.author.id);
-            replyEmbed.setTitle(
-              `Your message in ${
-                message.guild!.name
-              } contains a forbidden word!`
+    try {
+      await Tags.update(
+        {
+          user_message_logs: sequelize.fn(
+            'array_append',
+            sequelize.col('user_message_logs'),
+            JSON.stringify({
+              guildIdent: message.guild!.id,
+              userID: message.author.id,
+              userMessage: message.content,
+              timeStamp: Date.now(),
+            })
+          ),
+        },
+        { where: { guildId: message.guild!.id } }
+      );
+      const tag = (await Tags.findOne({
+        where: { guildId: message.guild!.id },
+      }))!;
+      const keywords = (
+        tag.get('message_reply_keywords') as string[]
+      ).reverse();
+      const phrases = (tag.get('message_reply_phrases') as string[]).reverse();
+      for (let i = 0; i < keywords.length; i++) {
+        if (message.content.includes(keywords[i])) {
+          if (phrases[i] === '<DELETE>') {
+            message.delete();
+            try {
+              const messageSender = await client.users.fetch(message.author.id);
+              replyEmbed.setTitle(
+                `Your message in ${
+                  message.guild!.name
+                } contains a forbidden word!`
+              );
+              await messageSender.send({ embeds: [replyEmbed] });
+            } catch (error) {
+              console.log(`[MessageSendError]: ${error}`);
+              return;
+            }
+          } else if (phrases[i] === '<RESET>') {
+            keywords.splice(i, 1);
+            phrases.splice(i, 1);
+            await Tags.update(
+              {
+                message_reply_keywords: keywords,
+                displayLeaveMessages: phrases,
+              },
+              { where: { guildId: message.guild!.id } }
             );
-            await messageSender.send({ embeds: [replyEmbed] });
-          } catch (error) {
-            console.log(`[ERROR]: ${error}`);
+          } else {
+            message.reply(phrases[i]);
           }
-        } else if (phrases[i] === '<RESET>') {
-          keywords.splice(i, 1);
-          phrases.splice(i, 1);
-          await Tags.update(
-            {
-              message_reply_keywords: keywords,
-              displayLeaveMessages: phrases,
-            },
-            { where: { guildId: message.guild!.id } }
-          );
-        } else {
-          message.reply(phrases[i]);
+          break;
         }
-        break;
       }
+    } catch (error) {
+      console.log(`[DBError]: Guild ${message.guild!.id} not found`);
+      return;
     }
   }
 });
@@ -235,21 +244,26 @@ client.on(
     console.log(
       `[MessageDelete]-FROM-${messageAuthor}-IN-${guildId}: ${message.content}`
     );
-    await Tags.update(
-      {
-        deleted_user_message_logs: sequelize.fn(
-          'array_append',
-          sequelize.col('deleted_user_message_logs'),
-          JSON.stringify({
-            guildID: guildId,
-            userID: messageAuthor,
-            userMessage: message.content,
-            timeStamp: Date.now(),
-          })
-        ),
-      },
-      { where: { guildId: message.guild!.id } }
-    );
+    try {
+      await Tags.update(
+        {
+          deleted_user_message_logs: sequelize.fn(
+            'array_append',
+            sequelize.col('deleted_user_message_logs'),
+            JSON.stringify({
+              guildID: guildId,
+              userID: messageAuthor,
+              userMessage: message.content,
+              timeStamp: Date.now(),
+            })
+          ),
+        },
+        { where: { guildId: message.guild!.id } }
+      );
+    } catch (error) {
+      console.log(`[DBError]: Guild ${message.guild!.id} not found`);
+      return;
+    }
   }
 );
 
@@ -413,6 +427,7 @@ client.on(
       });
       return;
     }
+    if (interaction.guild.id === devGuildId && process.env.PRODUCTION) return;
     if (interaction.isCommand()) {
       console.log(
         `[InteractionCreate]-FROM-${interaction.user.id}-IN-${

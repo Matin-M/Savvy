@@ -75,7 +75,8 @@ module.exports = {
         `${
           interaction.guild.iconURL()
             ? interaction.guild.iconURL()
-            : 'http://petsamaritan.org/images/animals/noImage.jpg'
+            : // A default image if the server doesn't have an icon
+              'https://us.123rf.com/450wm/pavelstasevich/pavelstasevich1811/pavelstasevich181101028/pavelstasevich181101028.jpg'
         }`
       )
       .setTimestamp();
