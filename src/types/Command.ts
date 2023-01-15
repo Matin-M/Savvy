@@ -1,4 +1,5 @@
 import { CacheType, Interaction, SlashCommandBuilder } from 'discord.js';
+import { ModelCtor, Model } from 'sequelize/types';
 import { CustomClient } from './CustomClient';
 
 type ICommand = {
@@ -6,7 +7,7 @@ type ICommand = {
   execute: (
     client: CustomClient,
     interaction: Interaction<CacheType>,
-    Tags: any
+    Tags: ModelCtor<Model<any, any>>
   ) => Promise<void>;
 };
 

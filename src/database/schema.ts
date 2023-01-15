@@ -1,6 +1,6 @@
-const Sequelize = require('sequelize');
+import Sequelize from 'sequelize';
 
-module.exports = {
+export default {
   guildId: {
     type: Sequelize.STRING,
     allowNull: false,

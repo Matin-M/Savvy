@@ -1,21 +1,30 @@
-const { SlashCommandBuilder } = require('@discordjs/builders');
-const { EmbedBuilder } = require('discord.js');
-const { dbConnectionString } = require('../config.json');
-const Sequelize = require('sequelize');
+import { SlashCommandBuilder } from '@discordjs/builders';
+import {
+  CacheType,
+  ChatInputCommandInteraction,
+  EmbedBuilder,
+} from 'discord.js';
+import { dbConnectionString } from '../config.json';
+import { ModelCtor, Model, Sequelize } from 'sequelize';
+import { CustomClient } from '../types/CustomClient';
 const sequelize = new Sequelize(dbConnectionString);
 
-module.exports = {
+export default {
   data: new SlashCommandBuilder()
     .setName('voiceupdates')
     .setDescription(
       'Savvy will ping you when a user connects to any voice channel in this server'
     ),
-  async execute(client, interaction, Tags) {
+  async execute(
+    client: CustomClient,
+    interaction: ChatInputCommandInteraction<CacheType>,
+    Tags: ModelCtor<Model<any, any>>
+  ) {
     const replyEmbed = new EmbedBuilder();
-    const tag = await Tags.findOne({
-      where: { guildId: interaction.guild.id },
-    });
-    const subscribedUsers = tag.get('voice_subscribers_list');
+    const tag = (await Tags.findOne({
+      where: { guildId: interaction.guild!.id },
+    }))!;
+    const subscribedUsers = tag.get('voice_subscribers_list') as string[];
     if (subscribedUsers.includes(interaction.user.id)) {
       replyEmbed
         .setColor('#ffcc00')
@@ -29,7 +38,7 @@ module.exports = {
             (user) => user != interaction.user.id
           ),
         },
-        { where: { guildId: interaction.guild.id } }
+        { where: { guildId: interaction.guild!.id } }
       );
     } else {
       await Tags.update(
@@ -40,7 +49,7 @@ module.exports = {
             `${interaction.user.id}`
           ),
         },
-        { where: { guildId: interaction.guild.id } }
+        { where: { guildId: interaction.guild!.id } }
       );
 
       replyEmbed

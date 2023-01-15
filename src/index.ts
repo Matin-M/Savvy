@@ -32,9 +32,7 @@ import {
   clientActivityTitle,
   devGuildId,
 } from './config.json';
-import audioCommands from './commands/audio_player/AudioCommands';
-import clientCommands from '../src/commands/index';
-import ICommand from './types/Command';
+import ClientCommands from '../src/commands/index';
 
 const intents = [
   GatewayIntentBits.Guilds,
@@ -73,10 +71,7 @@ const player = new Player(client, {
 });
 client.player = player;
 
-const audioCommandList = audioCommands as [ICommand];
-let commands = clientCommands as [ICommand];
-commands = commands.concat(audioCommandList) as [ICommand];
-commands.map((command) => client.commands.set(command.data, command));
+ClientCommands.map((command) => client.commands.set(command.data, command));
 
 const sequelize = new Sequelize(dbConnectionString, {
   dialect: 'postgres',
@@ -271,7 +266,6 @@ client.on(
 client.on(
   Events.VoiceStateUpdate,
   async (oldState: VoiceState, newState: VoiceState) => {
-    let subscribedUsers = [];
     if (
       newState.channelId != oldState.channelId &&
       newState.channelId != null
@@ -279,7 +273,7 @@ client.on(
       const tag = (await Tags.findOne({
         where: { guildId: newState.member!.guild.id },
       }))!;
-      subscribedUsers = [
+      const subscribedUsers = [
         ...new Set(tag.get('voice_subscribers_list') as string[]),
       ];
       for (const userID of subscribedUsers) {

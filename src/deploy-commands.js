@@ -19,7 +19,7 @@ commands.push(
   )
 );
 
-const audioCommands = require('./commands/audio_player/AudioCommands');
+const audioCommands = require('./commands/AudioCommands');
 commands.push(
   ...Object.keys(audioCommands).map((command) =>
     audioCommands[command].data.toJSON()
