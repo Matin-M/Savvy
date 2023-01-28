@@ -30,6 +30,8 @@ import {
   dbName,
   devAdminId,
   clientActivityTitle,
+  devGuildId,
+  environment,
 } from './config.json';
 import ClientCommands from '../src/commands/index';
 
@@ -420,7 +422,9 @@ client.on(
       });
       return;
     }
-    // if (interaction.guild.id === devGuildId && process.env.PRODUCTION) return;
+    if (interaction.guild.id === devGuildId && environment === 'production') {
+      return;
+    }
     if (interaction.isCommand()) {
       console.log(
         `[InteractionCreate]-FROM-${interaction.user.id}-IN-${
