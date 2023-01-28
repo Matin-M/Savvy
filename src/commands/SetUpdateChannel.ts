@@ -1,8 +1,14 @@
-const { SlashCommandBuilder } = require('@discordjs/builders');
-const { EmbedBuilder } = require('discord.js');
-const { devAdminId } = require('../config.json');
+import { SlashCommandBuilder } from '@discordjs/builders';
+import {
+  CacheType,
+  ChatInputCommandInteraction,
+  EmbedBuilder,
+} from 'discord.js';
+import { Model, ModelCtor } from 'sequelize/types';
+import { devAdminId } from '../config.json';
+import { CustomClient } from '../types/CustomClient';
 
-module.exports = {
+export default {
   data: new SlashCommandBuilder()
     .setName('setupdate')
     .setDescription('The text channel that Savvy will send updates to')
@@ -19,17 +25,23 @@ module.exports = {
         .setDescription('Disable or enable user leave messages')
         .setRequired(false)
     ),
-  async execute(client, interaction, Tags) {
+  async execute(
+    client: CustomClient,
+    interaction: ChatInputCommandInteraction<CacheType>,
+    Tags: ModelCtor<Model<any, any>>
+  ) {
     const replyEmbed = new EmbedBuilder();
-    const adminRoles = interaction.guild.roles.cache.find((role) => {
+    const adminRoles = interaction.guild!.roles.cache.find((role) => {
       if (role.permissions.toArray().includes('Administrator')) {
-        return role;
+        return true;
+      } else {
+        return false;
       }
     });
-    const adminArray = adminRoles.members.map((m) => m.id);
+    const adminArray = adminRoles!.members.map((m) => m.id);
     if (
       adminArray.includes(interaction.user.id) ||
-      interaction.user.id == devAdminId
+      interaction.user.id === devAdminId
     ) {
       const newChannel = interaction.options.getString('channel');
       const showLeaves = interaction.options.getBoolean('userleave');
@@ -38,7 +50,7 @@ module.exports = {
           updateChannel: newChannel,
           displayLeaveMessages: showLeaves ? true : false,
         },
-        { where: { guildId: interaction.guild.id } }
+        { where: { guildId: interaction.guild!.id } }
       );
 
       replyEmbed

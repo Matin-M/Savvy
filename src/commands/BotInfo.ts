@@ -1,8 +1,18 @@
-const { SlashCommandBuilder } = require('@discordjs/builders');
-const { EmbedBuilder } = require('discord.js');
-const process = require('process');
-const osu = require('node-os-utils');
-const { msToTime } = require('../helpers/formatting');
+// To Be Fixed
+/*
+import { SlashCommandBuilder } from '@discordjs/builders';
+import {
+  CacheType,
+  ChatInputCommandInteraction,
+  EmbedBuilder,
+} from 'discord.js';
+import { Model, ModelCtor } from 'sequelize/types';
+import { devAdminId } from '../config.json';
+import { CustomClient } from '../types/CustomClient';
+
+import process from 'process';
+import { osu } from 'node-os-utils';
+import { msToTime } from '../helpers/formatting';
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -64,3 +74,4 @@ module.exports = {
     await interaction.reply({ embeds: [replyEmbed] });
   },
 };
+*/

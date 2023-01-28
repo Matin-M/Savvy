@@ -1,8 +1,31 @@
-const { SlashCommandBuilder, EmbedBuilder } = require('@discordjs/builders');
-const axios = require('axios');
-const { fortnite_api_key } = require('../config.json');
+import { SlashCommandBuilder } from '@discordjs/builders';
+import {
+  CacheType,
+  ChatInputCommandInteraction,
+  EmbedBuilder,
+} from 'discord.js';
+import { Model, ModelCtor } from 'sequelize/types';
+import { fortnite_api_key } from '../config.json';
+import { CustomClient } from '../types/CustomClient';
+import axios, { AxiosResponse } from 'axios';
 
-module.exports = {
+interface ServerResponse {
+  response: number;
+  data: OverallStats;
+}
+
+interface OverallStats {
+  account: Record<string, string>;
+  battlePass: Record<string, number>;
+  image: string;
+  stats: {
+    all: {
+      overall: Record<string, number>;
+    };
+  };
+}
+
+export default {
   data: new SlashCommandBuilder()
     .setName('fortnitestats')
     .setDescription('Get fortnite stats for a player')
@@ -18,12 +41,16 @@ module.exports = {
         .setDescription('Set timespan to lifetime')
         .setRequired(false)
     ),
-  async execute(client, interaction, Tags) {
+  async execute(
+    client: CustomClient,
+    interaction: ChatInputCommandInteraction<CacheType>,
+    Tags: ModelCtor<Model<any, any>>
+  ) {
     const replyEmbed = new EmbedBuilder();
     const username = interaction.options.getString('username');
     const timespan = interaction.options.getBoolean('lifetime');
-    const res = await axios
-      .get(
+    await axios
+      .get<ServerResponse>(
         `https://fortnite-api.com/v2/stats/br/v2?name=${username}&accountType=epic&timeWindow=${
           timespan ? 'lifetime' : 'season'
         }&image=all`,
@@ -32,9 +59,9 @@ module.exports = {
         }
       )
       .catch((err) => {
-        //Something here just to prevent the error from being thrown
+        // Something here just to prevent the error from being thrown
       })
-      .then((res) => {
+      .then((res: void | AxiosResponse<ServerResponse, any>) => {
         if (!res) {
           replyEmbed
             .setColor([255, 0, 0])
@@ -43,11 +70,14 @@ module.exports = {
           interaction.reply({ embeds: [replyEmbed], ephemeral: true });
           return;
         }
-        const data = res.data.data;
-        const overallStats = data.stats.all.overall;
+        // This is a bit of a hack, but it works
+        const { data } = res;
+        const overallStats = data.data.stats.all.overall;
         replyEmbed
           .setTitle(
-            `${data.account.name}'s ${timespan ? 'lifetime' : 'season'} Stats`
+            `${data.data.account.name}'s ${
+              timespan ? 'lifetime' : 'season'
+            } Stats`
           )
           .addFields(
             {
@@ -57,7 +87,7 @@ module.exports = {
             },
             {
               name: 'Battlepass Level',
-              value: `${data.battlePass.level}`,
+              value: `${data.data.battlePass.level}`,
               inline: true,
             },
             {
@@ -81,7 +111,7 @@ module.exports = {
               inline: true,
             }
           )
-          .setImage(data.image);
+          .setImage(data.data.image);
         interaction.reply({ embeds: [replyEmbed] });
         return;
       });

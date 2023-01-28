@@ -19,6 +19,6 @@
     "useUnknownInCatchVariables": false,
     "strictPropertyInitialization": false
   },
-  "include": ["src/**/*.ts", "src/commands/GetGameStats.js"],
+  "include": ["src/**/*.ts", "src/index.ts"],
   "exclude": ["node_modules", "<node_internals>/**"]
 }
