@@ -1,8 +1,14 @@
-const { SlashCommandBuilder } = require('@discordjs/builders');
-const { EmbedBuilder } = require('discord.js');
-const { devAdminId } = require('../config.json');
+import { SlashCommandBuilder } from '@discordjs/builders';
+import {
+  CacheType,
+  ChatInputCommandInteraction,
+  EmbedBuilder,
+} from 'discord.js';
+import { Model, ModelCtor } from 'sequelize/types';
+import { devAdminId } from '../config.json';
+import { CustomClient } from '../types/CustomClient';
 
-module.exports = {
+export default {
   data: new SlashCommandBuilder()
     .setName('joinrole')
     .setDescription(
@@ -15,14 +21,20 @@ module.exports = {
         .setRequired(true)
         .setAutocomplete(true)
     ),
-  async execute(client, interaction, Tags) {
+  async execute(
+    client: CustomClient,
+    interaction: ChatInputCommandInteraction<CacheType>,
+    Tags: ModelCtor<Model<any, any>>
+  ) {
     const replyEmbed = new EmbedBuilder();
-    const adminRoles = interaction.guild.roles.cache.find((role) => {
+    const adminRoles = interaction.guild!.roles.cache.find((role) => {
       if (role.permissions.toArray().includes('Administrator')) {
-        return role;
+        return true;
+      } else {
+        return false;
       }
     });
-    const adminArray = adminRoles.members.map((m) => m.id);
+    const adminArray = adminRoles!.members.map((m) => m.id);
     if (
       adminArray.includes(interaction.user.id) ||
       interaction.user.id == devAdminId
@@ -30,7 +42,7 @@ module.exports = {
       const role = interaction.options.getString('role');
       await Tags.update(
         { joinRole: role },
-        { where: { guildId: interaction.guild.id } }
+        { where: { guildId: interaction.guild!.id } }
       );
 
       replyEmbed

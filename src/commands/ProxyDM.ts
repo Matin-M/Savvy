@@ -1,7 +1,13 @@
-const { SlashCommandBuilder } = require('@discordjs/builders');
-const { EmbedBuilder } = require('discord.js');
+import { SlashCommandBuilder } from '@discordjs/builders';
+import {
+  CacheType,
+  ChatInputCommandInteraction,
+  EmbedBuilder,
+} from 'discord.js';
+import { Model, ModelCtor } from 'sequelize/types';
+import { CustomClient } from '../types/CustomClient';
 
-module.exports = {
+export default {
   data: new SlashCommandBuilder()
     .setName('proxydm')
     .setDescription('Use Savvy to direct message any user in this server')
@@ -19,12 +25,16 @@ module.exports = {
         .setRequired(true)
         .setAutocomplete(true)
     ),
-  async execute(client, interaction, Tags) {
+  async execute(
+    client: CustomClient,
+    interaction: ChatInputCommandInteraction<CacheType>,
+    Tags: ModelCtor<Model<any, any>>
+  ) {
     const nick = interaction.options.getString('nickname');
     const message = interaction.options.getString('message');
-    let members = await interaction.guild.members.fetch();
-    members = members.map((u) => u.user);
-    const selectedMember = members.filter((member) => {
+    const members = await interaction.guild!.members.fetch();
+    const memberMap = members.map((u) => u.user);
+    const selectedMember = memberMap.filter((member) => {
       if (String(member['username']) === String(nick)) {
         return member;
       }

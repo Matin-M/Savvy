@@ -1,8 +1,14 @@
-const { SlashCommandBuilder } = require('@discordjs/builders');
-const { EmbedBuilder } = require('discord.js');
-const { devAdminId } = require('../config.json');
+import { SlashCommandBuilder } from '@discordjs/builders';
+import {
+  CacheType,
+  ChatInputCommandInteraction,
+  EmbedBuilder,
+} from 'discord.js';
+import { Model, ModelCtor } from 'sequelize/types';
+import { devAdminId } from '../config.json';
+import { CustomClient } from '../types/CustomClient';
 
-module.exports = {
+export default {
   data: new SlashCommandBuilder()
     .setName('bulkdelete')
     .setDescription('Delete messages in bulk')
@@ -13,20 +19,27 @@ module.exports = {
         .setRequired(true)
         .setAutocomplete(true)
     ),
-  async execute(client, interaction, Tags) {
+  async execute(
+    cclient: CustomClient,
+    interaction: ChatInputCommandInteraction<CacheType>,
+    Tags: ModelCtor<Model<any, any>>
+  ) {
     const replyEmbed = new EmbedBuilder();
-    const adminRoles = interaction.guild.roles.cache.find((role) => {
+    const adminRoles = interaction.guild!.roles.cache.find((role) => {
       if (role.permissions.toArray().includes('Administrator')) {
-        return role;
+        return true;
+      } else {
+        return false;
       }
     });
-    const adminArray = adminRoles.members.map((m) => m.id);
+    const adminArray = adminRoles!.members.map((m) => m.id);
     if (
       adminArray.includes(interaction.user.id) ||
       interaction.user.id == devAdminId
     ) {
       const quantity = interaction.options.getString('quantity');
-      interaction.channel.bulkDelete(quantity, true);
+      // FIX ME
+      // interaction.channel.bulkDelete(quantity, true);
       replyEmbed
         .setColor('#0099ff')
         .setTitle(`The last ${quantity} messages have been deleted`)

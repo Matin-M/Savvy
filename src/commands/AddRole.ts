@@ -1,17 +1,32 @@
-const { SlashCommandBuilder } = require('@discordjs/builders');
-const { ActionRowBuilder, SelectMenuBuilder } = require('discord.js');
-const { EmbedBuilder } = require('discord.js');
+import {
+  SlashCommandBuilder,
+  ActionRowBuilder,
+  SelectMenuBuilder,
+} from '@discordjs/builders';
+import {
+  APIActionRowComponent,
+  APIMessageActionRowComponent,
+  CacheType,
+  ChatInputCommandInteraction,
+  EmbedBuilder,
+} from 'discord.js';
+import { Model, ModelCtor } from 'sequelize/types';
+import { CustomClient } from '../types/CustomClient';
 
-module.exports = {
+export default {
   data: new SlashCommandBuilder()
     .setName('addrole')
     .setDescription('Give yourself a role'),
-  async execute(client, interaction, Tags) {
+  async execute(
+    client: CustomClient,
+    interaction: ChatInputCommandInteraction<CacheType>,
+    Tags: ModelCtor<Model<any, any>>
+  ) {
     const replyEmbed = new EmbedBuilder();
     const tag = await Tags.findOne({
-      where: { guildId: interaction.guild.id },
+      where: { guildId: interaction.guild!.id },
     });
-    let userRoles = tag.get('self_assign_roles');
+    const userRoles = tag!.get('self_assign_roles') as string[];
     if (!userRoles || userRoles.length == 0 || userRoles[0] == '') {
       replyEmbed
         .setColor('#ffcc00')
@@ -20,24 +35,26 @@ module.exports = {
       interaction.reply({ embeds: [replyEmbed], ephemeral: true });
       return;
     }
-    userRoles = userRoles.map((role) => {
+    const userRoleList = userRoles.map((role) => {
       return {
         label: role,
         description: 'Click to select role',
         value: role,
       };
     });
-    console.log(userRoles);
+    console.log(userRoleList);
     const row = new ActionRowBuilder().addComponents(
       new SelectMenuBuilder()
         .setCustomId('role-selector')
         .setPlaceholder('...')
-        .addOptions(userRoles)
+        .addOptions(userRoleList)
     );
     replyEmbed.setColor('#0099ff').setDescription(`Please select a role`);
     await interaction.reply({
       embeds: [replyEmbed],
-      components: [row],
+      components: [
+        row as unknown as APIActionRowComponent<APIMessageActionRowComponent>,
+      ],
       ephemeral: true,
     });
   },

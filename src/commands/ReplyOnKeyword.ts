@@ -1,10 +1,16 @@
-const { SlashCommandBuilder } = require('@discordjs/builders');
-const { EmbedBuilder } = require('discord.js');
-const { dbConnectionString, devAdminId } = require('../config.json');
-const Sequelize = require('sequelize');
+import { SlashCommandBuilder } from '@discordjs/builders';
+import {
+  CacheType,
+  ChatInputCommandInteraction,
+  EmbedBuilder,
+} from 'discord.js';
+import { dbConnectionString } from '../config.json';
+import { ModelCtor, Model, Sequelize } from 'sequelize';
+import { CustomClient } from '../types/CustomClient';
+import { devAdminId } from '../config.json';
 const sequelize = new Sequelize(dbConnectionString);
 
-module.exports = {
+export default {
   data: new SlashCommandBuilder()
     .setName('replyonkeyword')
     .setDescription(
@@ -31,14 +37,20 @@ module.exports = {
         .setRequired(true)
         .setAutocomplete(true)
     ),
-  async execute(client, interaction, Tags) {
+  async execute(
+    client: CustomClient,
+    interaction: ChatInputCommandInteraction<CacheType>,
+    Tags: ModelCtor<Model<any, any>>
+  ) {
     const replyEmbed = new EmbedBuilder();
-    const adminRoles = interaction.guild.roles.cache.find((role) => {
+    const adminRoles = interaction.guild!.roles.cache.find((role) => {
       if (role.permissions.toArray().includes('Administrator')) {
-        return role;
+        return true;
+      } else {
+        return false;
       }
     });
-    const adminArray = adminRoles.members.map((m) => m.id);
+    const adminArray = adminRoles!.members.map((m) => m.id);
     if (
       adminArray.includes(interaction.user.id) ||
       interaction.user.id == devAdminId
@@ -54,7 +66,7 @@ module.exports = {
             `${keyword}`
           ),
         },
-        { where: { guildId: interaction.guild.id } }
+        { where: { guildId: interaction.guild!.id } }
       );
       await Tags.update(
         {
@@ -64,7 +76,7 @@ module.exports = {
             `${phrase}`
           ),
         },
-        { where: { guildId: interaction.guild.id } }
+        { where: { guildId: interaction.guild!.id } }
       );
 
       replyEmbed.setColor('#0099ff').setTimestamp();
