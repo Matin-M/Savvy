@@ -1,6 +1,5 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { CacheType, ChatInputCommandInteraction } from 'discord.js';
-import { Model, ModelCtor } from 'sequelize/types';
 import { CustomClient } from '../types/CustomClient';
 
 export default {
@@ -9,8 +8,7 @@ export default {
     .setDescription(`Returns Savvy's ping`),
   async execute(
     client: CustomClient,
-    interaction: ChatInputCommandInteraction<CacheType>,
-    Tags: ModelCtor<Model<any, any>>
+    interaction: ChatInputCommandInteraction<CacheType>
   ) {
     const sent = await interaction.reply({
       content: 'Pinging...',

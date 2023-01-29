@@ -4,7 +4,6 @@ import {
   ChatInputCommandInteraction,
   EmbedBuilder,
 } from 'discord.js';
-import { Model, ModelCtor } from 'sequelize/types';
 import { CustomClient } from '../types/CustomClient';
 
 export default {
@@ -13,8 +12,7 @@ export default {
     .setDescription('Replies with information about your discord account'),
   async execute(
     client: CustomClient,
-    interaction: ChatInputCommandInteraction<CacheType>,
-    Tags: ModelCtor<Model<any, any>>
+    interaction: ChatInputCommandInteraction<CacheType>
   ) {
     const accDate = new Date(
       interaction.user.createdTimestamp

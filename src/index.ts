@@ -33,7 +33,7 @@ import {
   devGuildId,
   environment,
 } from './config.json';
-import ClientCommands from '../src/commands/index';
+import ClientCommands from './commands/index';
 
 const intents = [
   GatewayIntentBits.Guilds,
@@ -139,8 +139,8 @@ client.on(Events.GuildCreate, async (guild: Guild) => {
 });
 
 // Handle guild leave/kick
-client.on(Events.GuildDelete, async (guild: Guild) => {
-  await Tags.destroy({ where: { guildId: guild.id } });
+client.on(Events.GuildDelete, (guild: Guild) => {
+  // await Tags.destroy({ where: { guildId: guild.id } });
   console.log(`Savvy removed from guild ${guild.name}`);
 });
 

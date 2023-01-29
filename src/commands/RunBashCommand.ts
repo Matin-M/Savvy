@@ -7,7 +7,7 @@ import {
 import { ModelCtor, Model } from 'sequelize';
 import { CustomClient } from '../types/CustomClient';
 import * as child from 'child_process';
-import { sendMessageToChannel } from '../helpers/formatting';
+import { sendMessageToChannel } from '../helpers/utils';
 import { devAdminId } from '../config.json';
 
 export default {

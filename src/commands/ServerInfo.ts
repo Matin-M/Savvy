@@ -6,7 +6,7 @@ import {
 } from 'discord.js';
 import { Model, ModelCtor } from 'sequelize/types';
 import { CustomClient } from '../types/CustomClient';
-import { keySort, wordFreq } from '../helpers/formatting';
+import { keySort, wordFreq } from '../helpers/utils';
 
 export default {
   data: new SlashCommandBuilder()

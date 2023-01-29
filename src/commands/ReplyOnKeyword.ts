@@ -30,12 +30,11 @@ export default {
         .setRequired(true)
         .setAutocomplete(true)
     )
-    .addStringOption((option) =>
+    .addBooleanOption((option) =>
       option
         .setName('case')
-        .setDescription('Requires keyword matching to be case sensitive')
-        .setRequired(true)
-        .setAutocomplete(true)
+        .setDescription('If set to true, keyword is case-sensitive')
+        .setRequired(false)
     ),
   async execute(
     client: CustomClient,

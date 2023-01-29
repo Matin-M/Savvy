@@ -4,8 +4,8 @@ import {
   ChatInputCommandInteraction,
   EmbedBuilder,
 } from 'discord.js';
-import { Model, ModelCtor } from 'sequelize/types';
 import { CustomClient } from '../types/CustomClient';
+import { devAdminId } from '../config.json';
 
 export default {
   data: new SlashCommandBuilder()
@@ -27,8 +27,7 @@ export default {
     ),
   async execute(
     client: CustomClient,
-    interaction: ChatInputCommandInteraction<CacheType>,
-    Tags: ModelCtor<Model<any, any>>
+    interaction: ChatInputCommandInteraction<CacheType>
   ) {
     const nick = interaction.options.getString('nickname');
     const message = interaction.options.getString('message');
@@ -42,7 +41,11 @@ export default {
     const replyEmbed = new EmbedBuilder().setColor('#0099ff').setTimestamp();
     try {
       const user = await client.users.fetch(selectedMember.id);
-      await user.send(`Message from ${interaction.user.username}: ${message}`);
+      await user.send(
+        devAdminId !== interaction.user.id
+          ? `Message from ${interaction.user.username}: ${message}`
+          : `${message}`
+      );
       replyEmbed.setTitle(`Sent ${message} to ${nick}`);
     } catch (error) {
       replyEmbed.setColor('#ff0000');

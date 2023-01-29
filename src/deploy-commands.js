@@ -1,30 +1,16 @@
-const fs = require('fs');
 const { REST } = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v9');
-const { clientId, guildId, token } = require('./config.json');
+const { clientId, devGuildId, token } = require('./config.json');
 const readline = require('readline').createInterface({
   input: process.stdin,
   output: process.stdout,
 });
 
 const commands = [];
-const commandFiles = fs
-  .readdirSync('./commands')
-  .filter((file) => file.endsWith('.js'));
-
-const regCommands = require('./commands/index');
-commands.push(
-  ...Object.keys(regCommands).map((command) =>
-    regCommands[command].data.toJSON()
-  )
-);
-
-const audioCommands = require('./commands/AudioCommands');
-commands.push(
-  ...Object.keys(audioCommands).map((command) =>
-    audioCommands[command].data.toJSON()
-  )
-);
+const commandList = require('../bin/commands/index.js');
+for (const command of commandList.default) {
+  commands.push(command.data.toJSON());
+}
 
 const rest = new REST({ version: '9' }).setToken(token);
 
@@ -40,7 +26,7 @@ readline.question(
         .catch(console.error);
     } else if (response === 'local') {
       rest
-        .put(Routes.applicationGuildCommands(clientId, guildId), {
+        .put(Routes.applicationGuildCommands(clientId, devGuildId), {
           body: commands,
         })
         .then(() =>
