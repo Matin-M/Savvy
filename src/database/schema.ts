@@ -5,6 +5,7 @@ export default {
     type: Sequelize.STRING,
     allowNull: false,
     unique: true,
+    primaryKey: true,
   },
   updateChannel: {
     type: Sequelize.STRING,

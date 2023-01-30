@@ -19,9 +19,11 @@ import {
   Events,
   GuildBasedChannel,
   PartialGuildMember,
+  Presence,
 } from 'discord.js';
 import { Sequelize } from 'sequelize';
 import schemaColumns from './database/schema';
+import presenceSchema from './database/presenceSchema';
 import { CustomClient } from './types/CustomClient';
 import { Player } from 'discord-music-player';
 import {
@@ -80,6 +82,12 @@ const sequelize = new Sequelize(dbConnectionString, {
 });
 const queryInterface = sequelize.getQueryInterface();
 const Tags = sequelize.define(dbName.slice(0, -1), schemaColumns);
+const PresenceTable = sequelize.define('presence_table', presenceSchema, {
+  freezeTableName: true,
+});
+console.log('-----------------------STARTING-----------------------');
+Tags.hasMany(PresenceTable, { foreignKey: 'guildId' });
+PresenceTable.belongsTo(Tags, { foreignKey: 'guildId' });
 
 async function addColumn(col: string) {
   await queryInterface.describeTable(dbName).then((tableDefinition) => {
@@ -101,6 +109,7 @@ client.once(Events.ClientReady, () => {
   console.log('Serving in Guilds: ');
   console.log(Guilds);
   Tags.sync();
+  PresenceTable.sync();
   console.log('Checking for database schema updates...');
   for (const col in schemaColumns) {
     addColumn(col);
@@ -143,6 +152,44 @@ client.on(Events.GuildDelete, (guild: Guild) => {
   // await Tags.destroy({ where: { guildId: guild.id } });
   console.log(`Savvy removed from guild ${guild.name}`);
 });
+
+// Log presence changes from guild members
+client.on(
+  Events.PresenceUpdate,
+  async (oldPresence: Presence | null, newPresence: Presence) => {
+    if (
+      !newPresence ||
+      newPresence.activities.length === 0 ||
+      newPresence.guild!.id === devGuildId
+    ) {
+      return;
+    }
+    const clientActivity = newPresence.activities[0];
+    await PresenceTable.create({
+      guildId: newPresence.guild!.id,
+      userId: newPresence.user!.id,
+      timeStamp: new Date(),
+      name: clientActivity?.name ? clientActivity.name : 'No Activity',
+      type: clientActivity?.type ? clientActivity.type : 0,
+      url: clientActivity?.url ? clientActivity.url : 'No URL',
+      details: clientActivity?.details ? clientActivity.details : 'No Details',
+      state: clientActivity?.state ? clientActivity.state : 'No State',
+      largeText: clientActivity?.assets?.largeText
+        ? clientActivity.assets.largeText
+        : 'No Large Text',
+      smallText: clientActivity?.assets?.smallText
+        ? clientActivity.assets.smallText
+        : 'No Small Text',
+      userStatus: newPresence.status,
+    });
+    /*
+    const tag = (await PresenceTable.findAll({
+      where: { guildId: newPresence.guild!.id },
+    }))!;
+    console.log(tag.forEach((t) => console.log(t.toJSON())));
+    */
+  }
+);
 
 // Handle messaging
 client.on(Events.MessageCreate, async (message: Message<boolean>) => {
