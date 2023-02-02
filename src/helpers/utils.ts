@@ -43,6 +43,46 @@ export const keySort = (
   return freqTable;
 };
 
+export const keywordFreq = (
+  freqMap: Record<string, number>,
+  keyword: string,
+  splitOnSpace: boolean
+) => {
+  if (splitOnSpace) {
+    const words = keyword.replace(/[.]/g, '').split(/\s/);
+    words.forEach((w) => {
+      if (w.includes('https://') || w === '' || !w) return;
+      if (!freqMap[w]) {
+        freqMap[w] = 0;
+      }
+      freqMap[w] += 1;
+    });
+  } else {
+    if (!freqMap[keyword]) {
+      freqMap[keyword] = 0;
+    }
+    freqMap[keyword] += 1;
+  }
+  return freqMap;
+};
+
+export const keywordSort = (
+  arr: Record<string, number>,
+  formatter: (item: string) => any
+) => {
+  let freqTable = '';
+  Object.keys(arr)
+    .sort((a, b) => {
+      return arr[b] - arr[a];
+    })
+    .forEach((item, index) => {
+      index < 15
+        ? (freqTable += `${formatter(item)} → ${arr[item]}\n`)
+        : undefined;
+    });
+  return freqTable;
+};
+
 export const sendMessageToChannel = (
   message: string,
   guild: Guild,

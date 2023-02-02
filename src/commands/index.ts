@@ -13,6 +13,7 @@ import BotLatency from './BotLatency';
 import ProxyDM from './ProxyDM';
 import RunBashCommand from './RunBashCommand';
 import ReplyOnKeyword from './ReplyOnKeyword';
+import ActivityStats from './PresenceStats';
 
 const commandList = [
   VoiceUpdates,
@@ -29,6 +30,7 @@ const commandList = [
   ProxyDM,
   RunBashCommand,
   ReplyOnKeyword,
+  ActivityStats,
 ];
 
 export default commandList as [ICommand];

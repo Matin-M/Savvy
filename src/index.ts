@@ -56,6 +56,8 @@ const intents = [
   GatewayIntentBits.DirectMessageReactions,
 ];
 
+console.log('[-----------------------STARTING-----------------------]');
+
 const client = new CustomClient({
   intents,
   allowedMentions: { parse: ['users', 'roles'] },
@@ -85,7 +87,6 @@ const Tags = sequelize.define(dbName.slice(0, -1), schemaColumns);
 const PresenceTable = sequelize.define('presence_table', presenceSchema, {
   freezeTableName: true,
 });
-console.log('-----------------------STARTING-----------------------');
 Tags.hasMany(PresenceTable, { foreignKey: 'guildId' });
 PresenceTable.belongsTo(Tags, { foreignKey: 'guildId' });
 
@@ -102,7 +103,7 @@ async function addColumn(col: string) {
   });
 }
 
-client.once(Events.ClientReady, () => {
+client.once(Events.ClientReady, async () => {
   const Guilds = client.guilds.cache.map(
     (guild) => `${guild.id}: ${guild.name}`
   );
@@ -112,7 +113,7 @@ client.once(Events.ClientReady, () => {
   PresenceTable.sync();
   console.log('Checking for database schema updates...');
   for (const col in schemaColumns) {
-    addColumn(col);
+    await addColumn(col);
   }
   client.user!.setStatus('online');
   setInterval(() => {
@@ -127,7 +128,7 @@ client.once(Events.ClientReady, () => {
       status: 'online',
     });
   }, 300000);
-  console.log('-----------------------READY-----------------------');
+  console.log('[-----------------------READY-----------------------]');
 });
 
 // Handle guild joins
@@ -157,13 +158,11 @@ client.on(Events.GuildDelete, (guild: Guild) => {
 client.on(
   Events.PresenceUpdate,
   async (oldPresence: Presence | null, newPresence: Presence) => {
-    if (
-      !newPresence ||
-      newPresence.activities.length === 0 ||
-      newPresence.guild!.id === devGuildId
-    ) {
+    if (!newPresence || newPresence.guild!.id === devGuildId) {
       return;
     }
+    // DELETE ME WHEN DONE TESTING
+    if (newPresence.guild!.id !== devGuildId) return;
     const clientActivity = newPresence.activities[0];
     await PresenceTable.create({
       guildId: newPresence.guild!.id,
@@ -182,12 +181,6 @@ client.on(
         : 'No Small Text',
       userStatus: newPresence.status,
     });
-    /*
-    const tag = (await PresenceTable.findAll({
-      where: { guildId: newPresence.guild!.id },
-    }))!;
-    console.log(tag.forEach((t) => console.log(t.toJSON())));
-    */
   }
 );
 
@@ -484,7 +477,7 @@ client.on(
       );
       if (!command) return;
       try {
-        await command.execute(client, interaction, Tags);
+        await command.execute(client, interaction, Tags, PresenceTable);
       } catch (error) {
         console.error(error);
         await interaction.reply({
