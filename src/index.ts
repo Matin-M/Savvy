@@ -161,8 +161,6 @@ client.on(
     if (!newPresence || newPresence.guild!.id === devGuildId) {
       return;
     }
-    // DELETE ME WHEN DONE TESTING
-    if (newPresence.guild!.id !== devGuildId) return;
     const clientActivity = newPresence.activities[0];
     await PresenceTable.create({
       guildId: newPresence.guild!.id,
