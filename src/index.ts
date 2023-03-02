@@ -89,6 +89,14 @@ const PresenceTable = sequelize.define('presence_table', presenceSchema, {
 });
 Tags.hasMany(PresenceTable, { foreignKey: 'guildId' });
 PresenceTable.belongsTo(Tags, { foreignKey: 'guildId' });
+queryInterface
+  .addConstraint('presence_table', {
+    fields: ['userId', 'timeStamp'],
+    type: 'unique',
+  })
+  .catch(() => {
+    /**/
+  });
 
 async function addColumn(col: string) {
   await queryInterface.describeTable(dbName).then((tableDefinition) => {
@@ -150,7 +158,6 @@ client.on(Events.GuildCreate, async (guild: Guild) => {
 
 // Handle guild leave/kick
 client.on(Events.GuildDelete, (guild: Guild) => {
-  // await Tags.destroy({ where: { guildId: guild.id } });
   console.log(`Savvy removed from guild ${guild.name}`);
 });
 
@@ -162,6 +169,16 @@ client.on(
       return;
     }
     const clientActivity = newPresence.activities[0];
+    if (
+      oldPresence &&
+      oldPresence.activities[0]?.name === clientActivity?.name &&
+      clientActivity?.name !== 'Spotify' &&
+      clientActivity?.name !== 'Apple Music' &&
+      clientActivity?.name !== 'YouTube Music' &&
+      clientActivity?.name !== undefined
+    ) {
+      return;
+    }
     await PresenceTable.create({
       guildId: newPresence.guild!.id,
       userId: newPresence.user!.id,
