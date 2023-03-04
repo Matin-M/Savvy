@@ -28,8 +28,6 @@ import { CustomClient } from './types/CustomClient';
 import { Player } from 'discord-music-player';
 import {
   token,
-  dbConnectionString,
-  dbName,
   devAdminId,
   clientActivityTitle,
   devGuildId,
@@ -78,12 +76,22 @@ client.player = player;
 
 ClientCommands.map((command) => client.commands.set(command.data, command));
 
-const sequelize = new Sequelize(dbConnectionString, {
-  dialect: 'postgres',
-  logging: false,
-});
+const sequelize = new Sequelize(
+  process.env.DB_NAME!,
+  process.env.DB_USER!,
+  process.env.DB_PASSWORD,
+  {
+    host: '10.11.236.10',
+    port: 5432,
+    dialect: 'postgres',
+    logging: false,
+  }
+);
+
 const queryInterface = sequelize.getQueryInterface();
-const Tags = sequelize.define(dbName.slice(0, -1), schemaColumns);
+const Tags = sequelize.define('guild_table', schemaColumns, {
+  tableName: 'guild_table',
+});
 const PresenceTable = sequelize.define('presence_table', presenceSchema, {
   freezeTableName: true,
 });
@@ -99,13 +107,13 @@ queryInterface
   });
 
 async function addColumn(col: string) {
-  await queryInterface.describeTable(dbName).then((tableDefinition) => {
+  await queryInterface.describeTable('guild_table').then((tableDefinition) => {
     if (tableDefinition[col]) {
       console.log(`Column ${col} exists`);
       return Promise.resolve();
     }
     console.log(`Adding column ${col}`);
-    return queryInterface.addColumn(dbName, col, {
+    return queryInterface.addColumn('guild_table', col, {
       type: schemaColumns[col as keyof typeof schemaColumns].type,
     });
   });
@@ -117,12 +125,13 @@ client.once(Events.ClientReady, async () => {
   );
   console.log('Serving in Guilds: ');
   console.log(Guilds);
-  Tags.sync();
-  PresenceTable.sync();
+  await Tags.sync();
+  await PresenceTable.sync();
   console.log('Checking for database schema updates...');
   for (const col in schemaColumns) {
     await addColumn(col);
   }
+
   client.user!.setStatus('online');
   setInterval(() => {
     console.log('Setting user activity');

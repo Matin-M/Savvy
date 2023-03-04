@@ -1,0 +1,48 @@
+version: '3'
+services:
+  savvy:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    depends_on:
+      - db
+    ports:
+      - '3000:3000'
+    environment:
+      PRODUCTION: true
+      NODE_ENV: production
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: postgres
+    networks:
+      mainnet:
+        ipv4_address: '10.11.236.12'
+
+  db:
+    image: postgres:alpine3.17
+    restart: always
+    hostname: db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+    ports:
+      - '5432:5432'
+    volumes:
+      - db:/var/lib/postgresql/data
+    networks:
+      mainnet:
+        ipv4_address: '10.11.236.10'
+
+networks:
+  mainnet:
+    ipam:
+      driver: default
+      config:
+        - subnet: '10.11.236.0/16'
+
+volumes:
+  db:
+    driver: local
