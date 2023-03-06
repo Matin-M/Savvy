@@ -97,14 +97,15 @@ const PresenceTable = sequelize.define('presence_table', presenceSchema, {
 });
 Tags.hasMany(PresenceTable, { foreignKey: 'guildId' });
 PresenceTable.belongsTo(Tags, { foreignKey: 'guildId' });
-queryInterface
-  .addConstraint('presence_table', {
-    fields: ['userId', 'timeStamp'],
-    type: 'unique',
-  })
-  .catch(() => {
-    /**/
-  });
+
+// queryInterface
+//  .addConstraint('presence_table', {
+//    fields: ['userId', 'timeStamp'],
+//    type: 'unique',
+//  })
+//  .catch(() => {
+//    /**/
+//  });
 
 async function addColumn(col: string) {
   await queryInterface
@@ -206,6 +207,8 @@ client.on(
         ? clientActivity.assets.smallText
         : 'No Small Text',
       userStatus: newPresence.status,
+    }).catch(() => {
+      console.log('ERROR: cannot log presence change');
     });
   }
 );
