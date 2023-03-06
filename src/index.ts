@@ -89,8 +89,8 @@ const sequelize = new Sequelize(
 );
 
 const queryInterface = sequelize.getQueryInterface();
-const Tags = sequelize.define('guild_table', schemaColumns, {
-  tableName: 'guild_table',
+const Tags = sequelize.define('defaultschemas', schemaColumns, {
+  tableName: 'defaultschemas',
 });
 const PresenceTable = sequelize.define('presence_table', presenceSchema, {
   freezeTableName: true,
@@ -107,16 +107,18 @@ queryInterface
   });
 
 async function addColumn(col: string) {
-  await queryInterface.describeTable('guild_table').then((tableDefinition) => {
-    if (tableDefinition[col]) {
-      console.log(`Column ${col} exists`);
-      return Promise.resolve();
-    }
-    console.log(`Adding column ${col}`);
-    return queryInterface.addColumn('guild_table', col, {
-      type: schemaColumns[col as keyof typeof schemaColumns].type,
+  await queryInterface
+    .describeTable('defaultschemas')
+    .then((tableDefinition) => {
+      if (tableDefinition[col]) {
+        console.log(`Column ${col} exists`);
+        return Promise.resolve();
+      }
+      console.log(`Adding column ${col}`);
+      return queryInterface.addColumn('defaultschemas', col, {
+        type: schemaColumns[col as keyof typeof schemaColumns].type,
+      });
     });
-  });
 }
 
 client.once(Events.ClientReady, async () => {
