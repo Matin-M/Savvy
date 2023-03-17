@@ -18,13 +18,15 @@ This project has now been optimized for docker and uses docker compose to orches
 
 ### config.json parameters
 
-```{
+```
+{
   "clientId": "<The client ID of your bot>",
   "guildId": "<The disord server you are using to test the bot>",
   "devAdminId": "<Your personal discord id>",
   "clientActivityTitle": "<A presence title>",
   "clientActivityType": "<A presence activity>",
-  "token": "<Your discord Auth token>", }
+  "token": "<Your discord Auth token>",
+}
 ```
 
 ---

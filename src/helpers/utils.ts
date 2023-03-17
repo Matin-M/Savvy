@@ -1,4 +1,5 @@
 import { ChannelType, Guild, GuildBasedChannel } from 'discord.js';
+import { removeStopwords } from 'stopword';
 
 export const msToTime = (ms: number) => {
   const seconds = ms / 1000;
@@ -14,7 +15,7 @@ export const msToTime = (ms: number) => {
 export const wordFreq = (strings: [string]) => {
   const freqMap: Record<string, number> = {};
   strings.forEach((string) => {
-    const words = string.replace(/[.]/g, '').split(/\s/);
+    const words = removeStopwords(string.replace(/[.]/g, '').split(/\s/));
     words.forEach((w) => {
       if (w.includes('https://') || w === '' || !w) return;
       if (!freqMap[w]) {
