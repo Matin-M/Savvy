@@ -1,9 +1,10 @@
 version: '3'
 services:
-  savvy:
+  bot:
     build:
       context: ./
       dockerfile: Dockerfile
+    restart: always
     depends_on:
       - db
     ports:

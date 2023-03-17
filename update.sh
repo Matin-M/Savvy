@@ -1,5 +1,3 @@
+docker-compose rm -s -v savvy-bot-1
 git pull origin main
-npm ci 
-rm -r bin 
-npm run build
-pm2 restart Savvy
+docker-compose up -d --force-recreate --build savvy-bot-1
