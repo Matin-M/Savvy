@@ -7,6 +7,7 @@ import {
 import { Model, ModelCtor } from 'sequelize/types';
 import ICommand from '../types/Command';
 import { CustomClient } from '../types/CustomClient';
+import { useQueue } from 'discord-player';
 
 const Play = {
   data: new SlashCommandBuilder()
@@ -24,36 +25,40 @@ const Play = {
     Tags: ModelCtor<Model<any, any>>
   ) {
     const replyEmbed = new EmbedBuilder().setColor('#0099ff').setTimestamp();
-    const videoLink = interaction.options.getString('video') as string;
+    const query = interaction.options.getString('video') as string;
     const members = await interaction.guild!.members.fetch();
     const member = members.find((m) => m.id === interaction.user.id);
+    const channel = member!.voice.channel;
     console.log(`[MusicPlayer]: ${interaction.guild!.id}`);
     try {
-      const guildQueue = client.player.getQueue(interaction.guild!.id);
-      const queue = client.player.createQueue(interaction.guild!.id);
-      await queue.join(member!.voice.channel?.id as string);
-      replyEmbed.setDescription('Fetching video...');
-      await interaction.reply({
-        embeds: [replyEmbed],
-        ephemeral: false,
-        fetchReply: true,
+      const searchResult = await client.player.search(query, {
+        requestedBy: interaction.user,
       });
-
-      const video = await queue.play(videoLink).catch((err) => {
-        replyEmbed.setColor('#FF0000').setDescription(`Invalid search query!`);
-        if (!guildQueue) queue.stop();
-      });
-      replyEmbed
-        .setColor(video ? '#0099ff' : '#FF0000')
-        .setDescription(
-          `${video ? 'Now playing' : 'Unable to play'} **${
-            video ? video : videoLink
-          }** in voice channel **${queue.connection!.channel.name}**`
-        );
-      await interaction.editReply({ embeds: [replyEmbed] });
+      if (!searchResult.hasTracks()) {
+        await interaction.reply(`We found no tracks for ${query}!`);
+        return;
+      } else {
+        const { track } = await client.player.play(channel!, searchResult, {
+          nodeOptions: {
+            metadata: interaction,
+          },
+        });
+        replyEmbed
+          .setColor(track ? '#0099ff' : '#FF0000')
+          .setDescription(
+            `${track ? 'Now playing' : 'Unable to play'} **${
+              track ? track : query
+            }** in voice channel **${channel?.name}**`
+          );
+        await interaction.reply({
+          embeds: [replyEmbed],
+          ephemeral: track ? false : true,
+          fetchReply: true,
+        });
+      }
     } catch (e) {
-      replyEmbed.setColor('#FF0000').setDescription(`${e}`);
-      await interaction.reply({ embeds: [replyEmbed], ephemeral: true });
+      console.log(`[MusicPlayerError]: ${e}`);
+      // await interaction.reply({ embeds: [replyEmbed], ephemeral: true });
     }
   },
 };
@@ -67,40 +72,32 @@ const Pause = {
     interaction: ChatInputCommandInteraction<CacheType>,
     Tags: ModelCtor<Model<any, any>>
   ) {
-    const replyEmbed = new EmbedBuilder().setColor('#FF0000').setTimestamp();
-    try {
-      const queue = client.player.getQueue(interaction.guild!.id);
-      queue!.setPaused(true);
-      replyEmbed.setColor('#ffcc00').setDescription(`Pausing playback`);
-    } catch (e) {
-      replyEmbed
-        .setColor('#FF0000')
-        .setDescription(`No video is currently playing!`);
+    const queue = useQueue(interaction.guildId!);
+    if (!queue) {
+      await interaction.reply(`No video is currently playing!`);
+      return;
     }
-    await interaction.reply({ embeds: [replyEmbed] });
+    queue.node.setPaused(true);
+    await interaction.reply(`Pausing playback`);
   },
 };
 
 const Resume = {
   data: new SlashCommandBuilder()
     .setName('resume')
-    .setDescription(`Resuming the current video`),
+    .setDescription(`Resume the current video`),
   async execute(
     client: CustomClient,
     interaction: ChatInputCommandInteraction<CacheType>,
     Tags: ModelCtor<Model<any, any>>
   ) {
-    const replyEmbed = new EmbedBuilder().setColor('#FF0000').setTimestamp();
-    try {
-      const queue = client.player.getQueue(interaction.guild!.id);
-      queue!.setPaused(false);
-      replyEmbed.setColor('#ffcc00').setDescription(`Resuming playback`);
-    } catch (e) {
-      replyEmbed
-        .setColor('#FF0000')
-        .setDescription(`No video is currently playing!`);
+    const queue = useQueue(interaction.guildId!);
+    if (!queue) {
+      await interaction.reply(`No video is currently playing!`);
+      return;
     }
-    await interaction.reply({ embeds: [replyEmbed] });
+    queue.node.setPaused(false);
+    await interaction.reply(`Resuming playback`);
   },
 };
 
@@ -115,19 +112,13 @@ const Stop = {
     interaction: ChatInputCommandInteraction<CacheType>,
     Tags: ModelCtor<Model<any, any>>
   ) {
-    const replyEmbed = new EmbedBuilder().setColor('#FF0000').setTimestamp();
-    try {
-      const queue = client.player.getQueue(interaction.guild!.id);
-      queue!.stop();
-      replyEmbed
-        .setColor('#ffcc00')
-        .setDescription(`Stopping playback and leaving voice channel`);
-    } catch (e) {
-      replyEmbed
-        .setColor('#FF0000')
-        .setDescription(`No video is currently playing!`);
+    const queue = useQueue(interaction.guildId!);
+    if (!queue) {
+      await interaction.reply(`No video is currently playing!`);
+      return;
     }
-    await interaction.reply({ embeds: [replyEmbed] });
+    queue.delete();
+    await interaction.reply(`Stopping playback and leaving voice channel`);
   },
 };
 
@@ -140,17 +131,13 @@ const Skip = {
     interaction: ChatInputCommandInteraction<CacheType>,
     Tags: ModelCtor<Model<any, any>>
   ) {
-    const replyEmbed = new EmbedBuilder().setColor('#FF0000').setTimestamp();
-    try {
-      const queue = client.player.getQueue(interaction.guild!.id);
-      queue!.skip();
-      replyEmbed.setColor('#ffcc00').setDescription(`Skipping current video`);
-    } catch (e) {
-      replyEmbed
-        .setColor('#FF0000')
-        .setDescription(`No video is currently playing!`);
+    const queue = useQueue(interaction.guildId!);
+    if (!queue) {
+      await interaction.reply(`No video is currently playing!`);
+      return;
     }
-    await interaction.reply({ embeds: [replyEmbed] });
+    queue.node.skip();
+    await interaction.reply(`Skipping current video`);
   },
 };
 
@@ -163,51 +150,16 @@ const ClearQueue = {
     interaction: ChatInputCommandInteraction<CacheType>,
     Tags: ModelCtor<Model<any, any>>
   ) {
-    const replyEmbed = new EmbedBuilder().setColor('#FF0000');
-    try {
-      const queue = client.player.getQueue(interaction.guild!.id);
-      queue!.skip();
-      replyEmbed.setColor('#ffcc00').setDescription(`Clearing the queue`);
-    } catch (e) {
-      replyEmbed
-        .setColor('#FF0000')
-        .setDescription(`No video is currently playing!`);
+    const queue = useQueue(interaction.guildId!);
+    if (!queue) {
+      await interaction.reply(`No video is currently playing!`);
+      return;
     }
-    await interaction.reply({ embeds: [replyEmbed] });
+    queue.tracks.clear();
+    await interaction.reply(`Clearing the queue`);
   },
 };
 
-const VideoProgress = {
-  data: new SlashCommandBuilder()
-    .setName('videoprogress')
-    .setDescription(`Show video progress`),
-  async execute(
-    client: CustomClient,
-    interaction: ChatInputCommandInteraction<CacheType>,
-    Tags: ModelCtor<Model<any, any>>
-  ) {
-    const replyEmbed = new EmbedBuilder().setColor('#FF0000');
-    try {
-      const queue = client.player.getQueue(interaction.guild!.id);
-      const ProgressBar = queue!.createProgressBar();
-      replyEmbed.setColor('#ffcc00').setDescription(ProgressBar.prettier);
-    } catch (e) {
-      replyEmbed
-        .setColor('#FF0000')
-        .setDescription(`No video is currently playing!`);
-    }
-    await interaction.reply({ embeds: [replyEmbed] });
-  },
-};
-
-const audioCommandList = [
-  Play,
-  Pause,
-  Resume,
-  Stop,
-  Skip,
-  ClearQueue,
-  VideoProgress,
-];
+const audioCommandList = [Play, Pause, Resume, Stop, Skip, ClearQueue];
 
 export default audioCommandList as [ICommand];

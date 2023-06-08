@@ -1,10 +1,10 @@
-import { Player } from 'discord-music-player';
+import { Player } from 'discord-player';
 import { Client, ClientOptions, Collection } from 'discord.js';
 import ICommand from './Command';
 
 export class CustomClient extends Client {
   commands: Collection<unknown, ICommand> = new Collection();
-  player: Player<any>;
+  player: Player;
 
   constructor(clientOptions: ClientOptions) {
     super(clientOptions);

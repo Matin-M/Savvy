@@ -11,12 +11,15 @@
     "clean": "tsc --build --clean"
   },
   "dependencies": {
+    "@discord-player/extractor": "^4.2.1",
     "@discordjs/builders": "^1.1.0",
-    "@discordjs/opus": "^0.8.0",
+    "@discordjs/opus": "^0.9.0",
     "@discordjs/rest": "^1.0.1",
+    "@distube/ytdl-core": "^4.11.10",
+    "@ffmpeg-installer/ffmpeg": "^1.1.0",
     "axios": "^1.2.1",
     "discord-api-types": "^0.37.2",
-    "discord-music-player": "^9.1.1",
+    "discord-player": "6.3.1",
     "discord.js": "^14.2.0",
     "dotenv": "^16.0.1",
     "isomorphic-unfetch": "^3.1.0",

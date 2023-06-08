@@ -20,12 +20,13 @@ import {
   GuildBasedChannel,
   PartialGuildMember,
   Presence,
+  AutocompleteInteraction,
 } from 'discord.js';
 import { Sequelize } from 'sequelize';
 import schemaColumns from './database/schema';
 import presenceSchema from './database/presenceSchema';
 import { CustomClient } from './types/CustomClient';
-import { Player } from 'discord-music-player';
+import { Player } from 'discord-player';
 import {
   token,
   devAdminId,
@@ -69,9 +70,8 @@ const client = new CustomClient({
   ],
 });
 
-const player = new Player(client, {
-  leaveOnEmpty: false,
-});
+const player = new Player(client);
+player.extractors.loadDefault();
 client.player = player;
 
 ClientCommands.map((command) => client.commands.set(command.data, command));
@@ -482,16 +482,22 @@ client.on(
       | Interaction<CacheType>
       | ChatInputCommandInteraction<CacheType>
       | SelectMenuInteraction<CacheType>
+      | AutocompleteInteraction<CacheType>
   ) => {
-    if (interaction.isAutocomplete()) return;
-    if (!interaction.guild) {
-      await interaction.reply({
-        content: `This command can only be used in servers!`,
-        ephemeral: false,
-      });
+    if (interaction.isAutocomplete() && interaction.commandName === 'play') {
+      // await autocompleteRun(interaction);
       return;
     }
-    if (interaction.guild.id === devGuildId && environment === 'production') {
+    if (!interaction.guild) {
+      if (interaction.isCommand()) {
+        await interaction.reply({
+          content: `This command can only be used in servers!`,
+          ephemeral: false,
+        });
+        return;
+      }
+    }
+    if (interaction.guild!.id === devGuildId && environment === 'production') {
       return;
     }
     if (interaction.isCommand()) {
@@ -530,14 +536,14 @@ client.on(
             .setTimestamp();
           await Tags.update(
             { self_assign_roles: [] },
-            { where: { guildId: interaction.guild.id } }
+            { where: { guildId: interaction.guild!.id } }
           );
           interaction.followUp({ embeds: [replyEmbed] });
           return;
         }
         await Tags.update(
           { self_assign_roles: roles },
-          { where: { guildId: interaction.guild.id } }
+          { where: { guildId: interaction.guild!.id } }
         );
         replyEmbed
           .setColor('#0099ff')
@@ -584,7 +590,7 @@ client.on(
           )
           .setDescription(
             `Currently ${
-              interaction.guild.roles.cache.find(
+              interaction.guild!.roles.cache.find(
                 (role) => role.name === selectedRole
               )?.members.size
             } users with this role`
