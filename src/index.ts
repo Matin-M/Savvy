@@ -70,7 +70,7 @@ const client = new CustomClient({
   ],
 });
 
-const player = new Player(client);
+const player = Player.singleton(client);
 player.extractors.loadDefault();
 client.player = player;
 
@@ -97,15 +97,6 @@ const PresenceTable = sequelize.define('presence_table', presenceSchema, {
 });
 Tags.hasMany(PresenceTable, { foreignKey: 'guildId' });
 PresenceTable.belongsTo(Tags, { foreignKey: 'guildId' });
-
-// queryInterface
-//  .addConstraint('presence_table', {
-//    fields: ['userId', 'timeStamp'],
-//    type: 'unique',
-//  })
-//  .catch(() => {
-//    /**/
-//  });
 
 async function addColumn(col: string) {
   await queryInterface
@@ -177,7 +168,11 @@ client.on(Events.GuildDelete, (guild: Guild) => {
 client.on(
   Events.PresenceUpdate,
   async (oldPresence: Presence | null, newPresence: Presence) => {
-    if (!newPresence || newPresence.guild!.id === devGuildId) {
+    if (
+      !newPresence ||
+      newPresence.guild!.id === devGuildId ||
+      environment !== 'production'
+    ) {
       return;
     }
     const clientActivity = newPresence.activities[0];
@@ -338,7 +333,8 @@ client.on(
   async (oldState: VoiceState, newState: VoiceState) => {
     if (
       newState.channelId != oldState.channelId &&
-      newState.channelId != null
+      newState.channelId != null &&
+      newState.member!.id != client.user!.id
     ) {
       const tag = (await Tags.findOne({
         where: { guildId: newState.member!.guild.id },

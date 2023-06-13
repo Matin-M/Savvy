@@ -7,7 +7,7 @@ import {
 import { Model, ModelCtor } from 'sequelize/types';
 import ICommand from '../types/Command';
 import { CustomClient } from '../types/CustomClient';
-import { useQueue } from 'discord-player';
+import { useQueue, useMasterPlayer } from 'discord-player';
 
 const Play = {
   data: new SlashCommandBuilder()
@@ -29,16 +29,28 @@ const Play = {
     const members = await interaction.guild!.members.fetch();
     const member = members.find((m) => m.id === interaction.user.id);
     const channel = member!.voice.channel;
-    console.log(`[MusicPlayer]: ${interaction.guild!.id}`);
+    const player = useMasterPlayer()!;
+
+    // Checking if the user is connected to a voice channel
+    if (!channel) {
+      return interaction.reply('You need to join a voice channel first!');
+    }
+    if (!channel.joinable) {
+      return interaction.reply(
+        'I do not have permissions to join your voice channels!'
+      );
+    }
+
     try {
-      const searchResult = await client.player.search(query, {
+      const searchResult = await player.search(query, {
         requestedBy: interaction.user,
       });
       if (!searchResult.hasTracks()) {
         await interaction.reply(`We found no tracks for ${query}!`);
         return;
       } else {
-        const { track } = await client.player.play(channel!, searchResult, {
+        // Play the music in the specified channel
+        const { track } = await player.play(channel, searchResult, {
           nodeOptions: {
             metadata: interaction,
           },
