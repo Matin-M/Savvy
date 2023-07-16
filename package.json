@@ -2,7 +2,7 @@
   "name": "savvy",
   "version": "v1.1.2",
   "description": "A DiscordJS bot",
-  "main": "src/index.js",
+  "main": "bin/index.js",
   "scripts": {
     "prepare": "husky install",
     "prettier-format": "prettier --config .prettierrc 'src/**/*.ts' --write",
