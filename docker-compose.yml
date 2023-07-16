@@ -3,12 +3,14 @@ services:
   bot:
     build:
       context: ./
-      dockerfile: Dockerfile
+      dockerfile: ${DOCKERFILE}
     restart: always
     depends_on:
       - db
     ports:
       - '3000:3000'
+    volumes:
+      - .:/app
     environment:
       PRODUCTION: true
       NODE_ENV: production

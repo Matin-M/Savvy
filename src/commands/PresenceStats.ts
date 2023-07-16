@@ -18,6 +18,8 @@ export default {
     Tags: ModelCtor<Model<any, any>>,
     PresenceTable: ModelCtor<Model<any, any>>
   ) {
+    await interaction.deferReply({ ephemeral: true });
+
     // User presence
     const presences = (await PresenceTable.findAll({
       where: { guildId: interaction.guild!.id },
@@ -57,6 +59,7 @@ export default {
         inline: true,
       })
       .setTimestamp();
-    await interaction.reply({ embeds: [replyEmbed], ephemeral: true });
+
+    await interaction.editReply({ embeds: [replyEmbed] });
   },
 };

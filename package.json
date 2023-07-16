@@ -8,7 +8,8 @@
     "prettier-format": "prettier --config .prettierrc 'src/**/*.ts' --write",
     "eslint": "eslint --fix --ext .js,.ts .",
     "build": "tsc --build",
-    "clean": "tsc --build --clean"
+    "clean": "tsc --build --clean",
+    "dev": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/index.ts"
   },
   "dependencies": {
     "@discord-player/extractor": "^4.2.1",
@@ -37,6 +38,7 @@
     "eslint-plugin-prettier": "^4.2.1",
     "husky": "^8.0.1",
     "lint-staged": "^13.0.3",
+    "nodemon": "^3.0.1",
     "prettier": "^2.7.1",
     "ts-loader": "^9.4.1",
     "ts-node": "^10.9.1",
