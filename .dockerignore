@@ -1,15 +1,5 @@
 node_modules
 ProcessLogs
 bin
-npm-debug.Log
-.husky
 update.sh
-README.md
-docker-compose.yaml
-Dockerfile
-ecosystem.config.js
-.prettierrc
-.prettierignore
-.git
-.gitignore
-.gitattributes
+.nvmrc

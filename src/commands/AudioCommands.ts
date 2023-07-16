@@ -31,46 +31,59 @@ const Play = {
     const channel = member!.voice.channel;
     const player = useMasterPlayer()!;
 
-    // Checking if the user is connected to a voice channel
     if (!channel) {
-      return interaction.reply('You need to join a voice channel first!');
+      replyEmbed
+        .setColor('#FF0000')
+        .setDescription('You need to join a voice channel first!');
+      return interaction.reply({ embeds: [replyEmbed], ephemeral: true });
     }
     if (!channel.joinable) {
-      return interaction.reply(
-        'I do not have permissions to join your voice channels!'
-      );
+      replyEmbed
+        .setColor('#FF0000')
+        .setDescription(
+          'I do not have permissions to join your voice channels!'
+        );
+      return interaction.reply({ embeds: [replyEmbed], ephemeral: true });
     }
 
     try {
+      await interaction.deferReply({
+        ephemeral: false,
+      });
+      replyEmbed
+        .setColor('#FFA500')
+        .setDescription('Searching for your song...');
+      await interaction.editReply({ embeds: [replyEmbed] });
+
       const searchResult = await player.search(query, {
         requestedBy: interaction.user,
       });
       if (!searchResult.hasTracks()) {
-        await interaction.reply(`We found no tracks for ${query}!`);
-        return;
+        replyEmbed
+          .setColor('#FF0000')
+          .setDescription(`We found no tracks for ${query}!`);
+        return interaction.editReply({ embeds: [replyEmbed] });
       } else {
-        // Play the music in the specified channel
         const { track } = await player.play(channel, searchResult, {
           nodeOptions: {
             metadata: interaction,
           },
         });
         replyEmbed
-          .setColor(track ? '#0099ff' : '#FF0000')
+          .setColor(track ? '#00FF00' : '#FF0000')
           .setDescription(
             `${track ? 'Now playing' : 'Unable to play'} **${
               track ? track : query
             }** in voice channel **${channel?.name}**`
           );
-        await interaction.reply({
+        await interaction.editReply({
           embeds: [replyEmbed],
-          ephemeral: track ? false : true,
-          fetchReply: true,
         });
       }
     } catch (e) {
       console.log(`[MusicPlayerError]: ${e}`);
-      // await interaction.reply({ embeds: [replyEmbed], ephemeral: true });
+      replyEmbed.setColor('#FF0000').setDescription(`Error occurred: ${e}`);
+      await interaction.editReply({ embeds: [replyEmbed] });
     }
   },
 };
