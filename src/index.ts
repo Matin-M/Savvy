@@ -551,9 +551,9 @@ client.on(
           .setTimestamp();
         interaction.followUp({ embeds: [replyEmbed] });
       }
-    } else {
+    } else if (interaction.isStringSelectMenu()) {
       const replyEmbed = new EmbedBuilder();
-      const menuInteraction = interaction as SelectMenuInteraction<CacheType>;
+      const menuInteraction = interaction;
       const selectedRole = menuInteraction.values[0];
       if (menuInteraction.customId === 'role-selector') {
         try {
