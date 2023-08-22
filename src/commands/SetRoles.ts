@@ -60,7 +60,7 @@ export default {
         .setColor('#FF0000')
         .setTitle(`You do not have the permission to use this command!`)
         .setTimestamp();
-      await interaction.reply({ embeds: [replyEmbed] });
+      await interaction.reply({ embeds: [replyEmbed], ephemeral: true });
     }
   },
 };

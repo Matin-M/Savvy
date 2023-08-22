@@ -27,6 +27,7 @@ import schemaColumns from './database/schema';
 import presenceSchema from './database/presenceSchema';
 import { CustomClient } from './types/CustomClient';
 import { Player } from 'discord-player';
+import { sendMessageToUser } from './helpers/utils';
 import {
   token,
   devAdminId,
@@ -541,15 +542,15 @@ client.on(
           { self_assign_roles: roles },
           { where: { guildId: interaction.guild!.id } }
         );
-        replyEmbed
-          .setColor('#0099ff')
-          .setTitle(
-            `Users can select the following role(s) using the /addrole command: ${roles
-              .map((role) => `\n:arrow_right: *${role}*`)
-              .join('')}`
-          )
-          .setTimestamp();
-        interaction.followUp({ embeds: [replyEmbed] });
+        sendMessageToUser(
+          `Users in server ${
+            interaction.guild?.name
+          } can select the following role(s) using the /addrole command: ${roles
+            .map((role) => `\n:arrow_right: *${role}*`)
+            .join('')}`,
+          client,
+          interaction.user.id
+        );
       }
     } else if (interaction.isStringSelectMenu()) {
       const replyEmbed = new EmbedBuilder();

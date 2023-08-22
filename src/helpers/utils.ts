@@ -1,5 +1,6 @@
 import { ChannelType, Guild, GuildBasedChannel } from 'discord.js';
 import { removeStopwords } from 'stopword';
+import { CustomClient } from '../types/CustomClient';
 
 export const msToTime = (ms: number) => {
   const seconds = ms / 1000;
@@ -99,4 +100,19 @@ export const sendMessageToChannel = (
     }
     return false;
   });
+};
+
+export const sendMessageToUser = (
+  message: string,
+  client: CustomClient,
+  userId: string
+) => {
+  client.users
+    .fetch(userId)
+    .then((user) => {
+      user.send(message);
+    })
+    .catch((error) => {
+      console.log(`[ERROR]: ${error}`);
+    });
 };
