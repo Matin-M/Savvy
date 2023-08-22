@@ -78,7 +78,7 @@ export const keywordSort = (
       return arr[b] - arr[a];
     })
     .forEach((item, index) => {
-      index < 15
+      index < 10
         ? (freqTable += `${formatter(item)} → ${arr[item]}\n`)
         : undefined;
     });

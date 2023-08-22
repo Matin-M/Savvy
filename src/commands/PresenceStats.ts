@@ -24,9 +24,34 @@ export default {
     const presences = (await PresenceTable.findAll({
       where: { guildId: interaction.guild!.id },
     }))!;
+
     let presenceMap = {};
     let musicMap = {};
+    const uniqueUsers = new Set();
+    const userStatusCount = {
+      online: 0,
+      idle: 0,
+      dnd: 0,
+      offline: 0,
+    };
+    const userActivityCount: { [userId: string]: number } = {};
+
     presences.forEach((t) => {
+      const userId = t.get('userId') as string;
+      if (userActivityCount[userId]) {
+        userActivityCount[userId]++;
+      } else {
+        userActivityCount[userId] = 1;
+      }
+
+      uniqueUsers.add(t.get('userId'));
+
+      // Count user statuses
+      const status = t.get('userStatus') as keyof typeof userStatusCount;
+      if (status in userStatusCount) {
+        userStatusCount[status]++;
+      }
+
       if (
         t.get('name') === 'No Activity' ||
         t.get('name') === 'Custom Status'
@@ -44,20 +69,35 @@ export default {
     });
     const presenceRanking = keywordSort(presenceMap, (item) => item);
     const musicRanking = keywordSort(musicMap, (item) => item);
+    const sortedUsers = Object.entries(userActivityCount).sort(
+      (a, b) => b[1] - a[1]
+    );
+    const top10Users = sortedUsers.slice(0, 10);
+    // 3. Display the Top 10 Users
+    const top10Display = top10Users
+      .map(([id, count], index) => `${index + 1}. <@${id}>: ${count} presences`)
+      .join('\n');
 
     const replyEmbed = new EmbedBuilder()
       .setColor('#0099ff')
       .setTitle(`Activity information for ${interaction.guild!.name}`)
-      .addFields({
-        name: `Most common activities`,
-        value: `**${presenceRanking}**`,
-        inline: true,
-      })
-      .addFields({
-        name: `Most popular songs`,
-        value: `**${musicRanking}**`,
-        inline: true,
-      })
+      .addFields(
+        { name: '📊 Basic Stats', value: '\u200b' },
+        { name: '🏆 Top 10 Active Users', value: top10Display },
+        {
+          name: `Total presences logged`,
+          value: `${presences.length}`,
+          inline: true,
+        },
+        { name: '👥 User Status', value: '\u200b' },
+        {
+          name: `Status Distribution`,
+          value: `Online: ${userStatusCount.online}\nIdle: ${userStatusCount.idle}\nDND: ${userStatusCount.dnd}\nOffline: ${userStatusCount.offline}`,
+          inline: true,
+        },
+        { name: '🎮 Most Common Activities', value: `${presenceRanking}` },
+        { name: '🎵 Most Popular Songs', value: `${musicRanking}` }
+      )
       .setTimestamp();
 
     await interaction.editReply({ embeds: [replyEmbed] });
