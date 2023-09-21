@@ -4,7 +4,7 @@ Savvy is a discord moderation bot written using the Discord.JS framework.
 
 ## Features
 
-Soundcloud/youtube/spotify music player, keyword blacklisting, voice channel status pings, new user greetings, auto/self-select role assignments, proxy messaging, account/server info, auto keyword replies, and a continuous guild memember data logging. 
+Soundcloud/youtube/spotify streaming, keyword blacklisting, voice channel status pings, new user greetings, auto/self-select role assignments, proxy messaging, account/server statistics, auto keyword replies, and continuous guild member presence logging. 
 
 ## Setup and deployment
 
