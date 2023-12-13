@@ -121,7 +121,6 @@ client.once(Events.ClientReady, async () => {
 
   client.user!.setStatus('online');
   setInterval(() => {
-    console.log('Setting user activity');
     client.user!.setPresence({
       activities: [
         {
