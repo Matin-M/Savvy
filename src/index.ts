@@ -227,21 +227,16 @@ client.on(Events.MessageCreate, async (message: Message<boolean>) => {
       }`
     );
     try {
-      await Tags.update(
-        {
-          user_message_logs: sequelize.fn(
-            'array_append',
-            sequelize.col('user_message_logs'),
-            JSON.stringify({
-              guildIdent: message.guild!.id,
-              userID: message.author.id,
-              userMessage: message.content,
-              timeStamp: Date.now(),
-            })
-          ),
-        },
-        { where: { guildId: message.guild!.id } }
-      );
+      await ClientMessageLogs.create({
+        guildId: message.guild ? message.guild.id : 'N/A',
+        userId: message.author.id,
+        messageId: message.id,
+        editedAt: message.editedAt,
+        contents: message.content,
+        channelName: message.channel.name,
+        channelId: message.channel.id,
+        type: message.type,
+      });
       const tag = (await Tags.findOne({
         where: { guildId: message.guild!.id },
       }))!;
