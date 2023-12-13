@@ -1,0 +1,10 @@
+{
+  "clientId": "<APP ID>",
+  "environment": "testing",
+  "devAdminId": "<DEVELOPER ID>",
+  "clientActivityTitle": "/play",
+  "clientActivityType": "LISTENING",
+  "token": "<LOGIN TOKEN>",
+  "devGuildId": "<GUILD ID>",
+  "fortnite_api_key": "<KEY>"
+}
