@@ -8,7 +8,8 @@ type ICommand = {
     client: CustomClient,
     interaction?: Interaction<CacheType>,
     Tags?: ModelCtor<Model<any, any>>,
-    PresenceTable?: ModelCtor<Model<any, any>>
+    PresenceTable?: ModelCtor<Model<any, any>>,
+    ClientMessageLogs?: ModelCtor<Model<any, any>>
   ) => Promise<void>;
 };
 

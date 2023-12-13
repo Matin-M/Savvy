@@ -23,8 +23,9 @@ import {
   AutocompleteInteraction,
 } from 'discord.js';
 import { Sequelize } from 'sequelize';
-import schemaColumns from './database/schema';
-import presenceSchema from './database/presenceSchema';
+import schemaColumns from './database/models/schema';
+import presenceSchema from './database/models/presenceSchema';
+import clientMessageSchema from './database/models/clientMessageSchema';
 import { CustomClient } from './types/CustomClient';
 import { Player } from 'discord-player';
 import { sendMessageToUser } from './helpers/utils';
@@ -89,30 +90,24 @@ const sequelize = new Sequelize(
   }
 );
 
-const queryInterface = sequelize.getQueryInterface();
 const Tags = sequelize.define('defaultschemas', schemaColumns, {
   tableName: 'defaultschemas',
 });
 const PresenceTable = sequelize.define('presence_table', presenceSchema, {
   freezeTableName: true,
 });
-Tags.hasMany(PresenceTable, { foreignKey: 'guildId' });
-PresenceTable.belongsTo(Tags, { foreignKey: 'guildId' });
+const ClientMessageLogs = sequelize.define(
+  'client_message_logs',
+  clientMessageSchema,
+  {
+    freezeTableName: true,
+  }
+);
 
-async function addColumn(col: string) {
-  await queryInterface
-    .describeTable('defaultschemas')
-    .then((tableDefinition) => {
-      if (tableDefinition[col]) {
-        console.log(`Column ${col} exists`);
-        return Promise.resolve();
-      }
-      console.log(`Adding column ${col}`);
-      return queryInterface.addColumn('defaultschemas', col, {
-        type: schemaColumns[col as keyof typeof schemaColumns].type,
-      });
-    });
-}
+Tags.hasMany(PresenceTable, { foreignKey: 'guildId' });
+Tags.hasMany(ClientMessageLogs, { foreignKey: 'guildId' });
+PresenceTable.belongsTo(Tags, { foreignKey: 'guildId' });
+ClientMessageLogs.belongsTo(Tags, { foreignKey: 'guildId' });
 
 client.once(Events.ClientReady, async () => {
   const Guilds = client.guilds.cache.map(
@@ -122,10 +117,7 @@ client.once(Events.ClientReady, async () => {
   console.log(Guilds);
   await Tags.sync();
   await PresenceTable.sync();
-  console.log('Checking for database schema updates...');
-  for (const col in schemaColumns) {
-    await addColumn(col);
-  }
+  await ClientMessageLogs.sync();
 
   client.user!.setStatus('online');
   setInterval(() => {
@@ -235,21 +227,16 @@ client.on(Events.MessageCreate, async (message: Message<boolean>) => {
       }`
     );
     try {
-      await Tags.update(
-        {
-          user_message_logs: sequelize.fn(
-            'array_append',
-            sequelize.col('user_message_logs'),
-            JSON.stringify({
-              guildIdent: message.guild!.id,
-              userID: message.author.id,
-              userMessage: message.content,
-              timeStamp: Date.now(),
-            })
-          ),
-        },
-        { where: { guildId: message.guild!.id } }
-      );
+      await ClientMessageLogs.create({
+        guildId: message.guild ? message.guild.id : 'N/A',
+        userId: message.author.id,
+        messageId: message.id,
+        editedAt: message.editedAt,
+        contents: message.content,
+        channelName: message.channel.name,
+        channelId: message.channel.id,
+        type: message.type,
+      });
       const tag = (await Tags.findOne({
         where: { guildId: message.guild!.id },
       }))!;
