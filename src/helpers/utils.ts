@@ -1,4 +1,10 @@
-import { ChannelType, Guild, GuildBasedChannel } from 'discord.js';
+import {
+  ChannelType,
+  Guild,
+  GuildBasedChannel,
+  GuildMember,
+  PartialGuildMember,
+} from 'discord.js';
 import { removeStopwords } from 'stopword';
 import { CustomClient } from '../types/CustomClient';
 
@@ -115,4 +121,22 @@ export const sendMessageToUser = (
     .catch((error) => {
       console.log(`[ERROR]: ${error}`);
     });
+};
+
+export const formatUserName = (
+  user: (GuildMember | PartialGuildMember) | string,
+  guild: Guild,
+  client?: CustomClient
+) => {
+  if (typeof user === 'string') {
+    const member = client!.users.cache.get(user);
+    if (member && guild.members.cache.has(member.id)) {
+      return `${member.username}#${member.discriminator}`;
+    } else {
+      return 'Unknown User';
+    }
+  } else if (user.guild?.id !== guild.id) {
+    return `${user.user.username}#${user.user.discriminator}`;
+  }
+  return `<@${user.id}>`;
 };

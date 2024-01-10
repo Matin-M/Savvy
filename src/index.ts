@@ -28,7 +28,7 @@ import presenceSchema from './database/models/presenceSchema';
 import clientMessageSchema from './database/models/clientMessageSchema';
 import { CustomClient } from './types/CustomClient';
 import { Player } from 'discord-player';
-import { sendMessageToUser } from './helpers/utils';
+import { sendMessageToUser, formatUserName } from './helpers/utils';
 import {
   token,
   devAdminId,
@@ -375,7 +375,12 @@ client.on(Events.GuildMemberAdd, async (member: GuildMember) => {
         c.name == tag.get('updateChannel')
       ) {
         try {
-          c.send(`Welcome to **${member.guild.name}**, <@${member.id}>!`);
+          c.send(
+            `Welcome to **${member.guild.name}**, ${formatUserName(
+              member,
+              member.guild
+            )}!`
+          );
         } catch (error) {
           console.log(`[ERROR]: ${error}`);
         }
@@ -430,7 +435,11 @@ client.on(
           c.name == tag.get('updateChannel')
         ) {
           try {
-            c.send(`<@${member.id}> has left **${member.guild.name}**`);
+            c.send(
+              `${formatUserName(member, member.guild)} has left **${
+                member.guild.name
+              }**`
+            );
           } catch (error) {
             console.log(`[ERROR]: ${error}`);
           }
@@ -468,7 +477,6 @@ client.on(
       | AutocompleteInteraction<CacheType>
   ) => {
     if (interaction.isAutocomplete() && interaction.commandName === 'play') {
-      // await autocompleteRun(interaction);
       return;
     }
     if (!interaction.guild) {
