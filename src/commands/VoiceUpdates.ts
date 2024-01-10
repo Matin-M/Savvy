@@ -4,10 +4,8 @@ import {
   ChatInputCommandInteraction,
   EmbedBuilder,
 } from 'discord.js';
-import { dbConnectionString } from '../config.json';
 import { ModelCtor, Model, Sequelize } from 'sequelize';
 import { CustomClient } from '../types/CustomClient';
-const sequelize = new Sequelize(dbConnectionString);
 
 export default {
   data: new SlashCommandBuilder()
@@ -43,9 +41,9 @@ export default {
     } else {
       await Tags.update(
         {
-          voice_subscribers_list: sequelize.fn(
+          voice_subscribers_list: Sequelize.fn(
             'array_append',
-            sequelize.col('voice_subscribers_list'),
+            Sequelize.col('voice_subscribers_list'),
             `${interaction.user.id}`
           ),
         },

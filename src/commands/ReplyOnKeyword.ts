@@ -4,11 +4,9 @@ import {
   ChatInputCommandInteraction,
   EmbedBuilder,
 } from 'discord.js';
-import { dbConnectionString } from '../config.json';
 import { ModelCtor, Model, Sequelize } from 'sequelize';
 import { CustomClient } from '../types/CustomClient';
 import { devAdminId } from '../config.json';
-const sequelize = new Sequelize(dbConnectionString);
 
 export default {
   data: new SlashCommandBuilder()
@@ -59,9 +57,9 @@ export default {
 
       await Tags.update(
         {
-          message_reply_keywords: sequelize.fn(
+          message_reply_keywords: Sequelize.fn(
             'array_append',
-            sequelize.col('message_reply_keywords'),
+            Sequelize.col('message_reply_keywords'),
             `${keyword}`
           ),
         },
@@ -69,9 +67,9 @@ export default {
       );
       await Tags.update(
         {
-          message_reply_phrases: sequelize.fn(
+          message_reply_phrases: Sequelize.fn(
             'array_append',
-            sequelize.col('message_reply_phrases'),
+            Sequelize.col('message_reply_phrases'),
             `${phrase}`
           ),
         },
