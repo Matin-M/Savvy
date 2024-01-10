@@ -113,8 +113,7 @@ client.once(Events.ClientReady, async () => {
   const Guilds = client.guilds.cache.map(
     (guild) => `${guild.id}: ${guild.name}`
   );
-  console.log('Serving in Guilds: ');
-  console.log(Guilds);
+  console.log({ Guilds });
   await Tags.sync();
   await PresenceTable.sync();
   await ClientMessageLogs.sync();
@@ -195,7 +194,7 @@ client.on(
         : 'No Small Text',
       userStatus: newPresence.status,
     }).catch(() => {
-      console.log('ERROR: cannot log presence change');
+      console.error('[PresenceLoggingError]: Cannot log presence change');
     });
   }
 );
@@ -256,7 +255,7 @@ client.on(Events.MessageCreate, async (message: Message<boolean>) => {
               );
               await messageSender.send({ embeds: [replyEmbed] });
             } catch (error) {
-              console.log(`[MessageSendError]: ${error}`);
+              console.error(`[MessageSendError]: ${error}`);
               return;
             }
           } else if (phrases[i] === '<RESET>') {
@@ -276,7 +275,7 @@ client.on(Events.MessageCreate, async (message: Message<boolean>) => {
         }
       }
     } catch (error) {
-      console.log(`[DBError]: Guild ${message.guild!.id} not found`);
+      console.error(`[DBError]: Guild ${message.guild!.id} not found`);
       return;
     }
   }
@@ -356,7 +355,7 @@ client.on(
           );
           await subscribedUser.send({ embeds: [replyEmbed] });
         } catch (error) {
-          console.log(`[ERROR]: ${error}`);
+          console.error(`[VoiceUpdateError]: ${error}`);
         }
       }
     }
@@ -382,7 +381,7 @@ client.on(Events.GuildMemberAdd, async (member: GuildMember) => {
             )}!`
           );
         } catch (error) {
-          console.log(`[ERROR]: ${error}`);
+          console.error(`[UpdateChannelError]: ${error}`);
         }
       }
       return false;
@@ -399,7 +398,7 @@ client.on(Events.GuildMemberAdd, async (member: GuildMember) => {
       )!
     );
   } catch (error) {
-    console.log(`[ERROR]: ${error}`);
+    console.error(`[UpdateChannelError]: ${error}`);
   }
   await Tags.update(
     {
@@ -441,7 +440,7 @@ client.on(
               }**`
             );
           } catch (error) {
-            console.log(`[ERROR]: ${error}`);
+            console.error(`[GuildMemberRemoveError]: ${error}`);
           }
         }
         return false;
@@ -464,7 +463,7 @@ client.on(
   }
 );
 
-client.on('warn', (info) => console.log(`[WARN]: ${info}`));
+client.on('warn', (info) => console.warn(`[WARN]: ${info}`));
 
 // Handle slash commands
 client.on(
@@ -505,12 +504,21 @@ client.on(
       try {
         await command.execute(client, interaction, Tags, PresenceTable);
       } catch (error) {
-        console.error(error);
-        await interaction.reply({
-          content: `Error! ${error}`,
-          ephemeral: true,
-        });
-        console.log(`Command execution error: ${error}`);
+        console.error(
+          `[InteractionError]-FROM-${interaction.user.id}-IN-${
+            interaction.guild ? interaction.guild.name : 'UserDM'
+          }: ${error}`
+        );
+        if (interaction.deferred) {
+          await interaction.editReply({
+            content: `There was an error while executing this command!`,
+          });
+        } else {
+          await interaction.reply({
+            content: `There was an error while executing this command!`,
+            ephemeral: true,
+          });
+        }
       }
     } else if (interaction.type === InteractionType.ModalSubmit) {
       const replyEmbed = new EmbedBuilder();
@@ -560,14 +568,17 @@ client.on(
           ) as Role;
           member.roles.add(role);
         } catch (error) {
-          console.log('There was an error! Role does not exist');
+          console.error(
+            `[MenuInteractionError]-FROM-${interaction.user.id}-IN-${
+              interaction.guild ? interaction.guild.name : 'UserDM'
+            }: ${error}`
+          );
           replyEmbed
             .setColor('#FF0000')
             .setTitle(
               `Role does not exist. Please contact the admin of this discord server`
             )
             .setTimestamp();
-          console.log(`[ERROR]: ${error}`);
           await menuInteraction.update({
             embeds: [replyEmbed],
             components: [],
