@@ -128,10 +128,13 @@ export const formatUserName = (
   guild: Guild,
   client?: CustomClient
 ) => {
+  if (!user) return 'Unknown User';
   if (typeof user === 'string') {
     const member = client!.users.cache.get(user);
-    if (member && guild.members.cache.has(member.id)) {
-      return `${member.username}#${member.discriminator}`;
+    if (member) {
+      return guild.members.cache.has(user)
+        ? `<@${user}>`
+        : `${member.username}#${member.discriminator}`;
     } else {
       return 'Unknown User';
     }

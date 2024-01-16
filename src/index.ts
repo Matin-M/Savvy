@@ -307,7 +307,7 @@ client.on(
         { where: { guildId: message.guild!.id } }
       );
     } catch (error) {
-      console.log(`[DBError]: Guild ${message.guild!.id} not found`);
+      console.log(`[DBError]: Guild ${message.guild!.name} not found`);
       return;
     }
   }
@@ -492,7 +492,7 @@ client.on(
     }
     if (interaction.isCommand()) {
       console.log(
-        `[InteractionCreate]-FROM-${interaction.user.id}-IN-${
+        `[InteractionCreate]-FROM-${interaction.user.username}-IN-${
           interaction.guild ? interaction.guild.name : 'UserDM'
         }: ${interaction.type}`
       );
@@ -505,7 +505,7 @@ client.on(
         await command.execute(client, interaction, Tags, PresenceTable);
       } catch (error) {
         console.error(
-          `[InteractionError]-FROM-${interaction.user.id}-IN-${
+          `[InteractionError]-FROM-${interaction.user.username}-IN-${
             interaction.guild ? interaction.guild.name : 'UserDM'
           }: ${error}`
         );
@@ -569,7 +569,7 @@ client.on(
           member.roles.add(role);
         } catch (error) {
           console.error(
-            `[MenuInteractionError]-FROM-${interaction.user.id}-IN-${
+            `[MenuInteractionError]-FROM-${interaction.user.username}-IN-${
               interaction.guild ? interaction.guild.name : 'UserDM'
             }: ${error}`
           );

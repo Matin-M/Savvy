@@ -73,14 +73,10 @@ export default {
     );
     const top10Users = sortedUsers.slice(0, 10);
     const top10Display = top10Users
-      .map(
-        ([id, count], index) =>
-          `${index + 1}. ${formatUserName(
-            id,
-            interaction.guild!,
-            client
-          )}: ${count} presences`
-      )
+      .map(([id, count], index) => {
+        const formattedName = formatUserName(id, interaction.guild!, client);
+        return `${index + 1}. ${formattedName}: ${count} presences`;
+      })
       .join('\n');
 
     const replyEmbed = new EmbedBuilder()
