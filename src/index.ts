@@ -181,17 +181,13 @@ client.on(
       guildId: newPresence.guild!.id,
       userId: newPresence.user!.id,
       timeStamp: new Date(),
-      name: clientActivity?.name ? clientActivity.name : 'No Activity',
-      type: clientActivity?.type ? clientActivity.type : 0,
-      url: clientActivity?.url ? clientActivity.url : 'No URL',
-      details: clientActivity?.details ? clientActivity.details : 'No Details',
-      state: clientActivity?.state ? clientActivity.state : 'No State',
-      largeText: clientActivity?.assets?.largeText
-        ? clientActivity.assets.largeText
-        : 'No Large Text',
-      smallText: clientActivity?.assets?.smallText
-        ? clientActivity.assets.smallText
-        : 'No Small Text',
+      name: clientActivity.name,
+      type: clientActivity.type,
+      url: clientActivity.url,
+      details: clientActivity.details,
+      state: clientActivity.state,
+      largeText: clientActivity?.assets?.largeText,
+      smallText: clientActivity?.assets?.smallText,
       userStatus: newPresence.status,
     }).catch(() => {
       console.error('[PresenceLoggingError]: Cannot log presence change');
