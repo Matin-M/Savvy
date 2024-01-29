@@ -15,6 +15,7 @@ export default {
   async execute(
     client: CustomClient,
     interaction: ChatInputCommandInteraction<CacheType>,
+    Tags: ModelCtor<Model<any, any>>,
     PresenceTable: ModelCtor<Model<any, any>>
   ) {
     await interaction.deferReply({ ephemeral: true });

@@ -216,9 +216,9 @@ client.on(Events.MessageCreate, async (message: Message<boolean>) => {
     console.log(`[UserDM]-FROM-${message.author.username}: ${message.content}`);
   } else if (message.channel.type === ChannelType.GuildText) {
     console.log(
-      `[ChannelMessage]-FROM-${message.author.id}-IN-${message.guild!.id}: ${
-        message.content
-      }`
+      `[ChannelMessage]-FROM-${message.author.username}-IN-${
+        message.guild!.name
+      }: ${message.content}`
     );
     try {
       await ClientMessageLogs.create({
@@ -281,7 +281,7 @@ client.on(Events.MessageCreate, async (message: Message<boolean>) => {
 client.on(
   Events.MessageDelete,
   async (message: Message<boolean> | PartialMessage) => {
-    const messageAuthor = message.author?.id || 'NA';
+    const messageAuthor = message.author?.username || 'NA';
     const guildId = message.guildId || 'NA';
     console.log(
       `[MessageDelete]-FROM-${messageAuthor}-IN-${guildId}: ${message.content}`
@@ -345,9 +345,9 @@ client.on(
           .setTimestamp();
         try {
           console.log(
-            `[VoiceUpdate]-FROM-${newState.member!.id}-IN-${
-              newState.member!.guild.id
-            }: ${newState.channel!.id}`
+            `[VoiceUpdate]-FROM-${newState.member!.user.username}-IN-${
+              newState.member!.guild.name
+            }: ${newState.channel!.name}`
           );
           await subscribedUser.send({ embeds: [replyEmbed] });
         } catch (error) {
@@ -360,7 +360,9 @@ client.on(
 
 // Handle guild member join
 client.on(Events.GuildMemberAdd, async (member: GuildMember) => {
-  console.log(`[NewUserJoin]-FROM-${member.user.id}-IN-${member.guild.id}`);
+  console.log(
+    `[NewUserJoin]-FROM-${member.user.username}-IN-${member.guild.name}`
+  );
   const tag = (await Tags.findOne({ where: { guildId: member.guild.id } }))!;
 
   if (tag.get('updateChannel') != 'NA') {
@@ -416,7 +418,9 @@ client.on(Events.GuildMemberAdd, async (member: GuildMember) => {
 client.on(
   Events.GuildMemberRemove,
   async (member: GuildMember | PartialGuildMember) => {
-    console.log(`[UserLeave]-FROM-${member.user.id}-IN-${member.guild.id}`);
+    console.log(
+      `[UserLeave]-FROM-${member.user.username}-IN-${member.guild.name}`
+    );
     if (member.id === client.user!.id) {
       return;
     }
