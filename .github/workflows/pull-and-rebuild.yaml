@@ -15,4 +15,4 @@ jobs:
           script: |
             cd ${{ secrets.APP_PATH }}
             git pull https://github.com/Matin-M/Savvy.git main
-            docker-compose up -d --build
+            docker compose up -d --build
