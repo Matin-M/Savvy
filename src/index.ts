@@ -98,27 +98,33 @@ PresenceTable.belongsTo(Tags, { foreignKey: 'guildId' });
 ClientMessageLogs.belongsTo(Tags, { foreignKey: 'guildId' });
 
 client.once(Events.ClientReady, async () => {
-  const Guilds = client.guilds.cache.map(
-    (guild) => `${guild.id}: ${guild.name}`
-  );
-  console.log({ Guilds });
-  await Tags.sync();
-  await PresenceTable.sync();
-  await ClientMessageLogs.sync();
+  try {
+    const Guilds = client.guilds.cache.map(
+      (guild) => `${guild.id}: ${guild.name}`
+    );
+    console.log({ Guilds });
 
-  client.user!.setStatus('online');
-  setInterval(() => {
-    client.user!.setPresence({
-      activities: [
-        {
-          name: clientActivityTitle,
-          type: ActivityType.Listening,
-        },
-      ],
-      status: 'online',
-    });
-  }, 300000);
-  console.log('[-----------------------READY-----------------------]');
+    await Promise.all([
+      Tags.sync(),
+      PresenceTable.sync(),
+      ClientMessageLogs.sync(),
+    ]);
+    console.log('Database synchronized');
+
+    client.user!.setStatus('online');
+    setInterval(() => {
+      client.user!.setPresence({
+        activities: [
+          { name: clientActivityTitle, type: ActivityType.Listening },
+        ],
+        status: 'online',
+      });
+    }, 300000);
+
+    console.log('[-----------------------READY-----------------------]');
+  } catch (error) {
+    console.error(`[DBError]: ${error}`);
+  }
 });
 
 // Handle guild joins
