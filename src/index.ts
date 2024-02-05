@@ -22,7 +22,7 @@ import {
   Presence,
   AutocompleteInteraction,
 } from 'discord.js';
-import { Sequelize } from 'sequelize';
+import connection from './database/connection';
 import schemaColumns from './database/models/schema';
 import presenceSchema from './database/models/presenceSchema';
 import clientMessageSchema from './database/models/clientMessageSchema';
@@ -78,25 +78,13 @@ client.player = player;
 
 ClientCommands.map((command) => client.commands.set(command.data, command));
 
-const sequelize = new Sequelize(
-  process.env.DB_NAME!,
-  process.env.DB_USER!,
-  process.env.DB_PASSWORD,
-  {
-    host: process.env.DB_HOST,
-    port: process.env.DB_PORT as unknown as number,
-    dialect: 'postgres',
-    logging: false,
-  }
-);
-
-const Tags = sequelize.define('defaultschemas', schemaColumns, {
+const Tags = connection.define('defaultschemas', schemaColumns, {
   tableName: 'defaultschemas',
 });
-const PresenceTable = sequelize.define('presence_table', presenceSchema, {
+const PresenceTable = connection.define('presence_table', presenceSchema, {
   freezeTableName: true,
 });
-const ClientMessageLogs = sequelize.define(
+const ClientMessageLogs = connection.define(
   'client_message_logs',
   clientMessageSchema,
   {
@@ -289,9 +277,9 @@ client.on(
     try {
       await Tags.update(
         {
-          deleted_user_message_logs: sequelize.fn(
+          deleted_user_message_logs: connection.fn(
             'array_append',
-            sequelize.col('deleted_user_message_logs'),
+            connection.col('deleted_user_message_logs'),
             JSON.stringify({
               guildID: guildId,
               userID: messageAuthor,
@@ -400,9 +388,9 @@ client.on(Events.GuildMemberAdd, async (member: GuildMember) => {
   }
   await Tags.update(
     {
-      user_joined_logs: sequelize.fn(
+      user_joined_logs: connection.fn(
         'array_append',
-        sequelize.col('user_joined_logs'),
+        connection.col('user_joined_logs'),
         JSON.stringify({
           guildID: member.guild.id,
           userID: member.id,
@@ -448,9 +436,9 @@ client.on(
     }
     await Tags.update(
       {
-        user_left_logs: sequelize.fn(
+        user_left_logs: connection.fn(
           'array_append',
-          sequelize.col('user_left_logs'),
+          connection.col('user_left_logs'),
           JSON.stringify({
             guildID: member.guild.id,
             userID: member.id,
