@@ -248,7 +248,7 @@ client.on(Events.MessageCreate, async (message: Message<boolean>) => {
               console.error(`[MessageSendError]: ${error}`);
               return;
             }
-          } else if (phrases[i] === '<RESET>') {
+          } else if (phrases[i] === '<CLEAR>') {
             keywords.splice(i, 1);
             phrases.splice(i, 1);
             await Tags.update(
