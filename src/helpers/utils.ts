@@ -123,16 +123,16 @@ export const sendMessageToUser = (
     });
 };
 
-export const formatUserName = (
+export const formatUserName = async (
   user: (GuildMember | PartialGuildMember) | string,
   guild: Guild,
   client?: CustomClient
 ) => {
   if (!user) return 'Unknown User';
   if (typeof user === 'string') {
-    const member = client!.users.cache.get(user);
+    const member = await client!.users.fetch(user);
     if (member) {
-      return guild.members.cache.has(user)
+      return guild.members.cache.get(user)
         ? `<@${user}>`
         : `${member.username}#${member.discriminator}`;
     } else {
