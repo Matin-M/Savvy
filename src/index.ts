@@ -360,14 +360,14 @@ client.on(Events.GuildMemberAdd, async (member: GuildMember) => {
   const tag = (await Tags.findOne({ where: { guildId: member.guild.id } }))!;
 
   if (tag.get('updateChannel') != 'NA') {
-    member.guild.channels.cache.find((c: GuildBasedChannel) => {
+    member.guild.channels.cache.find(async (c: GuildBasedChannel) => {
       if (
         c.type === ChannelType.GuildText &&
         c.name == tag.get('updateChannel')
       ) {
         try {
           c.send(
-            `Welcome to **${member.guild.name}**, ${formatUserName(
+            `Welcome to **${member.guild.name}**, ${await formatUserName(
               member,
               member.guild
             )}!`
@@ -422,14 +422,14 @@ client.on(
     if (!tag.get('displayLeaveMessages')) return;
 
     if (tag.get('updateChannel') != 'NA') {
-      member.guild.channels.cache.find((c: GuildBasedChannel) => {
+      member.guild.channels.cache.find(async (c: GuildBasedChannel) => {
         if (
           c.type === ChannelType.GuildText &&
           c.name == tag.get('updateChannel')
         ) {
           try {
             c.send(
-              `${formatUserName(member, member.guild)} has left **${
+              `${await formatUserName(member, member.guild)} has left **${
                 member.guild.name
               }**`
             );
