@@ -366,7 +366,7 @@ client.on(Events.GuildMemberAdd, async (member: GuildMember) => {
         c.name == tag.get('updateChannel')
       ) {
         try {
-          c.send(
+          await c.send(
             `Welcome to **${member.guild.name}**, ${await formatUserName(
               member,
               member.guild
@@ -428,7 +428,7 @@ client.on(
           c.name == tag.get('updateChannel')
         ) {
           try {
-            c.send(
+            await c.send(
               `${await formatUserName(member, member.guild)} has left **${
                 member.guild.name
               }**`

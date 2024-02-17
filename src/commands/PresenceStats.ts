@@ -72,13 +72,14 @@ export default {
     const sortedUsers = Object.entries(userActivityCount).sort(
       (a, b) => b[1] - a[1]
     );
-    const top10Users = sortedUsers.slice(0, 10);
-    const top10Display = top10Users
-      .map(async ([id, count], index) => {
-        const formattedName = await formatUserName(id, interaction.guild!, client);
-        return `${index + 1}. ${formattedName}: ${count} presences`;
-      })
-      .join('\n');
+    const promises = sortedUsers.slice(0, 10).map(([id, count], index) => {
+      return formatUserName(id, interaction.guild!, client).then(
+        (formattedName) => {
+          return `${index + 1}. ${formattedName}: ${count} presences`;
+        }
+      );
+    });
+    const top10Display = (await Promise.all(promises)).join('\n');
 
     const replyEmbed = new EmbedBuilder()
       .setColor('#0099ff')
