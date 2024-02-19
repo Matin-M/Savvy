@@ -232,6 +232,7 @@ client.on(Events.MessageCreate, async (message: Message<boolean>) => {
         tag.get('message_reply_keywords') as string[]
       ).reverse();
       const phrases = (tag.get('message_reply_phrases') as string[]).reverse();
+      let messageContent = '';
       for (let i = 0; i < keywords.length; i++) {
         if (message.content.includes(keywords[i])) {
           if (phrases[i] === '<DELETE>') {
@@ -246,8 +247,8 @@ client.on(Events.MessageCreate, async (message: Message<boolean>) => {
               await messageSender.send({ embeds: [replyEmbed] });
             } catch (error) {
               console.error(`[MessageSendError]: ${error}`);
-              return;
             }
+            return;
           } else if (phrases[i] === '<CLEAR>') {
             keywords.splice(i, 1);
             phrases.splice(i, 1);
@@ -259,10 +260,12 @@ client.on(Events.MessageCreate, async (message: Message<boolean>) => {
               { where: { guildId: message.guild!.id } }
             );
           } else {
-            message.reply(phrases[i]);
+            messageContent += `${phrases[i]}\n`;
           }
-          break;
         }
+      }
+      if (messageContent !== '') {
+        message.reply(messageContent);
       }
     } catch (error) {
       console.error(`[DBError]: Guild ${message.guild!.id} not found`);
