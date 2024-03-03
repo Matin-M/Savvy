@@ -14,6 +14,7 @@ import ProxyDM from './ProxyDM';
 import RunBashCommand from './RunBashCommand';
 import ReplyOnKeyword from './ReplyOnKeyword';
 import ActivityStats from './PresenceStats';
+import ChatStats from './ChatStats';
 
 const commandList = [
   VoiceUpdates,
@@ -31,6 +32,7 @@ const commandList = [
   RunBashCommand,
   ReplyOnKeyword,
   ActivityStats,
+  ChatStats,
 ];
 
 export default commandList as [ICommand];

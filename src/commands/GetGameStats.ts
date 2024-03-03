@@ -59,7 +59,7 @@ export default {
         }
       )
       .catch((err) => {
-        // Something here just to prevent the error from being thrown
+        console.error(err);
       })
       .then((res: void | AxiosResponse<ServerResponse, any>) => {
         if (!res) {
@@ -70,8 +70,8 @@ export default {
           interaction.reply({ embeds: [replyEmbed], ephemeral: true });
           return;
         }
-        // This is a bit of a hack, but it works
         const { data } = res;
+        // lol
         const overallStats = data.data.stats.all.overall;
         replyEmbed
           .setTitle(

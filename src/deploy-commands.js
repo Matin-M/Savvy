@@ -9,6 +9,7 @@ const readline = require('readline').createInterface({
 const commands = [];
 const commandList = require('../bin/commands/index.js');
 for (const command of commandList.default) {
+  console.log(command.data.name);
   commands.push(command.data.toJSON());
 }
 
