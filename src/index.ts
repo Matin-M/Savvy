@@ -232,10 +232,15 @@ client.on(Events.MessageCreate, async (message: Message<boolean>) => {
         tag.get('message_reply_keywords') as string[]
       ).reverse();
       const phrases = (tag.get('message_reply_phrases') as string[]).reverse();
+      const messageWords = message.content.split(' ');
       let messageContent = '';
-      for (let i = 0; i < keywords.length; i++) {
-        if (message.content.includes(keywords[i])) {
-          if (phrases[i] === '<DELETE>') {
+      for (let i = 0; i < messageWords.length; i++) {
+        const index = keywords.findIndex(
+          (substring) =>
+            messageWords[i].includes(substring) || messageWords[i] === substring
+        );
+        if (index !== -1) {
+          if (phrases[index] === '<DELETE>') {
             message.delete();
             try {
               const messageSender = await client.users.fetch(message.author.id);
@@ -249,7 +254,7 @@ client.on(Events.MessageCreate, async (message: Message<boolean>) => {
               console.error(`[MessageSendError]: ${error}`);
             }
             return;
-          } else if (phrases[i] === '<CLEAR>') {
+          } else if (phrases[index] === '<CLEAR>') {
             keywords.splice(i, 1);
             phrases.splice(i, 1);
             await Tags.update(
@@ -260,7 +265,7 @@ client.on(Events.MessageCreate, async (message: Message<boolean>) => {
               { where: { guildId: message.guild!.id } }
             );
           } else {
-            messageContent += `${phrases[i]}\n`;
+            messageContent += `${phrases[index]}\n`;
           }
         }
       }
