@@ -490,6 +490,7 @@ client.on(
       }
     }
     if (interaction.guild!.id === devGuildId && environment === 'production') {
+      console.log('Skipping dev guild interaction in production mode...');
       return;
     }
     if (interaction.isCommand()) {
@@ -504,7 +505,13 @@ client.on(
       );
       if (!command) return;
       try {
-        await command.execute(client, interaction, Tags, PresenceTable);
+        await command.execute(
+          client,
+          interaction,
+          Tags,
+          PresenceTable,
+          ClientMessageLogs
+        );
       } catch (error) {
         console.error(
           `[InteractionError]-FROM-${interaction.user.username}-IN-${

@@ -34,23 +34,6 @@ export const wordFreq = (strings: [string]) => {
   return freqMap;
 };
 
-export const keySort = (
-  arr: Record<string, number>,
-  formatter: (item: string) => any
-) => {
-  let freqTable = '';
-  Object.keys(arr)
-    .sort((a, b) => {
-      return arr[b] - arr[a];
-    })
-    .forEach((item, index) => {
-      index < 15
-        ? (freqTable += `${formatter(item)} → ${arr[item]}\n`)
-        : undefined;
-    });
-  return freqTable;
-};
-
 export const keywordFreq = (
   freqMap: Record<string, number>,
   keyword: string,
