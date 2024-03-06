@@ -41,7 +41,14 @@ export default {
   ) {
     const replyEmbed = new EmbedBuilder();
     const adminRoles = interaction.guild!.roles.cache.find((role) => {
-      if (role.permissions.toArray().includes('Administrator')) {
+      console.log(role.permissions.toArray());
+      if (
+        role.permissions.toArray().includes('Administrator') ||
+        role.permissions.toArray().includes('ModerateMembers') ||
+        role.permissions.toArray().includes('ManageGuild') ||
+        role.permissions.toArray().includes('ManageChannels') ||
+        role.permissions.toArray().includes('KickMembers')
+      ) {
         return true;
       } else {
         return false;
