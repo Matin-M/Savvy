@@ -99,17 +99,41 @@ ClientMessageLogs.belongsTo(Tags, { foreignKey: 'guildId' });
 
 client.once(Events.ClientReady, async () => {
   try {
-    const Guilds = client.guilds.cache.map(
-      (guild) => `${guild.id}: ${guild.name}`
-    );
-    console.log({ Guilds });
+    const servedGuilds = client.guilds.cache.map((guild) => {
+      console.log(guild.name);
+      return `${guild.id}`;
+    });
 
     await Promise.all([
       Tags.sync(),
       PresenceTable.sync(),
       ClientMessageLogs.sync(),
     ]);
-    console.log('Database synchronized');
+
+    console.log('Checking to see if all guilds are in db...');
+    const existingGuilds = await Tags.findAll();
+    const guildsToAdd = servedGuilds.filter(
+      (id) => !existingGuilds.some((guild) => guild.get('guildId') === id)
+    );
+
+    if (guildsToAdd.length > 0) {
+      guildsToAdd.forEach((id) => {
+        Tags.create({
+          guildId: id.trim(),
+          self_assign_roles: [],
+          voice_subscribers_list: [],
+          message_reply_phrases: [],
+          message_reply_keywords: [],
+          displayLeaveMessages: true,
+          user_message_logs: [],
+          user_joined_logs: [],
+          user_left_logs: [],
+          deleted_user_message_logs: [],
+        }).then(() => console.log(`Added guild ${id}`));
+      });
+    } else {
+      console.log('All guilds are in db');
+    }
 
     client.user!.setStatus('online');
     setInterval(() => {
@@ -235,6 +259,7 @@ client.on(Events.MessageCreate, async (message: Message<boolean>) => {
       const messageWords = message.content.split(' ');
       let messageContent = '';
       for (let i = 0; i < messageWords.length; i++) {
+        // Use a map here to avoid O(n^2) complexity
         const index = keywords.findIndex(
           (substring) =>
             messageWords[i].includes(substring) || messageWords[i] === substring
