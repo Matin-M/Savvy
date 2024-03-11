@@ -40,25 +40,12 @@ export default {
     Tags: ModelCtor<Model<any, any>>
   ) {
     const replyEmbed = new EmbedBuilder();
-    const adminRoles = interaction.guild!.roles.cache.find((role) => {
-      console.log(role.permissions.toArray());
-      if (
-        role.permissions.toArray().includes('Administrator') ||
-        role.permissions.toArray().includes('ModerateMembers') ||
-        role.permissions.toArray().includes('ManageGuild') ||
-        role.permissions.toArray().includes('ManageChannels') ||
-        role.permissions.toArray().includes('KickMembers')
-      ) {
-        return true;
-      } else {
-        return false;
-      }
-    });
-    const adminArray = adminRoles!.members.map((m) => m.id);
-    if (
-      adminArray.includes(interaction.user.id) ||
-      interaction.user.id == devAdminId
-    ) {
+    const isAdmin = interaction.guild!.members.cache.map((m) =>
+      m.roles.cache.map((r) =>
+        r.permissions.toArray().includes('Administrator')
+      )
+    );
+    if (isAdmin || interaction.user.id == devAdminId) {
       const keyword = interaction.options.getString('keyword');
       const phrase = interaction.options.getString('phrase');
 
