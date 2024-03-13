@@ -109,6 +109,21 @@ export default {
               name: 'Score/match',
               value: `${overallStats.scorePerMatch}`,
               inline: true,
+            },
+            {
+              name: 'Top 10',
+              value: `${overallStats.top10} finishes`,
+              inline: true,
+            },
+            {
+              name: 'Top 5',
+              value: `${overallStats.top5} finishes`,
+              inline: true,
+            },
+            {
+              name: 'Top 3',
+              value: `${overallStats.top3} finishes`,
+              inline: true,
             }
           )
           .setImage(data.data.image);
