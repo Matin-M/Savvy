@@ -54,7 +54,8 @@ export default {
 
       if (
         t.get('name') === 'No Activity' ||
-        t.get('name') === 'Custom Status'
+        t.get('name') === 'Custom Status' ||
+        !t.get('name')
       ) {
         return;
       }
