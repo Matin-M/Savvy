@@ -256,16 +256,16 @@ client.on(Events.MessageCreate, async (message: Message<boolean>) => {
         tag.get('message_reply_keywords') as string[]
       ).reverse();
       const phrases = (tag.get('message_reply_phrases') as string[]).reverse();
+      const keywordPhraseMap = new Map<string, string>();
+      keywords.forEach((keyword, index) => {
+        keywordPhraseMap.set(keyword, phrases[index]);
+      });
       const messageWords = message.content.split(' ');
       let messageContent = '';
       for (let i = 0; i < messageWords.length; i++) {
-        // Use a map here to avoid O(n^2) complexity
-        const index = keywords.findIndex(
-          (substring) =>
-            messageWords[i].includes(substring) || messageWords[i] === substring
-        );
-        if (index !== -1) {
-          if (phrases[index] === '<DELETE>') {
+        const phrase = keywordPhraseMap.get(messageWords[i]);
+        if (phrase) {
+          if (phrase === '<DELETE>') {
             message.delete();
             try {
               const messageSender = await client.users.fetch(message.author.id);
@@ -279,7 +279,7 @@ client.on(Events.MessageCreate, async (message: Message<boolean>) => {
               console.error(`[MessageSendError]: ${error}`);
             }
             return;
-          } else if (phrases[index] === '<CLEAR>') {
+          } else if (phrase === '<CLEAR>') {
             keywords.splice(i, 1);
             phrases.splice(i, 1);
             await Tags.update(
@@ -290,7 +290,7 @@ client.on(Events.MessageCreate, async (message: Message<boolean>) => {
               { where: { guildId: message.guild!.id } }
             );
           } else {
-            messageContent += `${phrases[index]}\n`;
+            messageContent += `${phrase}\n`;
           }
         }
       }
