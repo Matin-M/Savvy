@@ -22,9 +22,6 @@ export default {
     const messages = (await ClientMessageLogs.findAll({
       where: { guildId: interaction.guild!.id },
     }))!;
-    console.log(
-      messages.map((msg) => msg.get('contents') as string) as [string]
-    );
     const freq = wordFreq(
       messages.map((msg) => msg.get('contents') as string) as [string]
     );
@@ -35,7 +32,10 @@ export default {
       messages.map((msg) => msg.get('userId') as string) as [string]
     );
     const userFreqTable = keywordSort(userFreq, (userID) =>
-      members.find((member) => member.id === userID)
+      members.find(
+        (member) =>
+          member.id === userID && !member.user.bot && member.user.username
+      )
     );
 
     const replyEmbed = new EmbedBuilder()
