@@ -26,6 +26,7 @@ import connection from './database/connection';
 import schemaColumns from './database/models/schema';
 import presenceSchema from './database/models/presenceSchema';
 import clientMessageSchema from './database/models/clientMessageSchema';
+import preferenceSchema from './database/models/preferenceSchema';
 import { CustomClient } from './types/CustomClient';
 import { Player } from 'discord-player';
 import { sendMessageToUser, formatUserName } from './helpers/utils';
@@ -91,11 +92,20 @@ const ClientMessageLogs = connection.define(
     freezeTableName: true,
   }
 );
+const PreferenceTable = connection.define(
+  'guild_preferences',
+  preferenceSchema,
+  {
+    freezeTableName: true,
+  }
+);
 
 Tags.hasMany(PresenceTable, { foreignKey: 'guildId' });
 Tags.hasMany(ClientMessageLogs, { foreignKey: 'guildId' });
+Tags.hasMany(PreferenceTable, { foreignKey: 'guildId' });
 PresenceTable.belongsTo(Tags, { foreignKey: 'guildId' });
 ClientMessageLogs.belongsTo(Tags, { foreignKey: 'guildId' });
+PreferenceTable.belongsTo(Tags, { foreignKey: 'guildId' });
 
 client.once(Events.ClientReady, async () => {
   try {
@@ -108,6 +118,7 @@ client.once(Events.ClientReady, async () => {
       Tags.sync(),
       PresenceTable.sync(),
       ClientMessageLogs.sync(),
+      PreferenceTable.sync(),
     ]);
 
     console.log('Checking to see if all guilds are in db...');
