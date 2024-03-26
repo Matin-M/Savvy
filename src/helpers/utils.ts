@@ -5,8 +5,11 @@ import {
   GuildMember,
   PartialGuildMember,
 } from 'discord.js';
+import { ServerResponse } from '../types/APIInterfaces';
+import axios from 'axios';
 import { removeStopwords } from 'stopword';
 import { CustomClient } from '../types/CustomClient';
+import { fortnite_api_key } from '../config.json';
 
 export const msToTime = (ms: number) => {
   const seconds = ms / 1000;
@@ -125,4 +128,27 @@ export const formatUserName = async (
     return `${user.user.username}#${user.user.discriminator}`;
   }
   return `<@${user.id}>`;
+};
+
+export const makeFortniteAPIRequest = async (
+  username: string,
+  timespan: string
+): Promise<ServerResponse | null> => {
+  try {
+    const res = await axios.get<ServerResponse>(
+      `https://fortnite-api.com/v2/stats/br/v2?name=${username}&accountType=epic&timeWindow=${
+        timespan ? 'lifetime' : 'season'
+      }&image=all`,
+      {
+        headers: { Authorization: fortnite_api_key },
+      }
+    );
+    if (res && res.data) {
+      return res.data;
+    }
+    return null;
+  } catch (err) {
+    console.error(err);
+    return null;
+  }
 };

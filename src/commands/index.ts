@@ -15,6 +15,7 @@ import RunBashCommand from './RunBashCommand';
 import ReplyOnKeyword from './ReplyOnKeyword';
 import ActivityStats from './PresenceStats';
 import ChatStats from './ChatStats';
+import GetGameStatsForAll from './GetGameStatsForAll';
 
 const commandList = [
   VoiceUpdates,
@@ -22,6 +23,7 @@ const commandList = [
   SetJoinRole,
   ServerInfo,
   GetGameStats,
+  GetGameStatsForAll,
   ...audioCommandList,
   AddRole,
   SetRoles,

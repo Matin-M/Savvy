@@ -7,23 +7,8 @@ import {
 import { Model, ModelCtor } from 'sequelize/types';
 import { fortnite_api_key } from '../config.json';
 import { CustomClient } from '../types/CustomClient';
+import { ServerResponse } from '../types/APIInterfaces';
 import axios, { AxiosResponse } from 'axios';
-
-interface ServerResponse {
-  response: number;
-  data: OverallStats;
-}
-
-interface OverallStats {
-  account: Record<string, string>;
-  battlePass: Record<string, number>;
-  image: string;
-  stats: {
-    all: {
-      overall: Record<string, number>;
-    };
-  };
-}
 
 export default {
   data: new SlashCommandBuilder()
