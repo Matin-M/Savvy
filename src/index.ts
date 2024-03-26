@@ -546,7 +546,8 @@ client.on(
           interaction,
           Tags,
           PresenceTable,
-          ClientMessageLogs
+          ClientMessageLogs,
+          PreferenceTable
         );
       } catch (error) {
         console.error(
