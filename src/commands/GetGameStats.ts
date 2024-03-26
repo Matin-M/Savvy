@@ -15,7 +15,9 @@ export default {
     .addStringOption((option) =>
       option
         .setName('username')
-        .setDescription('Epic games username')
+        .setDescription(
+          'Epic games username. If not provided, stored username will be used.'
+        )
         .setRequired(false)
     )
     .addBooleanOption((option) =>

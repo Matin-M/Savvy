@@ -27,12 +27,6 @@ export default {
         .setDescription('Phrase to auto-reply with')
         .setRequired(true)
         .setAutocomplete(true)
-    )
-    .addBooleanOption((option) =>
-      option
-        .setName('case')
-        .setDescription('If set to true, keyword is case-sensitive')
-        .setRequired(false)
     ),
   async execute(
     client: CustomClient,
