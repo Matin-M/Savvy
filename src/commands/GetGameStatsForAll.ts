@@ -76,7 +76,7 @@ export default {
       const data = response.data;
       result +=
         `**${data.account.name}'s ${
-          timespan ? 'Lifetime' : 'Season'
+          timespan ? 'Season' : 'Lifetime'
         } Stats**\n` +
         `***Playtime***: ${(data.stats.all.overall.minutesPlayed / 60).toFixed(
           2

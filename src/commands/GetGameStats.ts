@@ -73,7 +73,7 @@ export default {
     const data = response.data;
     replyEmbed
       .setTitle(
-        `${data.account.name}'s ${timespan ? 'Lifetime' : 'Season'} Stats`
+        `${data.account.name}'s ${timespan ? 'Season' : 'Lifetime'} Stats`
       )
       .addFields(
         {
