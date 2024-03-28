@@ -15,13 +15,17 @@ export default {
     .addStringOption((option) =>
       option
         .setName('usernames')
-        .setDescription('usernames must be comma separated')
+        .setDescription(
+          'A list of comma separated Epic Games usernames. If not provided, stored usernames will be used.'
+        )
         .setRequired(false)
     )
     .addBooleanOption((option) =>
       option
         .setName('lifetime')
-        .setDescription('Set timespan to lifetime')
+        .setDescription(
+          'If set to true, lifetime stats will be shown. Default is season stats.'
+        )
         .setRequired(false)
     ),
   async execute(
@@ -39,7 +43,9 @@ export default {
       : 'season';
     const usernamesArray = [];
     if (usernames) {
-      usernamesArray.push(...usernames.split(','));
+      usernamesArray.push(
+        ...usernames.split(',').map((username) => username.trim())
+      );
       await PreferenceTable.upsert({
         guildId: interaction.guild!.id,
         key: 'fortniteUsernameList',

@@ -23,7 +23,9 @@ export default {
     .addBooleanOption((option) =>
       option
         .setName('lifetime')
-        .setDescription('Set timespan to lifetime')
+        .setDescription(
+          'If set to true, lifetime stats will be shown. Default is season stats.'
+        )
         .setRequired(false)
     ),
   async execute(
@@ -57,7 +59,7 @@ export default {
       await PreferenceTable.upsert({
         guildId: interaction.guild!.id,
         key: 'fortniteUsername',
-        value: username,
+        value: username.trim(),
       });
     }
 
