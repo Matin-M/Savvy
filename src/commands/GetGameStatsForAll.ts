@@ -50,10 +50,15 @@ export default {
         guildId: interaction.guild!.id,
         key: 'fortniteUsernameList',
         value: usernames,
+        classId: interaction.user.id,
       });
     } else {
       const storedUserNames = (await PreferenceTable.findAll({
-        where: { guildId: interaction.guild!.id, key: 'fortniteUsernameList' },
+        where: {
+          guildId: interaction.guild!.id,
+          key: 'fortniteUsernameList',
+          classId: interaction.user.id,
+        },
       }))!;
       if (storedUserNames.length === 0) {
         replyEmbed

@@ -44,7 +44,11 @@ export default {
 
     if (!username) {
       const storedUsername = await PreferenceTable.findOne({
-        where: { guildId: interaction.guild!.id, key: 'fortniteUsername' },
+        where: {
+          guildId: interaction.guild!.id,
+          key: 'fortniteUsername',
+          classId: interaction.user.id,
+        },
       });
       if (!storedUsername || !storedUsername.get('value')) {
         replyEmbed
@@ -60,6 +64,7 @@ export default {
         guildId: interaction.guild!.id,
         key: 'fortniteUsername',
         value: username.trim(),
+        classId: interaction.user.id,
       });
     }
 
