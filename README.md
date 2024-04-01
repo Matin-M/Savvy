@@ -1,7 +1,3 @@
-# Savvy
-
-Savvy is a discord moderation bot written using the Discord.JS framework.
-
 ## Features
 
 Soundcloud/youtube/spotify streaming, keyword blacklisting, voice channel status pings, new user greetings, auto/self-select role assignments, proxy messaging, account/server statistics, auto keyword replies, and continuous guild member presence logging. 
@@ -28,7 +24,3 @@ Savvy's deployment is handled by docker compose to orchestrate both the PostgreS
 The parameter `clientActivityType` must be a string set to either `Watching`, `Playing`, or `Streaming`.
 
 `devAdminID` is your personal discord id, and can be used to override any permission settings of guilds that Savvy is a member of.
-
-## Making contributions
-
-Currently accepting PRs!
