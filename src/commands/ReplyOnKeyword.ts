@@ -40,8 +40,14 @@ export default {
       )
     );
     if (isAdmin || interaction.user.id == devAdminId) {
-      const keyword = interaction.options.getString('keyword');
-      const phrase = interaction.options.getString('phrase');
+      const keyword = interaction.options
+        .getString('keyword')!
+        .trim()
+        .toLowerCase();
+      const phrase = interaction.options
+        .getString('phrase')!
+        .trim()
+        .toLowerCase();
 
       await Tags.update(
         {

@@ -274,7 +274,9 @@ client.on(Events.MessageCreate, async (message: Message<boolean>) => {
       const messageWords = message.content.split(' ');
       let messageContent = '';
       for (let i = 0; i < messageWords.length; i++) {
-        const phrase = keywordPhraseMap.get(messageWords[i]);
+        const phrase = keywordPhraseMap.get(
+          messageWords[i].trim().toLowerCase()
+        );
         if (phrase) {
           if (phrase === '<DELETE>') {
             message.delete();
