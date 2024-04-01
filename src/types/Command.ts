@@ -3,7 +3,7 @@ import { ModelCtor, Model } from 'sequelize/types';
 import { CustomClient } from './CustomClient';
 
 type ICommand = {
-  data: SlashCommandBuilder;
+  data: SlashCommandBuilder | Record<string, any>;
   execute: (
     client: CustomClient,
     interaction?: Interaction<CacheType>,

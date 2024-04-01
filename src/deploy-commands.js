@@ -8,9 +8,14 @@ const readline = require('readline').createInterface({
 
 const commands = [];
 const commandList = require('../bin/commands/index.js');
+const { SlashCommandBuilder } = require('discord.js');
 for (const command of commandList.default) {
   console.log(command.data.name);
-  commands.push(command.data.toJSON());
+  if (command.data instanceof SlashCommandBuilder) {
+    commands.push(command.data.toJSON());
+  } else {
+    commands.push(command.data);
+  }
 }
 
 const rest = new REST({ version: '9' }).setToken(token);

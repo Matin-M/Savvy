@@ -16,6 +16,7 @@ import ReplyOnKeyword from './ReplyOnKeyword';
 import ActivityStats from './PresenceStats';
 import ChatStats from './ChatStats';
 import GetGameStatsForAll from './GetGameStatsForAll';
+import UserServerInfo from './user/ServerInfo';
 
 const commandList = [
   VoiceUpdates,
@@ -35,6 +36,7 @@ const commandList = [
   ReplyOnKeyword,
   ActivityStats,
   ChatStats,
+  UserServerInfo,
 ];
 
 export default commandList as [ICommand];
