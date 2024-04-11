@@ -304,6 +304,10 @@ client.on(Events.MessageCreate, async (message: Message<boolean>) => {
             );
           } else {
             messageContent += `${phrase}\n`;
+            if (messageContent.length > 2000) {
+              message.reply(messageContent);
+              messageContent = '';
+            }
           }
         }
       }
