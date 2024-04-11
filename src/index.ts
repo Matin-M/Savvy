@@ -549,14 +549,15 @@ client.on(
       );
       if (!command) return;
       try {
-        await command.execute(
+        await command.execute({
           client,
           interaction,
           Tags,
           PresenceTable,
           ClientMessageLogs,
-          PreferenceTable
-        );
+          PreferenceTable,
+        });
+
         if (interaction.commandName == 'replyonkeyword') {
           generateKeywordMap();
         }
