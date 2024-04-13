@@ -53,14 +53,13 @@ export default {
         classId: interaction.user.id,
       });
     } else {
-      const storedUserNames = (await PreferenceTable.findAll({
+      const storedUserNames = (await PreferenceTable.findOne({
         where: {
           guildId: interaction.guild!.id,
           key: 'fortniteUsernameList',
-          classId: interaction.user.id,
         },
       }))!;
-      if (storedUserNames.length === 0) {
+      if (!storedUserNames || !storedUserNames.get('value')) {
         replyEmbed
           .setColor([255, 0, 0])
           .setTitle('Error!')
@@ -68,9 +67,11 @@ export default {
         interaction.reply({ embeds: [replyEmbed], ephemeral: true });
         return;
       }
-      storedUserNames.forEach((username) => {
-        usernamesArray.push(username.get('value'));
-      });
+      (storedUserNames.get('value') as string)
+        .split(',')
+        .forEach((username) => {
+          usernamesArray.push(username);
+        });
     }
 
     let result = '';
