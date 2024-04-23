@@ -218,8 +218,8 @@ client.on(
       largeText: clientActivity?.assets?.largeText,
       smallText: clientActivity?.assets?.smallText,
       userStatus: newPresence.status,
-    }).catch(() => {
-      console.error('[PresenceLoggingError]: Cannot log presence change');
+    }).catch((e) => {
+      console.error(`[PlayerLoggingError]: ${e}`);
     });
   }
 );

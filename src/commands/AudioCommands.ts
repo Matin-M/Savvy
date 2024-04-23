@@ -82,9 +82,10 @@ const Play = {
           state: track.author,
           largeText: track.requestedBy,
           smallText: track.duration,
-        }).catch(() => {
-          console.error('[PlayerLoggingError]: Cannot log presence change');
+        }).catch((e) => {
+          console.error(`[PlayerLoggingError]: ${e}`);
         });
+
         replyEmbed
           .setColor(track ? '#00FF00' : '#FF0000')
           .setDescription(
