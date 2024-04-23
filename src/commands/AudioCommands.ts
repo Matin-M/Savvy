@@ -22,7 +22,9 @@ const Play = {
   async execute(
     client: CustomClient,
     interaction: ChatInputCommandInteraction<CacheType>,
-    Tags: ModelCtor<Model<any, any>>
+    Tags: ModelCtor<Model<any, any>>,
+    PresenceTable: ModelCtor<Model<any, any>>,
+    ClientMessageLogs: ModelCtor<Model<any, any>>
   ) {
     const replyEmbed = new EmbedBuilder().setColor('#0099ff').setTimestamp();
     const query = interaction.options.getString('video') as string;
@@ -68,6 +70,20 @@ const Play = {
           nodeOptions: {
             metadata: interaction,
           },
+        });
+        await PresenceTable.create({
+          guildId: interaction.guild!.id,
+          userId: interaction.user.id,
+          timeStamp: new Date(),
+          name: 'SavvyPlayer',
+          type: 1337,
+          url: track.url,
+          details: track.title,
+          state: track.author,
+          largeText: track.requestedBy,
+          smallText: track.duration,
+        }).catch(() => {
+          console.error('[PlayerLoggingError]: Cannot log presence change');
         });
         replyEmbed
           .setColor(track ? '#00FF00' : '#FF0000')
