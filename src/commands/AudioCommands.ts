@@ -80,7 +80,7 @@ const Play = {
           url: track.url,
           details: track.title,
           state: track.author,
-          largeText: track.requestedBy,
+          largeText: track.requestedBy?.username,
           smallText: track.duration,
         }).catch((e) => {
           console.error(`[PlayerLoggingError]: ${e}`);
