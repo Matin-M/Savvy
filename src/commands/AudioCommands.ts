@@ -90,9 +90,32 @@ const Play = {
           .setColor(track ? '#00FF00' : '#FF0000')
           .setDescription(
             `${track ? 'Now playing' : 'Unable to play'} **${
-              track ? track : query
+              track ? track.title : query
             }** in voice channel **${channel?.name}**`
-          );
+          )
+          .addFields(
+            {
+              name: 'Author',
+              value: `${track.author}`,
+              inline: true,
+            },
+            {
+              name: 'Views',
+              value: `${track.views}`,
+              inline: true,
+            },
+            {
+              name: 'Duration',
+              value: `${track.duration}`,
+              inline: true,
+            },
+            {
+              name: 'URL',
+              value: track.url,
+              inline: true,
+            }
+          )
+          .setImage(track.thumbnail);
         await interaction.editReply({
           embeds: [replyEmbed],
         });
