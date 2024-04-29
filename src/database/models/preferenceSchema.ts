@@ -10,11 +10,11 @@ export default {
     allowNull: false,
   },
   value: {
-    type: Sequelize.STRING,
+    type: Sequelize.TEXT,
     allowNull: false,
   },
   classId: {
-    type: Sequelize.STRING,
+    type: Sequelize.TEXT,
     allowNull: true,
   },
 };
