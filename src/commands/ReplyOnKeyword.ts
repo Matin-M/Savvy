@@ -4,7 +4,7 @@ import {
   ChatInputCommandInteraction,
   EmbedBuilder,
 } from 'discord.js';
-import { ModelCtor, Model, Sequelize } from 'sequelize';
+import { ModelCtor, Model } from 'sequelize';
 import { CustomClient } from '../types/CustomClient';
 import { devAdminId } from '../config.json';
 
@@ -31,7 +31,10 @@ export default {
   async execute(
     client: CustomClient,
     interaction: ChatInputCommandInteraction<CacheType>,
-    Tags: ModelCtor<Model<any, any>>
+    Tags: ModelCtor<Model<any, any>>,
+    PresenceTable: ModelCtor<Model<any, any>>,
+    ClientMessageLogs: ModelCtor<Model<any, any>>,
+    PreferenceTable: ModelCtor<Model<any, any>>
   ) {
     const replyEmbed = new EmbedBuilder();
     const isAdmin = interaction.guild!.members.cache.map((m) =>
@@ -49,26 +52,12 @@ export default {
         .trim()
         .toLowerCase();
 
-      await Tags.update(
-        {
-          message_reply_keywords: Sequelize.fn(
-            'array_append',
-            Sequelize.col('message_reply_keywords'),
-            `${keyword}`
-          ),
-        },
-        { where: { guildId: interaction.guild!.id } }
-      );
-      await Tags.update(
-        {
-          message_reply_phrases: Sequelize.fn(
-            'array_append',
-            Sequelize.col('message_reply_phrases'),
-            `${phrase}`
-          ),
-        },
-        { where: { guildId: interaction.guild!.id } }
-      );
+      await PreferenceTable.upsert({
+        guildId: interaction.guild!.id,
+        key: 'keywordReply',
+        value: keyword,
+        classId: phrase,
+      });
 
       replyEmbed.setColor('#0099ff').setTimestamp();
       if (phrase === '<DELETE>') {

@@ -107,6 +107,28 @@ PresenceTable.belongsTo(Tags, { foreignKey: 'guildId' });
 ClientMessageLogs.belongsTo(Tags, { foreignKey: 'guildId' });
 PreferenceTable.belongsTo(Tags, { foreignKey: 'guildId' });
 
+const keywordPhraseMap = new Map<string, string>();
+
+const generateKeywordMap = async () => {
+  try {
+    const keywordPrefs = await PreferenceTable.findAll({
+      where: { key: 'keywordReply' },
+      attributes: ['value', 'guildId', 'classId'],
+    });
+
+    keywordPhraseMap.clear();
+    keywordPrefs.forEach((keyword) => {
+      const mapKey = `${keyword.get('value')}-${keyword.get('guildId')}`;
+      const classId = keyword.get('classId') as string;
+      keywordPhraseMap.set(mapKey, classId);
+    });
+
+    console.log(`Generated Keyword Map with ${keywordPrefs.length} entries`);
+  } catch (error) {
+    console.error('Failed to generate keyword map:', error);
+  }
+};
+
 client.once(Events.ClientReady, async () => {
   try {
     const servedGuilds = client.guilds.cache.map((guild) => {
@@ -146,6 +168,7 @@ client.once(Events.ClientReady, async () => {
       console.log('All guilds are in db');
     }
 
+    generateKeywordMap();
     client.user!.setStatus('online');
     setInterval(() => {
       client.user!.setPresence({
@@ -260,22 +283,11 @@ client.on(Events.MessageCreate, async (message: Message<boolean>) => {
         channelId: message.channel.id,
         type: message.type,
       });
-      const tag = (await Tags.findOne({
-        where: { guildId: message.guild!.id },
-      }))!;
-      const keywords = (
-        tag.get('message_reply_keywords') as string[]
-      ).reverse();
-      const phrases = (tag.get('message_reply_phrases') as string[]).reverse();
-      const keywordPhraseMap = new Map<string, string>();
-      keywords.forEach((keyword, index) => {
-        keywordPhraseMap.set(keyword, phrases[index]);
-      });
       const messageWords = message.content.split(' ');
       let messageContent = '';
       for (let i = 0; i < messageWords.length; i++) {
         const phrase = keywordPhraseMap.get(
-          messageWords[i].trim().toLowerCase()
+          `${messageWords[i].trim().toLowerCase()}-${message.guild!.id}`
         );
         if (phrase) {
           if (phrase === '<DELETE>') {
@@ -292,16 +304,6 @@ client.on(Events.MessageCreate, async (message: Message<boolean>) => {
               console.error(`[MessageSendError]: ${error}`);
             }
             return;
-          } else if (phrase === '<CLEAR>') {
-            keywords.splice(i, 1);
-            phrases.splice(i, 1);
-            await Tags.update(
-              {
-                message_reply_keywords: keywords,
-                displayLeaveMessages: phrases,
-              },
-              { where: { guildId: message.guild!.id } }
-            );
           } else {
             messageContent += `${phrase}\n`;
             if (messageContent.length > 2000) {
@@ -555,6 +557,9 @@ client.on(
           ClientMessageLogs,
           PreferenceTable
         );
+        if (interaction.commandName == 'replyonkeyword') {
+          generateKeywordMap();
+        }
       } catch (error) {
         console.error(
           `[InteractionError]-FROM-${interaction.user.username}-IN-${
