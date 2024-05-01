@@ -101,7 +101,9 @@ const Play = {
             },
             {
               name: 'Views',
-              value: `${track.views}`,
+              value: `${
+                track.url.includes('spotify.com') ? 'N/A' : track.views
+              }`,
               inline: true,
             },
             {
