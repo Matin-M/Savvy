@@ -52,9 +52,7 @@ const Play = {
       await interaction.deferReply({
         ephemeral: false,
       });
-      replyEmbed
-        .setColor('#FFA500')
-        .setDescription('Searching for your song...');
+      replyEmbed.setColor('#FFA500').setDescription('Searching for song...');
       await interaction.editReply({ embeds: [replyEmbed] });
 
       const searchResult = await player.search(query, {
@@ -95,7 +93,9 @@ const Play = {
           )
           .addFields(
             {
-              name: 'Author',
+              name: `${
+                track.url.includes('spotify.com') ? 'Artist' : 'Channel'
+              }`,
               value: `${track.author}`,
               inline: true,
             },
