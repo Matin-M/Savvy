@@ -1,26 +1,19 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
 import {
-  CacheType,
-  ChatInputCommandInteraction,
   EmbedBuilder,
   ModalBuilder,
   TextInputBuilder,
   ActionRowBuilder,
   TextInputStyle,
 } from 'discord.js';
-import { Model, ModelCtor } from 'sequelize/types';
 import { devAdminId } from '../config.json';
-import { CustomClient } from '../types/CustomClient';
+import { ExecuteParams } from '../types/Command';
 
 export default {
   data: new SlashCommandBuilder()
     .setName('setroles')
     .setDescription('Set the roles that users can assign to themselves'),
-  async execute(
-    client: CustomClient,
-    interaction: ChatInputCommandInteraction<CacheType>,
-    Tags: ModelCtor<Model<any, any>>
-  ) {
+  async execute({ interaction, Tags }: ExecuteParams): Promise<void> {
     const replyEmbed = new EmbedBuilder();
     const adminRoles = interaction.guild!.roles.cache.find((role) => {
       if (role.permissions.toArray().includes('Administrator')) {

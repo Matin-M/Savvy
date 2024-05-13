@@ -1,11 +1,7 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
-import {
-  CacheType,
-  ChatInputCommandInteraction,
-  EmbedBuilder,
-} from 'discord.js';
-import { CustomClient } from '../types/CustomClient';
+import { EmbedBuilder } from 'discord.js';
 import { devAdminId } from '../config.json';
+import { ExecuteParams } from '../types/Command';
 
 export default {
   data: new SlashCommandBuilder()
@@ -25,10 +21,7 @@ export default {
         .setRequired(true)
         .setAutocomplete(true)
     ),
-  async execute(
-    client: CustomClient,
-    interaction: ChatInputCommandInteraction<CacheType>
-  ) {
+  async execute({ client, interaction }: ExecuteParams): Promise<void> {
     const nick = interaction.options.getString('nickname');
     const message = interaction.options.getString('message');
     const members = await interaction.guild!.members.fetch();

@@ -1,13 +1,8 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
-import {
-  CacheType,
-  ChatInputCommandInteraction,
-  EmbedBuilder,
-} from 'discord.js';
-import { Model, ModelCtor } from 'sequelize/types';
+import { EmbedBuilder } from 'discord.js';
 import ICommand from '../types/Command';
-import { CustomClient } from '../types/CustomClient';
 import { useQueue, useMasterPlayer } from 'discord-player';
+import { ExecuteParams } from '../types/Command';
 
 const Play = {
   data: new SlashCommandBuilder()
@@ -19,13 +14,7 @@ const Play = {
         .setDescription('Enter a YouTube link or search query')
         .setRequired(true)
     ),
-  async execute(
-    client: CustomClient,
-    interaction: ChatInputCommandInteraction<CacheType>,
-    Tags: ModelCtor<Model<any, any>>,
-    PresenceTable: ModelCtor<Model<any, any>>,
-    ClientMessageLogs: ModelCtor<Model<any, any>>
-  ) {
+  async execute({ interaction, PresenceTable }: ExecuteParams): Promise<void> {
     const replyEmbed = new EmbedBuilder().setColor('#0099ff').setTimestamp();
     const query = interaction.options.getString('video') as string;
     const members = await interaction.guild!.members.fetch();
@@ -37,7 +26,8 @@ const Play = {
       replyEmbed
         .setColor('#FF0000')
         .setDescription('You need to join a voice channel first!');
-      return interaction.reply({ embeds: [replyEmbed], ephemeral: true });
+      interaction.reply({ embeds: [replyEmbed], ephemeral: true });
+      return;
     }
     if (!channel.joinable) {
       replyEmbed
@@ -45,7 +35,8 @@ const Play = {
         .setDescription(
           'I do not have permissions to join your voice channels!'
         );
-      return interaction.reply({ embeds: [replyEmbed], ephemeral: true });
+      interaction.reply({ embeds: [replyEmbed], ephemeral: true });
+      return;
     }
 
     try {
@@ -62,7 +53,8 @@ const Play = {
         replyEmbed
           .setColor('#FF0000')
           .setDescription(`We found no tracks for ${query}!`);
-        return interaction.editReply({ embeds: [replyEmbed] });
+        interaction.editReply({ embeds: [replyEmbed] });
+        return;
       } else {
         const { track } = await player.play(channel, searchResult, {
           nodeOptions: {
@@ -134,11 +126,7 @@ const Pause = {
   data: new SlashCommandBuilder()
     .setName('pause')
     .setDescription(`Pause the current video`),
-  async execute(
-    client: CustomClient,
-    interaction: ChatInputCommandInteraction<CacheType>,
-    Tags: ModelCtor<Model<any, any>>
-  ) {
+  async execute({ interaction }: ExecuteParams): Promise<void> {
     const queue = useQueue(interaction.guildId!);
     if (!queue) {
       await interaction.reply(`No video is currently playing!`);
@@ -153,11 +141,7 @@ const Resume = {
   data: new SlashCommandBuilder()
     .setName('resume')
     .setDescription(`Resume the current video`),
-  async execute(
-    client: CustomClient,
-    interaction: ChatInputCommandInteraction<CacheType>,
-    Tags: ModelCtor<Model<any, any>>
-  ) {
+  async execute({ interaction }: ExecuteParams): Promise<void> {
     const queue = useQueue(interaction.guildId!);
     if (!queue) {
       await interaction.reply(`No video is currently playing!`);
@@ -174,11 +158,7 @@ const Stop = {
     .setDescription(
       `Stop the current video and disconnect from the voice channel`
     ),
-  async execute(
-    client: CustomClient,
-    interaction: ChatInputCommandInteraction<CacheType>,
-    Tags: ModelCtor<Model<any, any>>
-  ) {
+  async execute({ interaction }: ExecuteParams): Promise<void> {
     const queue = useQueue(interaction.guildId!);
     if (!queue) {
       await interaction.reply(`No video is currently playing!`);
@@ -193,11 +173,7 @@ const Skip = {
   data: new SlashCommandBuilder()
     .setName('skip')
     .setDescription(`Skip the current video`),
-  async execute(
-    client: CustomClient,
-    interaction: ChatInputCommandInteraction<CacheType>,
-    Tags: ModelCtor<Model<any, any>>
-  ) {
+  async execute({ interaction }: ExecuteParams): Promise<void> {
     const queue = useQueue(interaction.guildId!);
     if (!queue) {
       await interaction.reply(`No video is currently playing!`);
@@ -212,11 +188,7 @@ const ClearQueue = {
   data: new SlashCommandBuilder()
     .setName('clearqueue')
     .setDescription(`Clear the queue`),
-  async execute(
-    client: CustomClient,
-    interaction: ChatInputCommandInteraction<CacheType>,
-    Tags: ModelCtor<Model<any, any>>
-  ) {
+  async execute({ interaction }: ExecuteParams): Promise<void> {
     const queue = useQueue(interaction.guildId!);
     if (!queue) {
       await interaction.reply(`No video is currently playing!`);

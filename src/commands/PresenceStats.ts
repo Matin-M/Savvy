@@ -1,23 +1,17 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
-import {
-  CacheType,
-  ChatInputCommandInteraction,
-  EmbedBuilder,
-} from 'discord.js';
-import { Model, ModelCtor } from 'sequelize/types';
-import { CustomClient } from '../types/CustomClient';
+import { EmbedBuilder } from 'discord.js';
 import { keywordFreq, keywordSort, formatUserName } from '../helpers/utils';
+import { ExecuteParams } from '../types/Command';
 
 export default {
   data: new SlashCommandBuilder()
     .setName('activitystats')
     .setDescription('Returns number of occurances for user activities'),
-  async execute(
-    client: CustomClient,
-    interaction: ChatInputCommandInteraction<CacheType>,
-    Tags: ModelCtor<Model<any, any>>,
-    PresenceTable: ModelCtor<Model<any, any>>
-  ) {
+  async execute({
+    client,
+    interaction,
+    PresenceTable,
+  }: ExecuteParams): Promise<void> {
     await interaction.deferReply({ ephemeral: true });
 
     // User presence

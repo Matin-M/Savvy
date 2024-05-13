@@ -1,11 +1,7 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
-import {
-  CacheType,
-  ChatInputCommandInteraction,
-  EmbedBuilder,
-} from 'discord.js';
-import { ModelCtor, Model, Sequelize } from 'sequelize';
-import { CustomClient } from '../types/CustomClient';
+import { EmbedBuilder } from 'discord.js';
+import { ExecuteParams } from '../types/Command';
+import { Sequelize } from 'sequelize';
 
 export default {
   data: new SlashCommandBuilder()
@@ -13,11 +9,7 @@ export default {
     .setDescription(
       'Savvy will ping you when a user connects to any voice channel in this server'
     ),
-  async execute(
-    client: CustomClient,
-    interaction: ChatInputCommandInteraction<CacheType>,
-    Tags: ModelCtor<Model<any, any>>
-  ) {
+  async execute({ interaction, Tags }: ExecuteParams): Promise<void> {
     const replyEmbed = new EmbedBuilder();
     const tag = (await Tags.findOne({
       where: { guildId: interaction.guild!.id },

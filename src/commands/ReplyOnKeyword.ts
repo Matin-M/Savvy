@@ -1,12 +1,8 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
-import {
-  CacheType,
-  ChatInputCommandInteraction,
-  EmbedBuilder,
-} from 'discord.js';
-import { ModelCtor, Model } from 'sequelize';
-import { CustomClient } from '../types/CustomClient';
+import { EmbedBuilder } from 'discord.js';
 import { devAdminId } from '../config.json';
+import { ExecuteParams } from '../types/Command';
+import { Sequelize } from 'sequelize';
 
 export default {
   data: new SlashCommandBuilder()
@@ -28,14 +24,10 @@ export default {
         .setRequired(true)
         .setAutocomplete(true)
     ),
-  async execute(
-    client: CustomClient,
-    interaction: ChatInputCommandInteraction<CacheType>,
-    Tags: ModelCtor<Model<any, any>>,
-    PresenceTable: ModelCtor<Model<any, any>>,
-    ClientMessageLogs: ModelCtor<Model<any, any>>,
-    PreferenceTable: ModelCtor<Model<any, any>>
-  ) {
+  async execute({
+    interaction,
+    PreferenceTable,
+  }: ExecuteParams): Promise<void> {
     const replyEmbed = new EmbedBuilder();
     const isAdmin = interaction.guild!.members.cache.map((m) =>
       m.roles.cache.map((r) =>

@@ -1,19 +1,12 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
-import {
-  CacheType,
-  ChatInputCommandInteraction,
-  EmbedBuilder,
-} from 'discord.js';
-import { CustomClient } from '../types/CustomClient';
+import { EmbedBuilder } from 'discord.js';
+import { ExecuteParams } from '../types/Command';
 
 export default {
   data: new SlashCommandBuilder()
     .setName('accountinfo')
     .setDescription('Replies with information about your discord account'),
-  async execute(
-    client: CustomClient,
-    interaction: ChatInputCommandInteraction<CacheType>
-  ) {
+  async execute({ interaction }: ExecuteParams): Promise<void> {
     const accDate = new Date(
       interaction.user.createdTimestamp
     ).toLocaleDateString('en-US');
