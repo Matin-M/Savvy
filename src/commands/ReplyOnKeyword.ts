@@ -2,7 +2,6 @@ import { SlashCommandBuilder } from '@discordjs/builders';
 import { EmbedBuilder } from 'discord.js';
 import { devAdminId } from '../config.json';
 import { ExecuteParams } from '../types/Command';
-import { Sequelize } from 'sequelize';
 
 export default {
   data: new SlashCommandBuilder()
