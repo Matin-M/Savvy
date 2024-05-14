@@ -6,7 +6,7 @@ export default {
   data: new SlashCommandBuilder()
     .setName('serverinfo')
     .setDescription('Returns info about this discord server'),
-  async eexecute({ interaction }: ExecuteParams): Promise<void> {
+  async execute({ interaction }: ExecuteParams): Promise<void> {
     const replyEmbed = new EmbedBuilder()
       .setColor('#0099ff')
       .setTitle(`Server info for ${interaction.guild!.name}`)
