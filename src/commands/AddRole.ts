@@ -6,22 +6,15 @@ import {
 import {
   APIActionRowComponent,
   APIMessageActionRowComponent,
-  CacheType,
-  ChatInputCommandInteraction,
   EmbedBuilder,
 } from 'discord.js';
-import { Model, ModelCtor } from 'sequelize/types';
-import { CustomClient } from '../types/CustomClient';
+import { ExecuteParams } from '../types/Command';
 
 export default {
   data: new SlashCommandBuilder()
     .setName('addrole')
     .setDescription('Give yourself a role'),
-  async execute(
-    client: CustomClient,
-    interaction: ChatInputCommandInteraction<CacheType>,
-    Tags: ModelCtor<Model<any, any>>
-  ) {
+  async execute({ interaction, Tags }: ExecuteParams): Promise<void> {
     const replyEmbed = new EmbedBuilder();
     const tag = await Tags.findOne({
       where: { guildId: interaction.guild!.id },

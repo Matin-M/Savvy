@@ -1,24 +1,16 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
-import {
-  CacheType,
-  ChatInputCommandInteraction,
-  EmbedBuilder,
-} from 'discord.js';
-import { Model, ModelCtor } from 'sequelize/types';
-import { CustomClient } from '../types/CustomClient';
+import { EmbedBuilder } from 'discord.js';
 import { keywordSort, wordFreq } from '../helpers/utils';
+import { ExecuteParams } from '../types/Command';
 
 export default {
   data: new SlashCommandBuilder()
     .setName('chatstats')
     .setDescription('Returns chat statistics'),
-  async execute(
-    client: CustomClient,
-    interaction: ChatInputCommandInteraction<CacheType>,
-    Tags: ModelCtor<Model<any, any>>,
-    PresenceTable: ModelCtor<Model<any, any>>,
-    ClientMessageLogs: ModelCtor<Model<any, any>>
-  ) {
+  async execute({
+    interaction,
+    ClientMessageLogs,
+  }: ExecuteParams): Promise<void> {
     const messages = (await ClientMessageLogs.findAll({
       where: { guildId: interaction.guild!.id },
     }))!;

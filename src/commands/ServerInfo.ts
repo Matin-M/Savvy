@@ -1,21 +1,15 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
-import {
-  CacheType,
-  ChatInputCommandInteraction,
-  EmbedBuilder,
-} from 'discord.js';
-import { Model, ModelCtor } from 'sequelize/types';
-import { CustomClient } from '../types/CustomClient';
+import { EmbedBuilder } from 'discord.js';
+import { ExecuteParams } from '../types/Command';
 
 export default {
   data: new SlashCommandBuilder()
     .setName('serverinfo')
     .setDescription('Returns info about this discord server'),
-  async execute(
-    client: CustomClient,
-    interaction: ChatInputCommandInteraction<CacheType>,
-    Tags: ModelCtor<Model<any, any>>
-  ) {
+  async eexecute({
+    interaction,
+    ClientMessageLogs,
+  }: ExecuteParams): Promise<void> {
     const replyEmbed = new EmbedBuilder()
       .setColor('#0099ff')
       .setTitle(`Server info for ${interaction.guild!.name}`)

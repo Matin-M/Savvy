@@ -1,14 +1,9 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
-import {
-  CacheType,
-  ChatInputCommandInteraction,
-  EmbedBuilder,
-} from 'discord.js';
-import { ModelCtor, Model } from 'sequelize';
-import { CustomClient } from '../types/CustomClient';
+import { EmbedBuilder } from 'discord.js';
 import * as child from 'child_process';
 import { sendMessageToChannel } from '../helpers/utils';
 import { devAdminId } from '../config.json';
+import { ExecuteParams } from '../types/Command';
 
 export default {
   data: new SlashCommandBuilder()
@@ -29,11 +24,7 @@ export default {
         .setAutocomplete(true)
     ),
 
-  async execute(
-    client: CustomClient,
-    interaction: ChatInputCommandInteraction<CacheType>,
-    Tags: ModelCtor<Model<any, any>>
-  ) {
+  async execute({ interaction }: ExecuteParams): Promise<void> {
     const command = interaction.options.getString('command')!;
     const guild = interaction.guild!;
     const channel = interaction.channelId;

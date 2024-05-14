@@ -1,11 +1,6 @@
-import {
-  CacheType,
-  ChatInputCommandInteraction,
-  EmbedBuilder,
-} from 'discord.js';
-import { ModelCtor, Model } from 'sequelize';
+import { EmbedBuilder } from 'discord.js';
 import ICommand from '../../types/Command';
-import { CustomClient } from '../../types/CustomClient';
+import { ExecuteParams } from '../../types/Command';
 
 export default {
   data: {
@@ -14,11 +9,7 @@ export default {
     integration_types: [1],
     contexts: [0, 1, 2],
   },
-  async execute(
-    client: CustomClient,
-    interaction: ChatInputCommandInteraction<CacheType>,
-    Tags: ModelCtor<Model<any, any>>
-  ) {
+  async execute({ interaction }: ExecuteParams): Promise<void> {
     const replyEmbed = new EmbedBuilder()
       .setColor('#0099ff')
       .setTitle(`Server info for ${interaction.guild!.name}`)

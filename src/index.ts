@@ -548,15 +548,18 @@ client.on(
         (int) => int.data.name === commandName
       );
       if (!command) return;
+      const chatInteraction =
+        interaction as ChatInputCommandInteraction<CacheType>;
       try {
-        await command.execute(
+        await command.execute({
           client,
-          interaction,
+          interaction: chatInteraction,
           Tags,
           PresenceTable,
           ClientMessageLogs,
-          PreferenceTable
-        );
+          PreferenceTable,
+        });
+
         if (interaction.commandName == 'replyonkeyword') {
           generateKeywordMap();
         }

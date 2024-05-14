@@ -1,12 +1,7 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
-import {
-  CacheType,
-  ChatInputCommandInteraction,
-  EmbedBuilder,
-} from 'discord.js';
+import { EmbedBuilder } from 'discord.js';
 import { makeFortniteAPIRequest } from '../helpers/utils';
-import { Model, ModelCtor } from 'sequelize/types';
-import { CustomClient } from '../types/CustomClient';
+import { ExecuteParams } from '../types/Command';
 
 export default {
   data: new SlashCommandBuilder()
@@ -28,14 +23,10 @@ export default {
         )
         .setRequired(false)
     ),
-  async execute(
-    client: CustomClient,
-    interaction: ChatInputCommandInteraction<CacheType>,
-    Tags: ModelCtor<Model<any, any>>,
-    PresenceTable: ModelCtor<Model<any, any>>,
-    ClientMessageLogs: ModelCtor<Model<any, any>>,
-    PreferenceTable: ModelCtor<Model<any, any>>
-  ) {
+  async execute({
+    interaction,
+    PreferenceTable,
+  }: ExecuteParams): Promise<void> {
     const replyEmbed = new EmbedBuilder();
     const usernames = interaction.options.getString('usernames');
     const timespan = interaction.options.getBoolean('lifetime')
