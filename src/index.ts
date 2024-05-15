@@ -287,7 +287,10 @@ client.on(Events.MessageCreate, async (message: Message<boolean>) => {
       let messageContent = '';
       for (let i = 0; i < messageWords.length; i++) {
         const phrase = keywordPhraseMap.get(
-          `${messageWords[i].trim().toLowerCase()}-${message.guild!.id}`
+          `${messageWords[i]
+            .trim()
+            .toLowerCase()
+            .replace(/[\W_]+$/, '')}-${message.guild!.id}`
         );
         if (phrase) {
           if (phrase === '<DELETE>') {

@@ -38,10 +38,7 @@ export default {
         .getString('keyword')!
         .trim()
         .toLowerCase();
-      const phrase = interaction.options
-        .getString('phrase')!
-        .trim()
-        .toLowerCase();
+      const phrase = interaction.options.getString('phrase')!.trim();
 
       await PreferenceTable.upsert({
         guildId: interaction.guild!.id,
