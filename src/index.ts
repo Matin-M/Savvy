@@ -114,6 +114,7 @@ const generateKeywordMap = async () => {
     const keywordPrefs = await PreferenceTable.findAll({
       where: { key: 'keywordReply' },
       attributes: ['value', 'guildId', 'classId'],
+      order: [['createdAt', 'ASC']],
     });
 
     keywordPhraseMap.clear();

@@ -48,6 +48,7 @@ export default {
         where: {
           guildId: interaction.guild!.id,
           key: 'fortniteUsernameList',
+          order: [['createdAt', 'DESC']],
         },
       }))!;
       if (!storedUserNames || !storedUserNames.get('value')) {

@@ -40,6 +40,7 @@ export default {
           key: 'fortniteUsername',
           classId: interaction.user.id,
         },
+        order: [['createdAt', 'DESC']],
       });
       if (!storedUsername || !storedUsername.get('value')) {
         replyEmbed
