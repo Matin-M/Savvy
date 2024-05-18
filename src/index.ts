@@ -208,15 +208,31 @@ client.on(Events.GuildDelete, (guild: Guild) => {
   console.log(`Savvy removed from guild ${guild.name}`);
 });
 
-// Log presence changes from guild members
+const presenceUpdates: any[] = [];
+const BATCH_INTERVAL = 500000;
+
+const flushPresenceUpdates = async () => {
+  if (presenceUpdates.length > 0) {
+    await PresenceTable.bulkCreate(presenceUpdates)
+      .catch((e) => {
+        console.error(`[PlayerLoggingError]: ${e}`);
+      })
+      .finally(() => {
+        presenceUpdates.length = 0;
+      });
+  }
+};
+
+setInterval(() => {
+  flushPresenceUpdates().catch((e) =>
+    console.error(`[FlushPresenceUpdatesError]: ${e}`)
+  );
+}, BATCH_INTERVAL);
+
 client.on(
   Events.PresenceUpdate,
-  async (oldPresence: Presence | null, newPresence: Presence) => {
-    if (
-      !newPresence ||
-      newPresence.guild!.id === devGuildId ||
-      environment !== 'production'
-    ) {
+  (oldPresence: Presence | null, newPresence: Presence) => {
+    if (!newPresence || newPresence.user?.bot) {
       return;
     }
     const clientActivity = newPresence.activities[0];
@@ -230,7 +246,8 @@ client.on(
     ) {
       return;
     }
-    await PresenceTable.create({
+
+    presenceUpdates.push({
       guildId: newPresence.guild!.id,
       userId: newPresence.user!.id,
       timeStamp: new Date(),
@@ -242,8 +259,6 @@ client.on(
       largeText: clientActivity?.assets?.largeText,
       smallText: clientActivity?.assets?.smallText,
       userStatus: newPresence.status,
-    }).catch((e) => {
-      console.error(`[PlayerLoggingError]: ${e}`);
     });
   }
 );
