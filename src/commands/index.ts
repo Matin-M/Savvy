@@ -6,8 +6,8 @@ import ServerInfo from './ServerInfo';
 import GetGameStats from './GetGameStats';
 import audioCommandList from './AudioCommands';
 import AddRole from './AddRole';
-import SetRoles from './SetRoles';
 import AccountInfo from './AccountInfo';
+import SetRoles from './SetRoles';
 import BulkDelete from './BulkDelete';
 import BotLatency from './BotLatency';
 import ProxyDM from './ProxyDM';
@@ -17,6 +17,7 @@ import ActivityStats from './PresenceStats';
 import ChatStats from './ChatStats';
 import GetGameStatsForAll from './GetGameStatsForAll';
 import UserServerInfo from './user/ServerInfo';
+import AskAI from './user/AskAI';
 
 const commandList = [
   VoiceUpdates,
@@ -37,6 +38,7 @@ const commandList = [
   ActivityStats,
   ChatStats,
   UserServerInfo,
+  AskAI,
 ];
 
 export default commandList as [ICommand];

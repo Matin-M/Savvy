@@ -36,8 +36,11 @@ import {
   clientActivityTitle,
   devGuildId,
   environment,
+  openAI_api_key,
+  openAI_project_id,
 } from './config.json';
 import ClientCommands from './commands/index';
+import OpenAI from 'openai';
 
 const intents = [
   GatewayIntentBits.Guilds,
@@ -76,6 +79,12 @@ const client = new CustomClient({
 const player = Player.singleton(client);
 player.extractors.loadDefault();
 client.player = player;
+
+const openAi = new OpenAI({
+  project: openAI_project_id,
+  apiKey: openAI_api_key,
+});
+client.openai = openAi;
 
 ClientCommands.map((command) => client.commands.set(command.data, command));
 
