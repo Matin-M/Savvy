@@ -5,12 +5,12 @@ import { assistant_id } from '../../config.json';
 export default {
   data: {
     name: 'askai',
-    description: 'Ask AI a question',
+    description: 'Ask OpenAI',
     options: [
       {
-        name: 'question',
+        name: 'prompt',
         type: 3,
-        description: 'The question you want to ask AI',
+        description: 'Enter a prompt to gpt-4o',
         required: true,
       },
     ],
@@ -18,7 +18,7 @@ export default {
     contexts: [0, 1, 2],
   },
   async execute({ interaction, client }: ExecuteParams): Promise<void> {
-    const question = interaction.options.getString('question')!;
+    const question = interaction.options.getString('prompt')!;
 
     await interaction.deferReply();
 
@@ -32,14 +32,14 @@ export default {
         ],
       });
 
-      let response = '';
+      let response = `**Prompt** > ${question}\n`;
 
       const run = client.openai.beta.threads.runs
         .stream(thread.id, {
           assistant_id: assistant_id,
         })
         .on('textCreated', (text) => {
-          response += '\n***assistant*** > ';
+          response += '\n***Response*** > ';
           interaction.editReply(response).catch(console.error);
         })
         .on('textDelta', (textDelta, snapshot) => {
