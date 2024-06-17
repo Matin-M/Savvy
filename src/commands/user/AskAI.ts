@@ -13,12 +13,19 @@ export default {
         description: 'Enter a prompt to gpt-4o',
         required: true,
       },
+      {
+        name: 'hideprompt',
+        type: 5,
+        description: 'Hide the prompt and assistant markers in the response',
+        required: false,
+      },
     ],
     integration_types: [1],
     contexts: [0, 1, 2],
   },
   async execute({ interaction, client }: ExecuteParams): Promise<void> {
     const question = interaction.options.getString('prompt')!;
+    const hidePrompt = interaction.options.getBoolean('hideprompt') || false;
 
     await interaction.deferReply();
 
@@ -32,14 +39,20 @@ export default {
         ],
       });
 
-      let response = `**Prompt** > ${question}\n`;
+      let response = '';
+
+      if (!hidePrompt) {
+        response = `**User**: ${question}\n`;
+      }
 
       const run = client.openai.beta.threads.runs
         .stream(thread.id, {
           assistant_id: assistant_id,
         })
         .on('textCreated', (text) => {
-          response += '\n***Response*** > ';
+          if (!hidePrompt) {
+            response += '\n***assistant*** > ';
+          }
           interaction.editReply(response).catch(console.error);
         })
         .on('textDelta', (textDelta, snapshot) => {
@@ -47,7 +60,9 @@ export default {
           interaction.editReply(response).catch(console.error);
         })
         .on('toolCallCreated', (toolCall) => {
-          response += `\nassistant > ${toolCall.type}\n\n`;
+          if (!hidePrompt) {
+            response += `\nassistant > ${toolCall.type}\n\n`;
+          }
           interaction.editReply(response).catch(console.error);
         })
         .on('toolCallDelta', (toolCallDelta, snapshot) => {
