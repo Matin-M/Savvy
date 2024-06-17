@@ -6,13 +6,19 @@ export default {
   data: {
     name: 'askai',
     description: 'Ask AI a question',
+    options: [
+      {
+        name: 'question',
+        type: 3,
+        description: 'The question you want to ask AI',
+        required: true,
+      },
+    ],
     integration_types: [1],
     contexts: [0, 1, 2],
   },
   async execute({ interaction, client }: ExecuteParams): Promise<void> {
-    // const question = interaction.options.getString('question', true);
-    // Temporary question until we can get the question from the user
-    const question = 'What is the meaning of life?';
+    const question = interaction.options.getString('question')!;
 
     await interaction.deferReply();
 
@@ -33,7 +39,7 @@ export default {
           assistant_id: assistant_id,
         })
         .on('textCreated', (text) => {
-          response += '\nassistant > ';
+          response += '\n***assistant*** > ';
           interaction.editReply(response).catch(console.error);
         })
         .on('textDelta', (textDelta, snapshot) => {
