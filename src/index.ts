@@ -84,7 +84,7 @@ const openAi = new OpenAI({
   project: openAI_project_id,
   apiKey: openAI_api_key,
 });
-client.openAiInstance = openAi;
+client.openai = openAi;
 
 ClientCommands.map((command) => client.commands.set(command.data, command));
 

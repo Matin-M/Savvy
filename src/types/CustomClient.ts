@@ -6,7 +6,7 @@ import OpenAI from 'openai';
 export class CustomClient extends Client {
   commands: Collection<unknown, ICommand> = new Collection();
   player: Player;
-  openAiInstance: OpenAI;
+  openai: OpenAI;
 
   constructor(clientOptions: ClientOptions) {
     super(clientOptions);
