@@ -42,7 +42,7 @@ export default {
       let response = '';
 
       if (!hidePrompt) {
-        response = `**User**: ${question}\n`;
+        response = `**User**: ${question}\n\n`;
       }
 
       const run = client.openai.beta.threads.runs
@@ -53,17 +53,23 @@ export default {
           if (!hidePrompt) {
             response += '\n***assistant*** > ';
           }
-          interaction.editReply(response).catch(console.error);
+          if (response.trim() !== '') {
+            interaction.editReply(response).catch(console.error);
+          }
         })
         .on('textDelta', (textDelta, snapshot) => {
           response += textDelta.value;
-          interaction.editReply(response).catch(console.error);
+          if (response.trim() !== '') {
+            interaction.editReply(response).catch(console.error);
+          }
         })
         .on('toolCallCreated', (toolCall) => {
           if (!hidePrompt) {
             response += `\nassistant > ${toolCall.type}\n\n`;
           }
-          interaction.editReply(response).catch(console.error);
+          if (response.trim() !== '') {
+            interaction.editReply(response).catch(console.error);
+          }
         })
         .on('toolCallDelta', (toolCallDelta, snapshot) => {
           if (toolCallDelta.type === 'code_interpreter') {
@@ -78,14 +84,16 @@ export default {
                 }
               });
             }
-            interaction.editReply(response).catch(console.error);
+            if (response.trim() !== '') {
+              interaction.editReply(response).catch(console.error);
+            }
           }
         });
 
       await run.finalRun();
 
       if (!response) {
-        await interaction.editReply('Failed to get a response from the AI.');
+        await interaction.editReply('Failed to get a response from OpenAI');
       }
     } catch (error) {
       console.error('Error while processing AI request:', error);
