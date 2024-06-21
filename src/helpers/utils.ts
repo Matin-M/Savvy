@@ -132,7 +132,7 @@ export const formatUserName = async (
 
 export const makeFortniteAPIRequest = async (
   username: string,
-  timespan: string
+  timespan: boolean
 ): Promise<ServerResponse | null> => {
   try {
     const res = await axios.get<ServerResponse>(

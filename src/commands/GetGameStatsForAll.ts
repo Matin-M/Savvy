@@ -29,9 +29,7 @@ export default {
   }: ExecuteParams): Promise<void> {
     const replyEmbed = new EmbedBuilder();
     const usernames = interaction.options.getString('usernames');
-    const timespan = interaction.options.getBoolean('lifetime')
-      ? 'lifetime'
-      : 'season';
+    const timespan = interaction.options.getBoolean('lifetime') ?? false;
     const usernamesArray = [];
     if (usernames) {
       usernamesArray.push(

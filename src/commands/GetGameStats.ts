@@ -29,9 +29,7 @@ export default {
   }: ExecuteParams): Promise<void> {
     const replyEmbed = new EmbedBuilder();
     let username = interaction.options.getString('username');
-    const timespan = interaction.options.getBoolean('lifetime')
-      ? 'lifetime'
-      : 'season';
+    const timespan = interaction.options.getBoolean('lifetime') ?? false;
 
     if (!username) {
       const storedUsername = await PreferenceTable.findOne({
