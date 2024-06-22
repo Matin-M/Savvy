@@ -137,7 +137,7 @@ export const makeFortniteAPIRequest = async (
   try {
     const res = await axios.get<ServerResponse>(
       `https://fortnite-api.com/v2/stats/br/v2?name=${username}&accountType=epic&timeWindow=${
-        timespan ? 'season' : 'lifespan'
+        timespan ? 'lifespan' : 'season'
       }&image=all`,
       {
         headers: { Authorization: fortnite_api_key },
