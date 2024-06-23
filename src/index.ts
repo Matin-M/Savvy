@@ -358,7 +358,7 @@ client.on(
     const messageAuthor = message.author?.username || 'NA';
     const guildId = message.guildId || 'NA';
     console.log(
-      `[MessageDelete]-FROM-${messageAuthor}-IN-${guildId}: ${message.content}`
+      `[MessageDelete]-FROM-${messageAuthor}-IN-${message.guild?.name}: ${message.content}`
     );
     try {
       await Tags.update(

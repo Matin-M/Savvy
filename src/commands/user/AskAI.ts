@@ -92,6 +92,7 @@ export default {
 
       await run.finalRun();
 
+      console.log(`[AskAI]-RESPONSE: ${response}`);
       if (!response) {
         await interaction.editReply('Failed to get a response from OpenAI');
       }
