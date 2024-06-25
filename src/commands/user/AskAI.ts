@@ -1,6 +1,5 @@
 import ICommand from '../../types/Command';
 import { ExecuteParams } from '../../types/Command';
-import { assistant_id } from '../../config.json';
 
 export default {
   data: {
@@ -23,11 +22,28 @@ export default {
     integration_types: [1],
     contexts: [0, 1, 2],
   },
-  async execute({ interaction, client }: ExecuteParams): Promise<void> {
+  async execute({
+    interaction,
+    PreferenceTable,
+    client,
+  }: ExecuteParams): Promise<void> {
     const question = interaction.options.getString('prompt')!;
     const hidePrompt = interaction.options.getBoolean('hideprompt') || false;
 
     await interaction.deferReply();
+
+    const assistantId = await PreferenceTable.findOne({
+      where: {
+        guildId: interaction.guild!.id,
+        key: 'assistantId',
+      },
+      order: [['createdAt', 'DESC']],
+    });
+
+    if (!assistantId) {
+      await interaction.editReply('No assistant ID found for this server!');
+      return;
+    }
 
     try {
       const thread = await client.openai.beta.threads.create({
@@ -47,7 +63,7 @@ export default {
 
       const run = client.openai.beta.threads.runs
         .stream(thread.id, {
-          assistant_id: assistant_id,
+          assistant_id: assistantId.get('value') as string,
         })
         .on('textCreated', (text) => {
           if (!hidePrompt) {
