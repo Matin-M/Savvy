@@ -1,5 +1,5 @@
-FROM node:18.14.2-alpine3.17
-RUN apk update && apk add ffmpeg
+FROM node:20.16.0
+RUN apt-get update && apt-get install -y ffmpeg
 WORKDIR /app
 COPY package*.json ./
 COPY tsconfig.json ./

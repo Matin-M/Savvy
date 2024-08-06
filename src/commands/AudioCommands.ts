@@ -1,7 +1,7 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { EmbedBuilder } from 'discord.js';
 import ICommand from '../types/Command';
-import { useQueue, useMasterPlayer } from 'discord-player';
+import { useQueue, useMainPlayer } from 'discord-player';
 import { ExecuteParams } from '../types/Command';
 
 const Play = {
@@ -20,7 +20,7 @@ const Play = {
     const members = await interaction.guild!.members.fetch();
     const member = members.find((m) => m.id === interaction.user.id);
     const channel = member!.voice.channel;
-    const player = useMasterPlayer()!;
+    const player = useMainPlayer();
 
     if (!channel) {
       replyEmbed
