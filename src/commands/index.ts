@@ -18,6 +18,7 @@ import ChatStats from './ChatStats';
 import GetGameStatsForAll from './GetGameStatsForAll';
 import UserServerInfo from './user/ServerInfo';
 import AskAI from './user/AskAI';
+import SetPreference from './SetPreference';
 
 const commandList = [
   VoiceUpdates,
@@ -39,6 +40,7 @@ const commandList = [
   ChatStats,
   UserServerInfo,
   AskAI,
+  SetPreference,
 ];
 
 export default commandList as [ICommand];
