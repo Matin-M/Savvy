@@ -49,6 +49,7 @@ const Play = {
       const searchResult = await player.search(query, {
         requestedBy: interaction.user,
       });
+      console.log('playing search result ', searchResult);
       if (!searchResult.hasTracks()) {
         replyEmbed
           .setColor('#FF0000')
@@ -56,7 +57,7 @@ const Play = {
         interaction.editReply({ embeds: [replyEmbed] });
         return;
       } else {
-        const { track } = await player.play(channel, searchResult, {
+        const { track } = await player.play(channel, query, {
           nodeOptions: {
             metadata: interaction,
           },
