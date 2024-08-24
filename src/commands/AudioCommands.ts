@@ -33,7 +33,7 @@ const Play = {
       replyEmbed
         .setColor('#FF0000')
         .setDescription(
-          'I do not have permissions to join your voice channels!'
+          'Savvy does not have permissions to join your voice channels!'
         );
       interaction.reply({ embeds: [replyEmbed], ephemeral: true });
       return;
@@ -49,72 +49,79 @@ const Play = {
       const searchResult = await player.search(query, {
         requestedBy: interaction.user,
       });
-      console.log('playing search result ', searchResult);
       if (!searchResult.hasTracks()) {
         replyEmbed
           .setColor('#FF0000')
           .setDescription(`We found no tracks for ${query}!`);
         interaction.editReply({ embeds: [replyEmbed] });
         return;
-      } else {
-        const { track } = await player.play(channel, query, {
-          nodeOptions: {
-            metadata: interaction,
-          },
-        });
-        await PresenceTable.create({
-          guildId: interaction.guild!.id,
-          userId: interaction.user.id,
-          timeStamp: new Date(),
-          name: 'SavvyPlayer',
-          type: 1337,
-          url: track.url,
-          details: track.title,
-          state: track.author,
-          largeText: track.requestedBy?.username,
-          smallText: track.duration,
-        }).catch((e) => {
-          console.error(`[PlayerLoggingError]: ${e}`);
-        });
-
-        replyEmbed
-          .setColor(track ? '#00FF00' : '#FF0000')
-          .setDescription(
-            `${track ? 'Now playing' : 'Unable to play'} **${
-              track ? track.title : query
-            }** in voice channel **${channel?.name}**`
-          )
-          .addFields(
-            {
-              name: `${
-                track.url.includes('spotify.com') ? 'Artist' : 'Channel'
-              }`,
-              value: `${track.author}`,
-              inline: true,
-            },
-            {
-              name: 'Views',
-              value: `${
-                track.url.includes('spotify.com') ? 'N/A' : track.views
-              }`,
-              inline: true,
-            },
-            {
-              name: 'Duration',
-              value: `${track.duration}`,
-              inline: true,
-            },
-            {
-              name: 'URL',
-              value: track.url,
-              inline: true,
-            }
-          )
-          .setImage(track.thumbnail);
-        await interaction.editReply({
-          embeds: [replyEmbed],
-        });
       }
+
+      try {
+        await player.play(channel, searchResult, {
+          nodeOptions: {
+            noEmitInsert: true,
+            leaveOnStop: false,
+            leaveOnEmpty: true,
+            leaveOnEnd: false,
+          },
+          requestedBy: interaction.user,
+        });
+      } catch (e) {
+        console.error(`[MusicPlayerError]: ${e}`);
+        replyEmbed.setColor('#FF0000').setDescription(`Error occurred: ${e}`);
+        await interaction.editReply({ embeds: [replyEmbed] });
+      }
+
+      const track = searchResult.tracks[0];
+      await PresenceTable.create({
+        guildId: interaction.guild!.id,
+        userId: interaction.user.id,
+        timeStamp: new Date(),
+        name: 'SavvyPlayer',
+        type: 1337,
+        url: track.url,
+        details: track.title,
+        state: track.author,
+        largeText: track.requestedBy?.username,
+        smallText: track.duration,
+      }).catch((e) => {
+        console.error(`[PlayerLoggingError]: ${e}`);
+      });
+
+      replyEmbed
+        .setColor(track ? '#00FF00' : '#FF0000')
+        .setDescription(
+          `${track ? 'Now playing' : 'Unable to play'} **${
+            track ? track.title : query
+          }** in voice channel **${channel?.name}**`
+        )
+        .addFields(
+          {
+            name: `${track.url.includes('spotify.com') ? 'Artist' : 'Channel'}`,
+            value: `${track.author}`,
+            inline: true,
+          },
+          {
+            name: 'Views',
+            value: `${track.url.includes('spotify.com') ? 'N/A' : track.views}`,
+            inline: true,
+          },
+          {
+            name: 'Duration',
+            value: `${track.duration}`,
+            inline: true,
+          },
+          {
+            name: 'URL',
+            value: track.url,
+            inline: true,
+          }
+        )
+        .setImage(track.thumbnail);
+      await interaction.editReply({
+        embeds: [replyEmbed],
+      });
     } catch (e) {
       console.log(`[MusicPlayerError]: ${e}`);
       replyEmbed.setColor('#FF0000').setDescription(`Error occurred: ${e}`);

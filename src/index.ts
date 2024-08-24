@@ -41,7 +41,6 @@ import {
 } from './config.json';
 import ClientCommands from './commands/index';
 import OpenAI from 'openai';
-import { YoutubeiExtractor } from 'discord-player-youtubei';
 
 const intents = [
   GatewayIntentBits.Guilds,
@@ -77,8 +76,10 @@ const client = new CustomClient({
   ],
 });
 
-client.player = new Player(client);
-client.player.extractors.register(YoutubeiExtractor, {});
+client.player = new Player(client, {
+  skipFFmpeg: false,
+});
+client.player.extractors.loadDefault((ext) => ext !== 'YouTubeExtractor');
 
 const openAi = new OpenAI({
   project: openAI_project_id,
