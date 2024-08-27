@@ -4,9 +4,9 @@ Soundcloud/youtube/spotify streaming, keyword blacklisting, voice channel status
 
 ## Setup and deployment
 
-Savvy's deployment is handled by docker compose to orchestrate both the PostgreSQL database and NodeJS services. Clone the repository locally and run `docker-compose up -d` to start Savvy for production. 
+docker compose up -d --build
 
-### config.json parameters
+### Required config.json parameters
 
 ```
 {
@@ -23,4 +23,4 @@ Savvy's deployment is handled by docker compose to orchestrate both the PostgreS
 
 The parameter `clientActivityType` must be a string set to either `Watching`, `Playing`, or `Streaming`.
 
-`devAdminID` is your personal discord id, and can be used to override any permission settings of guilds that Savvy is a member of.
+`devAdminID` is the Admin's personal discord id, and can be used to override any permission settings of guilds that Savvy is a member of.
