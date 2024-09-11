@@ -56,19 +56,24 @@ const Play = {
         interaction.editReply({ embeds: [replyEmbed] });
         return;
       }
-
+      console.log(`[MusicPlayer] Playing track ${searchResult.tracks[0]}`);
       try {
-        await player.play(channel, searchResult, {
+        await player.play(channel, searchResult.tracks[0], {
           nodeOptions: {
-            noEmitInsert: true,
+            noEmitInsert: false,
             leaveOnStop: false,
-            leaveOnEmpty: true,
+            leaveOnEmpty: false,
+            leaveOnEmptyCooldown: 60000,
             leaveOnEnd: false,
+            leaveOnEndCooldown: 60000,
+            pauseOnEmpty: true,
           },
           requestedBy: interaction.user,
+          connectionOptions: {
+            deaf: true,
+          },
         });
       } catch (e) {
-        console.error(`[MusicPlayerError]: ${e}`);
         replyEmbed.setColor('#FF0000').setDescription(`Error occurred: ${e}`);
         await interaction.editReply({ embeds: [replyEmbed] });
       }

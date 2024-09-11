@@ -29,6 +29,8 @@ import clientMessageSchema from './database/models/clientMessageSchema';
 import preferenceSchema from './database/models/preferenceSchema';
 import { CustomClient } from './types/CustomClient';
 import { Player } from 'discord-player';
+import { SpotifyExtractor } from '@discord-player/extractor';
+import { YoutubeiExtractor } from 'discord-player-youtubei';
 import { sendMessageToUser, formatUserName } from './helpers/utils';
 import {
   token,
@@ -79,7 +81,12 @@ const client = new CustomClient({
 client.player = new Player(client, {
   skipFFmpeg: false,
 });
-client.player.extractors.loadDefault((ext) => ext !== 'YouTubeExtractor');
+client.player.extractors.register(SpotifyExtractor, {});
+client.player.extractors.register(YoutubeiExtractor, {});
+
+client.player.on('debug', (message) => {
+  console.log(`[MusicPlayerDebug]: ${message}`);
+});
 
 const openAi = new OpenAI({
   project: openAI_project_id,
