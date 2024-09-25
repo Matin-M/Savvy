@@ -85,6 +85,7 @@ client.player.extractors.register(SpotifyExtractor, {});
 client.player.extractors.register(YoutubeiExtractor, {});
 
 client.player.on('debug', (message) => {
+  if (environment == 'production') return;
   console.log(`[MusicPlayerDebug]: ${message}`);
 });
 
