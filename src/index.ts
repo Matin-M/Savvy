@@ -150,6 +150,10 @@ const generateKeywordMap = async () => {
   }
 };
 
+client.on(Events.Error, (error) => {
+  console.log(`[BotError]: ${error}`);
+});
+
 client.once(Events.ClientReady, async () => {
   try {
     const servedGuilds = client.guilds.cache.map((guild) => {

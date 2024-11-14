@@ -235,12 +235,6 @@ export default {
       },
     };
 
-    console.log({
-      guildId: interaction.guild!.id,
-      key: statsKey,
-      value: JSON.stringify(statsToStore),
-      classId: interaction.user.id,
-    });
     await PreferenceTable.upsert({
       guildId: interaction.guild!.id,
       key: statsKey,
