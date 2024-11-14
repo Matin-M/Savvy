@@ -151,10 +151,11 @@ export default {
 
         if (previousValue != null) {
           const delta = currentValue - previousValue;
-          if (delta > 0) {
-            deltaText = ` ⬆️ (+${delta.toFixed(2)})`;
-          } else if (delta < 0) {
-            deltaText = ` ⬇️ (${delta.toFixed(2)})`;
+          const truncatedDelta = Math.trunc(delta * 100) / 100;
+          if (truncatedDelta > 0) {
+            deltaText = ` ⬆️ (+${truncatedDelta.toFixed(2)})`;
+          } else if (truncatedDelta < 0) {
+            deltaText = ` ⬇️ (${truncatedDelta.toFixed(2)})`;
           } else {
             deltaText = '0 (no change)';
           }

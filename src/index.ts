@@ -86,7 +86,9 @@ client.player.extractors.register(YoutubeiExtractor, {});
 
 client.player.on('debug', (message) => {
   if (environment == 'production') return;
-  console.log(`[MusicPlayerDebug]: ${message}`);
+  if (!message.includes('Lag Monitor')) {
+    console.log(`[MusicPlayerDebug]: ${message}`);
+  }
 });
 
 const openAi = new OpenAI({
