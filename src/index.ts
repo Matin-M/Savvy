@@ -99,10 +99,6 @@ client.on('warn', (info) => {
   console.warn(`[ClientWarning]: ${info}`);
 });
 
-client.on('debug', (info) => {
-  console.debug(`[ClientDebug]: ${info}`);
-});
-
 const openAi = new OpenAI({
   project: openAI_project_id,
   apiKey: openAI_api_key,
