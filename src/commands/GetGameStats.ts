@@ -244,6 +244,7 @@ export default {
       .addFields(fields)
       .setImage(data.image);
 
+    console.log('Constructing stats object');
     const statsToStore: OverallStats = {
       account: data.account,
       battlePass: data.battlePass,
