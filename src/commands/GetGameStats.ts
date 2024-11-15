@@ -178,10 +178,18 @@ export default {
           } else {
             deltaText = '0 (no change)';
           }
+        } else {
+          deltaText = 'No Data';
         }
       }
 
       if (stat.name.includes('Diff')) {
+        return {
+          name: stat.name,
+          value: deltaText,
+          inline: true,
+        };
+      } else if (deltaText == 'No Data') {
         return {
           name: stat.name,
           value: deltaText,
@@ -235,15 +243,6 @@ export default {
       },
     ];
 
-    console.log('Building reply embed');
-    replyEmbed
-      .setTitle(
-        `${data.account.name}'s ${timespan ? 'Lifetime' : 'Season'} Stats`
-      )
-      .addFields(staticFields)
-      .addFields(fields)
-      .setImage(data.image);
-
     console.log('Constructing stats object');
     const statsToStore: OverallStats = {
       account: data.account,
@@ -263,6 +262,15 @@ export default {
       value: JSON.stringify(statsToStore),
       classId: interaction.user.id,
     });
+
+    console.log('Building reply embed');
+    replyEmbed
+      .setTitle(
+        `${data.account.name}'s ${timespan ? 'Lifetime' : 'Season'} Stats`
+      )
+      .addFields(staticFields)
+      .addFields(fields)
+      .setImage(data.image);
 
     console.log('Replying to interaction');
     await interaction.reply({ embeds: [replyEmbed] });
