@@ -109,7 +109,11 @@ export default {
       }
     }
 
-    // Define the stats to compare
+    const sanitizeValue = (value: unknown): string =>
+      value === null || value === undefined || value === ''
+        ? 'N/A'
+        : value.toString();
+
     const statsToCompare = [
       {
         name: 'K/D Diff',
@@ -157,7 +161,7 @@ export default {
       } else {
         currentValue = getValueByPath(data, stat.path) as number;
       }
-      const formattedCurrentValue = stat.format(currentValue);
+      const formattedCurrentValue = sanitizeValue(stat.format(currentValue));
 
       let deltaText = '';
       if (previousStats) {
@@ -183,62 +187,52 @@ export default {
         }
       }
 
-      if (stat.name.includes('Diff')) {
-        return {
-          name: stat.name,
-          value: deltaText,
-          inline: true,
-        };
-      } else if (deltaText == 'No Data') {
-        return {
-          name: stat.name,
-          value: deltaText,
-          inline: true,
-        };
-      } else {
-        return {
-          name: stat.name,
-          value: `${formattedCurrentValue}${deltaText}`,
-          inline: true,
-        };
-      }
+      return {
+        name: stat.name,
+        value: sanitizeValue(
+          stat.name.includes('Diff') || deltaText == 'No Data'
+            ? deltaText
+            : `${formattedCurrentValue}${deltaText}`
+        ),
+        inline: true,
+      };
     });
 
     const staticFields = [
       {
         name: 'Playtime',
-        value: `${(data.stats.all.overall.minutesPlayed / 60).toFixed(
-          2
-        )} Hours`,
+        value: sanitizeValue(
+          `${(data.stats.all.overall.minutesPlayed / 60).toFixed(2)} Hours`
+        ),
       },
       {
         name: 'Battlepass Level',
-        value: `${data.battlePass.level}`,
+        value: sanitizeValue(data.battlePass.level),
         inline: true,
       },
       {
         name: 'Players Outlived',
-        value: `${data.stats.all.overall.playersOutlived}`,
+        value: sanitizeValue(data.stats.all.overall.playersOutlived),
         inline: true,
       },
       {
         name: 'Score',
-        value: `${data.stats.all.overall.score}`,
+        value: sanitizeValue(data.stats.all.overall.score),
         inline: true,
       },
       {
         name: 'Top 10',
-        value: `${data.stats.all.overall.top10} finishes`,
+        value: sanitizeValue(`${data.stats.all.overall.top10} finishes`),
         inline: true,
       },
       {
         name: 'Top 5',
-        value: `${data.stats.all.overall.top5} finishes`,
+        value: sanitizeValue(`${data.stats.all.overall.top5} finishes`),
         inline: true,
       },
       {
         name: 'Top 3',
-        value: `${data.stats.all.overall.top3} finishes`,
+        value: sanitizeValue(`${data.stats.all.overall.top3} finishes`),
         inline: true,
       },
     ];
@@ -275,7 +269,6 @@ export default {
     console.log('Replying to interaction');
     await interaction.reply({ embeds: [replyEmbed] });
 
-    // Utility function to get nested values
     function getValueByPath(obj: any, path: string): unknown {
       return (
         path
