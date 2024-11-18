@@ -28,16 +28,11 @@ export default {
     interaction,
     PreferenceTable,
   }: ExecuteParams): Promise<void> {
-    console.log('Command execution started');
     const replyEmbed = new EmbedBuilder();
     let username = interaction.options.getString('username');
     const timespan = interaction.options.getBoolean('lifetime') ?? false;
 
-    console.log('Username:', username);
-    console.log('Timespan:', timespan);
-
     if (!username) {
-      console.log('No username provided, checking stored username');
       const storedUsername = await PreferenceTable.findOne({
         where: {
           guildId: interaction.guild!.id,
@@ -46,10 +41,8 @@ export default {
         },
         order: [['createdAt', 'DESC']],
       });
-      console.log('Stored username:', storedUsername);
 
       if (!storedUsername || !storedUsername.get('value')) {
-        console.log('No stored username found');
         replyEmbed
           .setColor([255, 0, 0])
           .setTitle('Error!')
@@ -59,7 +52,6 @@ export default {
       }
       username = storedUsername.get('value') as string;
     } else {
-      console.log('Username provided, updating stored username');
       await PreferenceTable.upsert({
         guildId: interaction.guild!.id,
         key: 'fortniteUsername',
@@ -68,12 +60,9 @@ export default {
       });
     }
 
-    console.log('Making Fortnite API request');
     const response = await makeFortniteAPIRequest(username, timespan);
-    console.log('API response:', response);
 
     if (!response) {
-      console.log('No response from API');
       replyEmbed
         .setColor([255, 0, 0])
         .setTitle('Error!')
@@ -82,20 +71,18 @@ export default {
       return;
     }
     const data = response.data;
-    console.log('Data received:', data);
 
-    const statsKey = `fortniteStats-${timespan ? 'lifetime' : 'season'}`;
-    console.log('Stats key:', statsKey);
+    const statsKey = `fortniteStats-${
+      timespan ? 'lifetime' : 'season'
+    }-${username}`;
 
     const previousStatsEntry = await PreferenceTable.findOne({
       where: {
         guildId: interaction.guild!.id,
         key: statsKey,
-        classId: interaction.user.id,
       },
       order: [['createdAt', 'DESC']],
     });
-    console.log('Previous stats entry:', previousStatsEntry);
 
     let previousStats: OverallStats | null = null;
     if (previousStatsEntry && previousStatsEntry.get('value')) {
@@ -103,7 +90,6 @@ export default {
         previousStats = JSON.parse(
           previousStatsEntry.get('value') as string
         ) as OverallStats;
-        console.log('Parsed previous stats:', previousStats);
       } catch (error) {
         console.error('Error parsing previous stats:', error);
       }
@@ -153,7 +139,6 @@ export default {
       },
     ];
 
-    console.log('Comparing stats');
     const fields = statsToCompare.map((stat) => {
       let currentValue: number;
       if (stat.compute) {
@@ -237,7 +222,6 @@ export default {
       },
     ];
 
-    console.log('Constructing stats object');
     const statsToStore: OverallStats = {
       account: data.account,
       battlePass: data.battlePass,
@@ -249,7 +233,6 @@ export default {
       },
     };
 
-    console.log('Storing stats');
     await PreferenceTable.upsert({
       guildId: interaction.guild!.id,
       key: statsKey,
@@ -257,7 +240,6 @@ export default {
       classId: interaction.user.id,
     });
 
-    console.log('Building reply embed');
     replyEmbed
       .setTitle(
         `${data.account.name}'s ${timespan ? 'Lifetime' : 'Season'} Stats`
@@ -266,7 +248,6 @@ export default {
       .addFields(fields)
       .setImage(data.image);
 
-    console.log('Replying to interaction');
     await interaction.reply({ embeds: [replyEmbed] });
 
     function getValueByPath(obj: any, path: string): unknown {
