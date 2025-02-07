@@ -41,6 +41,7 @@ import {
   openAI_api_key,
   openAI_project_id,
 } from './config.json';
+import logger from './logging/winstonConf';
 import ClientCommands from './commands/index';
 import OpenAI from 'openai';
 
@@ -87,16 +88,16 @@ client.player.extractors.register(YoutubeiExtractor, {});
 client.player.on('debug', (message) => {
   if (environment == 'production') return;
   if (!message.includes('Lag Monitor')) {
-    console.log(`[MusicPlayerDebug]: ${message}`);
+    logger.warn(`[MusicPlayerDebug]: ${message}`);
   }
 });
 
 client.on('error', (error) => {
-  console.error(`[ClientError]: ${error.message}`, error);
+  logger.warn(`[ClientError]: ${error.message}`, error);
 });
 
 client.on('warn', (info) => {
-  console.warn(`[ClientWarning]: ${info}`);
+  logger.warn(`[ClientWarning]: ${info}`);
 });
 
 const openAi = new OpenAI({
@@ -152,7 +153,7 @@ const generateKeywordMap = async () => {
       keywordPhraseMap.set(mapKey, classId);
     });
 
-    console.log(`Generated Keyword Map with ${keywordPrefs.length} entries`);
+    logger.info(`Generated Keyword Map with ${keywordPrefs.length} entries`);
   } catch (error) {
     console.error('Failed to generate keyword map:', error);
   }
@@ -161,7 +162,7 @@ const generateKeywordMap = async () => {
 client.once(Events.ClientReady, async () => {
   try {
     const servedGuilds = client.guilds.cache.map((guild) => {
-      console.log(guild.name);
+      logger.info(guild.name);
       return `${guild.id}`;
     });
 
@@ -172,7 +173,7 @@ client.once(Events.ClientReady, async () => {
       PreferenceTable.sync(),
     ]);
 
-    console.log('Checking to see if all guilds are in db...');
+    logger.info('Checking to see if all guilds are in db...');
     const existingGuilds = await Tags.findAll();
     const guildsToAdd = servedGuilds.filter(
       (id) => !existingGuilds.some((guild) => guild.get('guildId') === id)
@@ -311,7 +312,7 @@ client.on(Events.MessageCreate, async (message: Message<boolean>) => {
     devAdmin.send({ embeds: [replyEmbed] });
     console.log(`[UserDM]-FROM-${message.author.username}: ${message.content}`);
   } else if (message.channel.type === ChannelType.GuildText) {
-    console.log(
+    logger.info(
       `[ChannelMessage]-FROM-${message.author.username}-IN-${
         message.guild!.name
       }: ${message.content}`

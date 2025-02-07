@@ -6,6 +6,7 @@ services:
     restart: always
     depends_on:
       - db
+      - logstash
     ports:
       - '3000:3000'
     volumes:
@@ -37,6 +38,25 @@ services:
     networks:
       mainnet:
         ipv4_address: '10.11.236.10'
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.17.1
+    container_name: logstash
+    restart: always
+    environment:
+      - ES_HOST=${ES_HOST}
+      - ES_USER=${ES_USER}
+      - ES_PASSWORD=${ES_PASSWORD}
+    depends_on:
+      - db
+    volumes:
+      - './logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro'
+    ports:
+      - '5044:5044'
+      - '9600:9600'
+    networks:
+      mainnet:
+        ipv4_address: '10.11.236.21'
 
 networks:
   mainnet:
