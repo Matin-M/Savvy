@@ -43,6 +43,10 @@ services:
     image: docker.elastic.co/logstash/logstash:8.17.1
     container_name: logstash
     restart: always
+    environment:
+      - ES_HOST=${ES_HOST}
+      - ES_USER=${ES_USER}
+      - ES_PASSWORD=${ES_PASSWORD}
     depends_on:
       - db
     volumes:
