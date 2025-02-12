@@ -64,7 +64,7 @@ const intents = [
   GatewayIntentBits.DirectMessageReactions,
 ];
 
-console.log('[-----------------------STARTING-----------------------]');
+logger.info('[-----------------------STARTING-----------------------]');
 
 const client = new CustomClient({
   intents,
@@ -162,7 +162,7 @@ const generateKeywordMap = async () => {
 client.once(Events.ClientReady, async () => {
   try {
     const servedGuilds = client.guilds.cache.map((guild) => {
-      logger.info(guild.name);
+      logger.info(`Guild Name: ${guild.name}, Guild ID: ${guild.id}`);
       return `${guild.id}`;
     });
 
@@ -192,10 +192,10 @@ client.once(Events.ClientReady, async () => {
           user_joined_logs: [],
           user_left_logs: [],
           deleted_user_message_logs: [],
-        }).then(() => console.log(`Added guild ${id}`));
+        }).then(() => logger.info(`Added guild ${id}`));
       });
     } else {
-      console.log('All guilds are in db');
+      logger.info('All guilds are in db');
     }
 
     generateKeywordMap();
@@ -209,15 +209,15 @@ client.once(Events.ClientReady, async () => {
       });
     }, 300000);
 
-    console.log('[-----------------------READY-----------------------]');
+    logger.info('[-----------------------READY-----------------------]');
   } catch (error) {
-    console.error(`[DBError]: ${error}`);
+    logger.error(`[DBError]: ${error}`);
   }
 });
 
 // Handle guild joins
 client.on(Events.GuildCreate, async (guild: Guild) => {
-  console.log(`Savvy has joined server ${guild.name}`);
+  logger.info(`Savvy has joined server ${guild.name}, Guild ID: ${guild.id}`);
   await Tags.create({
     guildId: guild.id,
     self_assign_roles: [],
@@ -234,7 +234,7 @@ client.on(Events.GuildCreate, async (guild: Guild) => {
 
 // Handle guild leave/kick
 client.on(Events.GuildDelete, (guild: Guild) => {
-  console.log(`Savvy removed from guild ${guild.name}`);
+  logger.info(`Savvy removed from guild ${guild.name}, Guild ID: ${guild.id}`);
 });
 
 const presenceUpdates: any[] = [];
@@ -254,7 +254,7 @@ const flushPresenceUpdates = async () => {
 
 setInterval(() => {
   flushPresenceUpdates().catch((e) =>
-    console.error(`[FlushPresenceUpdatesError]: ${e}`)
+    logger.error(`[FlushPresenceUpdatesError]: ${e}`)
   );
 }, BATCH_INTERVAL);
 
@@ -303,19 +303,17 @@ client.on(Events.MessageCreate, async (message: Message<boolean>) => {
       );
       await message.reply({ embeds: [replyEmbed] });
     } catch (error) {
-      console.log(`ERROR: ${error}`);
+      logger.error(`ERROR: ${error}`);
     }
     const devAdmin = await client.users.fetch(devAdminId);
     replyEmbed.setDescription(
       `Message from ${message.author.username}: ${message.content}`
     );
     devAdmin.send({ embeds: [replyEmbed] });
-    console.log(`[UserDM]-FROM-${message.author.username}: ${message.content}`);
+    logger.info(`[UserDM]-FROM-${message.author.username}: ${message.content}`);
   } else if (message.channel.type === ChannelType.GuildText) {
     logger.info(
-      `[ChannelMessage]-FROM-${message.author.username}-IN-${
-        message.guild!.name
-      }: ${message.content}`
+      `[ChannelMessage]-FROM-${message.author.username}-IN-${message.guild!.name}: ${message.content}`
     );
     try {
       await ClientMessageLogs.create({
@@ -349,7 +347,7 @@ client.on(Events.MessageCreate, async (message: Message<boolean>) => {
               );
               await messageSender.send({ embeds: [replyEmbed] });
             } catch (error) {
-              console.error(`[MessageSendError]: ${error}`);
+              logger.error(`[MessageSendError]: ${error}`);
             }
             return;
           } else {
@@ -365,7 +363,7 @@ client.on(Events.MessageCreate, async (message: Message<boolean>) => {
         message.reply(messageContent);
       }
     } catch (error) {
-      console.error(`[DBError]: Guild ${message.guild!.id} not found`);
+      logger.error(`[DBError]: Guild ${message.guild!.id} not found`);
       return;
     }
   }
@@ -377,7 +375,7 @@ client.on(
   async (message: Message<boolean> | PartialMessage) => {
     const messageAuthor = message.author?.username || 'NA';
     const guildId = message.guildId || 'NA';
-    console.log(
+    logger.info(
       `[MessageDelete]-FROM-${messageAuthor}-IN-${message.guild?.name}: ${message.content}`
     );
     try {
@@ -397,7 +395,7 @@ client.on(
         { where: { guildId: message.guild!.id } }
       );
     } catch (error) {
-      console.log(`[DBError]: Guild ${message.guild!.name} not found`);
+      logger.error(`[DBError]: Guild ${message.guild!.name} not found`);
       return;
     }
   }
@@ -438,14 +436,14 @@ client.on(
           )
           .setTimestamp();
         try {
-          console.log(
+          logger.info(
             `[VoiceUpdate]-FROM-${newState.member!.user.username}-IN-${
               newState.member!.guild.name
             }: ${newState.channel!.name}`
           );
           await subscribedUser.send({ embeds: [replyEmbed] });
         } catch (error) {
-          console.error(`[VoiceUpdateError]: ${error}`);
+          logger.error(`[VoiceUpdateError]: ${error}`);
         }
       }
     }
@@ -454,7 +452,7 @@ client.on(
 
 // Handle guild member join
 client.on(Events.GuildMemberAdd, async (member: GuildMember) => {
-  console.log(
+  logger.info(
     `[NewUserJoin]-FROM-${member.user.username}-IN-${member.guild.name}`
   );
   const tag = (await Tags.findOne({ where: { guildId: member.guild.id } }))!;
@@ -473,7 +471,7 @@ client.on(Events.GuildMemberAdd, async (member: GuildMember) => {
             )}!`
           );
         } catch (error) {
-          console.error(`[UpdateChannelError]: ${error}`);
+          logger.error(`[UpdateChannelError]: ${error}`);
         }
       }
       return false;
@@ -490,7 +488,7 @@ client.on(Events.GuildMemberAdd, async (member: GuildMember) => {
       )!
     );
   } catch (error) {
-    console.error(`[UpdateChannelError]: ${error}`);
+    logger.error(`[UpdateChannelError]: ${error}`);
   }
   await Tags.update(
     {
@@ -512,7 +510,7 @@ client.on(Events.GuildMemberAdd, async (member: GuildMember) => {
 client.on(
   Events.GuildMemberRemove,
   async (member: GuildMember | PartialGuildMember) => {
-    console.log(
+    logger.info(
       `[UserLeave]-FROM-${member.user.username}-IN-${member.guild.name}`
     );
     if (member.id === client.user!.id) {
@@ -534,7 +532,7 @@ client.on(
               }**`
             );
           } catch (error) {
-            console.error(`[GuildMemberRemoveError]: ${error}`);
+            logger.error(`[GuildMemberRemoveError]: ${error}`);
           }
         }
         return false;
@@ -582,11 +580,11 @@ client.on(
       }
     }
     if (interaction.guild!.id === devGuildId && environment === 'production') {
-      console.log('Skipping dev guild interaction in production mode...');
+      logger.info('Skipping dev guild interaction in production mode...');
       return;
     }
     if (interaction.isCommand()) {
-      console.log(
+      logger.info(
         `[InteractionCreate]-FROM-${interaction.user.username}-IN-${
           interaction.guild ? interaction.guild.name : 'UserDM'
         }: ${interaction.type}`
@@ -612,7 +610,7 @@ client.on(
           generateKeywordMap();
         }
       } catch (error) {
-        console.error(
+        logger.error(
           `[InteractionError]-FROM-${interaction.user.username}-IN-${
             interaction.guild ? interaction.guild.name : 'UserDM'
           }: ${error}`
@@ -676,7 +674,7 @@ client.on(
           ) as Role;
           member.roles.add(role);
         } catch (error) {
-          console.error(
+          logger.error(
             `[MenuInteractionError]-FROM-${interaction.user.username}-IN-${
               interaction.guild ? interaction.guild.name : 'UserDM'
             }: ${error}`
@@ -706,7 +704,7 @@ client.on(
             } users with this role`
           )
           .setTimestamp();
-        console.log(
+        logger.info(
           `/addrole used, ${menuInteraction.values[0]} assigned to ${interaction.user.username}`
         );
         await menuInteraction.update({
