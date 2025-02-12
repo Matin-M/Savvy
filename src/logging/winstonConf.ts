@@ -5,6 +5,7 @@ const customLogger = createLogger({
   format: format.json(),
   transports: [
     new transports.Console(),
+    new transports.File({ filename: 'combined.log' }),
     new transports.Http({
       host: '10.11.236.21',
       port: 5044,
